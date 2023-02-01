@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0;netstandard2.1;net7.0</TargetFrameworks>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+		<ProjectReference Include="..\Fireasy.Data.Abstractions\Fireasy.Data.Abstractions.csproj" />
+		<ProjectReference Include="..\Fireasy.Data.Configuration\Fireasy.Data.Configuration.csproj" />
+	</ItemGroup>
+</Project>

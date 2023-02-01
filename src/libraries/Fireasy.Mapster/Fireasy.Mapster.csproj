@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>net462;netstandard2.0;netstandard2.1;net7.0</TargetFrameworks>
+	</PropertyGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Fireasy.ObjectMapping.Abstractions\Fireasy.ObjectMapping.Abstractions.csproj" />
+		<PackageReference Include="Mapster" Version="7.0.0" />
+	</ItemGroup>
+</Project>

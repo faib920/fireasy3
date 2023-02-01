@@ -1,0 +1,8 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>net462;netstandard2.0;netstandard2.1;net7.0</TargetFrameworks>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="StackExchange.Redis" Version="2.6.70" />
+	</ItemGroup>
+</Project>

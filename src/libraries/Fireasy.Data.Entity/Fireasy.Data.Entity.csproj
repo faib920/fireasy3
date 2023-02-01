@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>net462;netstandard2.0;netstandard2.1;net7.0</TargetFrameworks>
+	</PropertyGroup>
+	<ItemGroup>
+	  <PackageReference Include="PostSharp" Version="6.10.15" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Fireasy.Data.Entity.Abstractions\Fireasy.Data.Entity.Abstractions.csproj" />
+	</ItemGroup>
+</Project>

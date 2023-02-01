@@ -1,0 +1,23 @@
+<Project>
+  <PropertyGroup>
+    <Authors>Huangxd</Authors>
+    <Company>Fireasy</Company>
+    <Copyright>Copyright © Fireasy 2013-2023</Copyright>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\..\..\..\keys\fireasy.snk</AssemblyOriginatorKeyFile>
+    <DelaySign>False</DelaySign>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <FileVersion>3.0.0</FileVersion>
+    <AssemblyVersion>3.0.0</AssemblyVersion>
+    <Version>3.0.0-preview.1</Version>
+    <PackageIconUrl>http://fireasy.cn/icon.png</PackageIconUrl>
+    <RepositoryUrl>https://gitee.com/faib920/fireasy3</RepositoryUrl>
+    <PackageProjectUrl>http://www.fireasy.cn/framework</PackageProjectUrl>
+    <PackageReleaseNotes></PackageReleaseNotes>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <LangVersion>latest</LangVersion>
+    <IsPackable>true</IsPackable>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+</Project>
