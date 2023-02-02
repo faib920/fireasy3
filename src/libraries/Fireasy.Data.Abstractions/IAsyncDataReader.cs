@@ -11,7 +11,7 @@ namespace Fireasy.Data
     /// <summary>
     /// 为 <see cref="IDataReader"/> 提供异步支持。
     /// </summary>
-    public interface IAsyncIDataReader : IDataReader
+    public interface IAsyncDataReader : IDataReader
     {
         /// <summary>
         /// 读取下一条记录。

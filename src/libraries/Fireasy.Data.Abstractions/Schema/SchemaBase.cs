@@ -333,7 +333,7 @@ namespace Fireasy.Data.Schema
         /// <returns></returns>
         protected async IAsyncEnumerable<T> ExecuteAndParseMetadataAsync<T>(IDatabase database, SpecialCommand sql, ParameterCollection? parameters, Func<IRecordWrapper?, IDataReader, T> parser)
         {
-            using var reader = (IAsyncIDataReader)await database.ExecuteReaderAsync(sql, parameters: parameters);
+            using var reader = (IAsyncDataReader)await database.ExecuteReaderAsync(sql, parameters: parameters);
             var wrapper = database.Provider.GetService<IRecordWrapper>();
             while (await reader.ReadAsync())
             {

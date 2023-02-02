@@ -9,7 +9,7 @@ using System.Data.Common;
 
 namespace Fireasy.Data.Internal
 {
-    internal class InternalDataReader : DisposableBase, IAsyncIDataReader
+    internal class InternalDataReader : DisposableBase, IAsyncDataReader
     {
         private readonly IDbCommand _command;
         private readonly IDataReader _reader;

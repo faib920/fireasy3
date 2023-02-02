@@ -253,7 +253,7 @@ namespace Fireasy.Data
             rowMapper ??= rowMapperFactory?.CreateRowMapper<T>();
             rowMapper!.RecordWrapper = Provider.GetService<IRecordWrapper>();
 
-            using var reader = (IAsyncIDataReader)await ExecuteReaderAsync(queryCommand, segment, parameters, null, cancellationToken);
+            using var reader = (IAsyncDataReader)await ExecuteReaderAsync(queryCommand, segment, parameters, null, cancellationToken);
             while (await reader!.ReadAsync(cancellationToken))
             {
                 yield return rowMapper.Map(reader);
@@ -274,7 +274,7 @@ namespace Fireasy.Data
         {
             Guard.ArgumentNull(queryCommand, nameof(queryCommand));
 
-            using var reader = (IAsyncIDataReader)await ExecuteReaderAsync(queryCommand, segment, parameters, null, cancellationToken);
+            using var reader = (IAsyncDataReader)await ExecuteReaderAsync(queryCommand, segment, parameters, null, cancellationToken);
             var wrapper = Provider.GetService<IRecordWrapper>();
 
             while (await reader!.ReadAsync(cancellationToken))
@@ -320,7 +320,7 @@ namespace Fireasy.Data
             rowMapper ??= rowMapperFactory?.CreateRowMapper<T>();
             rowMapper!.RecordWrapper = Provider.GetService<IRecordWrapper>();
 
-            using var reader = (IAsyncIDataReader)await ExecuteReaderAsync(queryCommand, segment, parameters, null, cancellationToken);
+            using var reader = (IAsyncDataReader)await ExecuteReaderAsync(queryCommand, segment, parameters, null, cancellationToken);
             while (await reader!.ReadAsync(cancellationToken))
             {
                 result.Add(rowMapper.Map(reader));
@@ -350,7 +350,7 @@ namespace Fireasy.Data
             var result = new List<T>();
             var wrapper = Provider.GetService<IRecordWrapper>();
 
-            using var reader = (IAsyncIDataReader)await ExecuteReaderAsync(queryCommand, segment, parameters, null, cancellationToken);
+            using var reader = (IAsyncDataReader)await ExecuteReaderAsync(queryCommand, segment, parameters, null, cancellationToken);
             while (await reader!.ReadAsync(cancellationToken))
             {
                 result.Add(rowMapper(wrapper, reader));
@@ -375,7 +375,7 @@ namespace Fireasy.Data
             cancellationToken.ThrowIfCancellationRequested();
 
             var result = new List<dynamic>();
-            using var reader = (IAsyncIDataReader)await ExecuteReaderAsync(queryCommand, segment, parameters, null, cancellationToken);
+            using var reader = (IAsyncDataReader)await ExecuteReaderAsync(queryCommand, segment, parameters, null, cancellationToken);
             var wrapper = Provider.GetService<IRecordWrapper>();
 
             while (await reader!.ReadAsync(cancellationToken))
