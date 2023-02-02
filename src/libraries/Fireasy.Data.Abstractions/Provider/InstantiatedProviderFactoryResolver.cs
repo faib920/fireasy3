@@ -25,10 +25,9 @@ namespace Fireasy.Data.Provider
             _instance = instance;
         }
 
-        bool IProviderFactoryResolver.TryResolve(out DbProviderFactory? factory, out Exception? exception)
+        bool IProviderFactoryResolver.TryResolve(out DbProviderFactory? factory)
         {
             factory = _instance;
-            exception = null;
 
             return true;
         }

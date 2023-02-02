@@ -29,16 +29,14 @@ namespace Fireasy.Data.Provider
             _customizer = accessor?.Value;
         }
 
-        bool IProviderFactoryResolver.TryResolve(out DbProviderFactory? factory, out Exception? exception)
+        bool IProviderFactoryResolver.TryResolve(out DbProviderFactory? factory)
         {
             factory = _customizer?.GetDbProviderFactory(typeof(TProvider));
             if (factory != null)
             {
-                exception = null;
                 return factory != null;
             }
 
-            exception = null;
             factory = null;
 
             return false;

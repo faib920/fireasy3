@@ -18,8 +18,7 @@ namespace Fireasy.Data.Provider
         /// 解析返回 <see cref="DbProviderFactory"/> 对象。
         /// </summary>
         /// <param name="factory"><see cref="DbProviderFactory"/> 对象。</param>
-        /// <param name="exception">异常信息。</param>
         /// <returns></returns>
-        bool TryResolve(out DbProviderFactory? factory, out Exception? exception);
+        bool TryResolve(out DbProviderFactory? factory);
     }
 }

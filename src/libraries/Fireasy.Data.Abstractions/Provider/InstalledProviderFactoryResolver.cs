@@ -27,19 +27,15 @@ namespace Fireasy.Data.Provider
             _providerName = providerName;
         }
 
-        bool IProviderFactoryResolver.TryResolve(out DbProviderFactory? factory, out Exception? exception)
+        bool IProviderFactoryResolver.TryResolve(out DbProviderFactory? factory)
         {
             factory = DbProviderFactories.GetFactory(_providerName);
             if (factory != null)
             {
-                exception = null;
                 return true;
             }
 
-            exception = new FileNotFoundException($"{_providerName} 未找到，请下载相关的程序进行安装。");
-            factory = null;
-
-            return false;
+            throw new FileNotFoundException($"{_providerName} 未找到，请下载相关的程序进行安装。");
         }
     }
 #endif

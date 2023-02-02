@@ -26,23 +26,19 @@ namespace Fireasy.Data.Provider
             _typeNames = typeNames;
         }
 
-        bool IProviderFactoryResolver.TryResolve(out DbProviderFactory? factory, out Exception? exception)
+        bool IProviderFactoryResolver.TryResolve(out DbProviderFactory? factory)
         {
             foreach (var typeName in _typeNames)
             {
                 if (AssemblyLoader.TryLoad(typeName, out factory))
                 {
-                    exception = null;
                     return true;
                 }
             }
 
             var typeNames = string.Join("、", _typeNames.Select(s => s.Substring(s.LastIndexOf(",") + 1).Trim()).ToArray());
             var message = _typeNames.Count() == 1 ? $"必须从 Nuget 里安装 {typeNames} 组件。" : $"必须从 Nuget 里安装 {typeNames} 中的任意一个组件。";
-            exception = new FileNotFoundException(message);
-            factory = null;
-
-            return false;
+            throw new FileNotFoundException(message);
         }
     }
 }

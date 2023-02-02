@@ -141,19 +141,13 @@ namespace Fireasy.Data.Provider
         /// <returns></returns>
         protected virtual DbProviderFactory? InitDbProviderFactory()
         {
-            Exception? exception = null;
             DbProviderFactory? factory = null;
             foreach (var resolver in _resolvers)
             {
-                if (resolver.TryResolve(out factory, out exception))
+                if (resolver.TryResolve(out factory))
                 {
                     return factory;
                 }
-            }
-
-            if (exception != null)
-            {
-                throw exception;
             }
 
             return null;
