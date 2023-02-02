@@ -6,9 +6,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using Fireasy.Common;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace Fireasy.Data
 {

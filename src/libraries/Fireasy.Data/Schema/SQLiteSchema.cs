@@ -6,20 +6,18 @@
 // </copyright>
 // -----------------------------------------------------------------------
 using Fireasy.Common.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Fireasy.Data.Schema
 {
     /// <summary>
-    /// SQLite相关数据库架构信息的获取方法。
+    /// SQLite 数据库架构信息的获取方法。
     /// </summary>
     public class SQLiteSchema : SchemaBase
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public SQLiteSchema()
         {
             AddRestriction<Table>(s => s.Name, s => s.Type);
@@ -79,11 +77,30 @@ namespace Fireasy.Data.Schema
             AddDataType("smalldate", DbType.DateTime, typeof(DateTime));
             AddDataType("date", DbType.Date, typeof(DateTime));
             AddDataType("time", DbType.Time, typeof(DateTime));
-            AddDataType("timestamp", DbType.DateTime2, typeof(DateTime));
+            AddDataType("timestamp", DbType.DateTime, typeof(DateTime));
         }
 
         /// <summary>
-        /// 
+        /// 获取 <see cref="Database"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
+        protected override IAsyncEnumerable<Database> GetDatabasesAsync(IDatabase database, RestrictionDictionary restrictionValues)
+        {
+            var parameters = new ParameterCollection();
+
+            SpecialCommand sql = $@"
+PRAGMA main.database_list";
+
+            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new Database
+            {
+                Name = wrapper!.GetString(reader, 0)
+            });
+        }
+
+        /// <summary>
+        /// 获取 <see cref="Table"/> 元数据序列。
         /// </summary>
         /// <param name="database"></param>
         /// <param name="restrictionValues"></param>
@@ -108,7 +125,7 @@ AND (name = @NAME OR @NAME IS NULL)";
         }
 
         /// <summary>
-        /// 
+        /// 获取 <see cref="Column"/> 元数据序列。
         /// </summary>
         /// <param name="database"></param>
         /// <param name="restrictionValues"></param>
@@ -152,7 +169,7 @@ PRAGMA main.TABLE_INFO('{tb.Name}')";
         }
 
         /// <summary>
-        /// 
+        /// 获取 <see cref="View"/> 元数据序列。
         /// </summary>
         /// <param name="database"></param>
         /// <param name="restrictionValues"></param>
@@ -176,7 +193,7 @@ AND (name = @NAME OR @NAME IS NULL)";
         }
 
         /// <summary>
-        /// 
+        /// 获取 <see cref="ViewColumn"/> 元数据序列。
         /// </summary>
         /// <param name="database"></param>
         /// <param name="restrictionValues"></param>
@@ -321,7 +338,7 @@ PRAGMA main.TABLE_INFO('{tb.Name}')";
         }
 
         /// <summary>
-        /// 
+        /// 获取 <see cref="ForeignKey"/> 元数据序列。
         /// </summary>
         /// <param name="database"></param>
         /// <param name="restrictionValues"></param>
@@ -337,13 +354,16 @@ PRAGMA main.TABLE_INFO('{tb.Name}')";
                 SpecialCommand sql = $@"
 PRAGMA main.FOREIGN_KEY_LIST('{tbName}')";
 
-                foreignKeys.AddRange(await ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new ForeignKey
+                await foreach (var item in ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new ForeignKey
                 {
                     TableName = tbName,
-                    ColumnName = wrapper!.GetString(reader, 4),
+                    ColumnName = wrapper!.GetString(reader, 3),
                     PKTable = wrapper.GetString(reader, 2),
-                    PKColumn = wrapper.GetString(reader, 3)
-                }).AsEnumerable());
+                    PKColumn = wrapper.GetString(reader, 4)
+                }))
+                {
+                    yield return item;
+                }
             }
             else
             {
@@ -353,18 +373,16 @@ PRAGMA main.FOREIGN_KEY_LIST('{tbName}')";
                     SpecialCommand sql = $@"
 PRAGMA main.FOREIGN_KEY_LIST('{tb.Name}')";
 
-                    foreignKeys.AddRange(await ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new ForeignKey
+                    await foreach (var item in ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new ForeignKey
                     {
                         TableName = tb.Name,
-                        ColumnName = wrapper!.GetString(reader, 4),
+                        ColumnName = wrapper!.GetString(reader, 3),
                         PKTable = wrapper.GetString(reader, 2),
-                        PKColumn = wrapper.GetString(reader, 3)
-                    }).AsEnumerable());
-                }
-
-                foreach (var item in foreignKeys)
-                {
-                    yield return item;
+                        PKColumn = wrapper.GetString(reader, 4)
+                    }))
+                    {
+                        yield return item;
+                    }
                 }
             }
         }

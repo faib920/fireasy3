@@ -23,7 +23,7 @@ namespace Fireasy.Data
         /// <returns></returns>
         public static IProvider? GetDefinedProvider(this IProviderManager providerManager, IInstanceConfigurationSetting setting)
         {
-            var provider = providerManager.GetDefinedProviderInstance(setting.ProviderType);
+            var provider = providerManager.GetDefinedProvider(setting.ProviderType);
             if (provider is IFeaturedProvider featureProvider)
             {
                 var feature = featureProvider.GetFeature(setting.ConnectionString);

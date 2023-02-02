@@ -38,18 +38,22 @@ namespace Fireasy.Data.Tests
                 Console.WriteLine(name);
             }
 
+            //通过配置 fireasy:dataProviders 自动注册了提供者
             Assert.IsTrue(names.Contains("myprovider"));
+
+            //由于引用了 Fireasy.Data.OleDb，自动注册了 OleDbProvider
+            Assert.IsTrue(names.Contains("OleDb"));
         }
 
         /// <summary>
         /// 测试获取指定名称的提供者
         /// </summary>
         [TestMethod]
-        public void TestGetDefinedProviderInstance()
+        public void TestGetDefinedProvider()
         {
             var manager = ServiceProvider.GetRequiredService<IProviderManager>();
 
-            var provider = manager.GetDefinedProviderInstance("myprovider");
+            var provider = manager.GetDefinedProvider("myprovider");
 
             Assert.IsInstanceOfType(provider, typeof(TestProvider));
         }
@@ -88,7 +92,7 @@ namespace Fireasy.Data.Tests
         /// 测试自定义提供者
         /// </summary>
         [TestMethod]
-        public void TestCustomeProvider()
+        public void TestCustomizedProvider()
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 

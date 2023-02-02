@@ -7,7 +7,6 @@
 // -----------------------------------------------------------------------
 
 using Fireasy.Data.Provider;
-using System.Data;
 
 namespace Fireasy.Data.Syntax
 {
@@ -55,7 +54,7 @@ namespace Fireasy.Data.Syntax
         /// <summary>
         /// 获取伪查询的表名称。
         /// </summary>
-        string FakeSelect { get; }
+        string FakeTable { get; }
 
         /// <summary>
         /// 获取存储参数的前缀。

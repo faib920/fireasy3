@@ -5,9 +5,6 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using Fireasy.Data.Provider;
-using System;
-using System.Threading.Tasks;
 
 namespace Fireasy.Data.Identity
 {

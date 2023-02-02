@@ -5,15 +5,11 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using Fireasy.Common;
 using Fireasy.Common.Collections;
 using Fireasy.Common.Extensions;
-using Fireasy.Data.Provider;
 using Fireasy.Data.RecordWrapper;
 using Fireasy.Data.Schema.Linq;
-using System;
-using System.Collections.Generic;
-using System.Data;
+using System.Data.Common;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -144,6 +140,20 @@ namespace Fireasy.Data.Schema
         protected void AddDataType(string name, DbType dbType, Type systemType)
         {
             _dataTypes.Add(new DataType { Name = name, DbType = dbType, SystemType = systemType });
+        }
+
+        /// <summary>
+        /// 添加数据类型。
+        /// </summary>
+        /// <param name="names">类型名称数组。</param>
+        /// <param name="dbType"></param>
+        /// <param name="systemType"></param>
+        protected void AddDataType(string[] names, DbType dbType, Type systemType)
+        {
+            foreach (var name in names)
+            {
+                _dataTypes.Add(new DataType { Name = name, DbType = dbType, SystemType = systemType });
+            }
         }
 
         /// <summary>
@@ -321,11 +331,11 @@ namespace Fireasy.Data.Schema
         /// <param name="parameters"></param>
         /// <param name="parser"></param>
         /// <returns></returns>
-        protected async IAsyncEnumerable<T> ExecuteAndParseMetadataAsync<T>(IDatabase database, SpecialCommand sql, ParameterCollection parameters, Func<IRecordWrapper?, IDataReader, T> parser)
+        protected async IAsyncEnumerable<T> ExecuteAndParseMetadataAsync<T>(IDatabase database, SpecialCommand sql, ParameterCollection? parameters, Func<IRecordWrapper?, IDataReader, T> parser)
         {
-            using var reader = await database.ExecuteReaderAsync(sql, parameters: parameters);
+            using var reader = (IAsyncIDataReader)await database.ExecuteReaderAsync(sql, parameters: parameters);
             var wrapper = database.Provider.GetService<IRecordWrapper>();
-            while (reader.Read())
+            while (await reader.ReadAsync())
             {
                 yield return parser(wrapper, reader);
             }

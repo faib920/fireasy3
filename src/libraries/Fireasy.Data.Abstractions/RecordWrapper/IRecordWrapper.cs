@@ -7,8 +7,6 @@
 // -----------------------------------------------------------------------
 
 using Fireasy.Data.Provider;
-using System;
-using System.Data;
 
 namespace Fireasy.Data.RecordWrapper
 {

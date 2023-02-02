@@ -1,5 +1,4 @@
-﻿using Fireasy.Common.DependencyInjection;
-using Fireasy.Common.Extensions;
+﻿using Fireasy.Common.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Fireasy.Data.Tests.DatabaseTest
@@ -98,6 +97,22 @@ namespace Fireasy.Data.Tests.DatabaseTest
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
             using var database = factory.CreateDatabase(InstanceName);
+            Assert.IsNotNull(database);
+
+            var exp = await database.TryConnectAsync();
+
+            Assert.IsNull(exp);
+        }
+
+        /// <summary>
+        /// 从提供者创建
+        /// </summary>
+        [TestMethod]
+        public async Task TestCreateDatabaseByProviderName()
+        {
+            var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
+
+            using var database = factory.CreateDatabase(ProviderName, ConnectionString);
             Assert.IsNotNull(database);
 
             var exp = await database.TryConnectAsync();

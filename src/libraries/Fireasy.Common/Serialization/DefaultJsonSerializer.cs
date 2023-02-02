@@ -93,7 +93,7 @@ namespace Fireasy.Common.Serialization
 
         private object? ParseElement(JsonElement element)
         {
-            if (element.ValueKind== JsonValueKind.Array)
+            if (element.ValueKind == JsonValueKind.Array)
             {
                 var array = new List<object?>();
 

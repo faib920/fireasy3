@@ -5,7 +5,6 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using System;
 using System.Data.Common;
 
 namespace Fireasy.Data.Provider

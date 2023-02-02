@@ -6,12 +6,8 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using Fireasy.Common.Extensions;
 using Fireasy.Configuration;
 using Fireasy.Data.Configuration.Converters;
-using System;
-using System.Drawing;
-using System.Linq;
 
 namespace Fireasy.Data.Converter
 {

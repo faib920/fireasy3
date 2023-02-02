@@ -6,17 +6,9 @@
 // </copyright>
 // -----------------------------------------------------------------------
 using Fireasy.Data.Extensions;
-using Fireasy.Data.Provider;
 using Fireasy.Data.Syntax;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Fireasy.Data.Batcher
 {
@@ -87,7 +79,7 @@ namespace Fireasy.Data.Batcher
         {
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// 批量插入集合中的数据。
         /// </summary>

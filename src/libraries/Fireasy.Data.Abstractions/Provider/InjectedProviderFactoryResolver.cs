@@ -7,11 +7,7 @@
 // -----------------------------------------------------------------------
 using Fireasy.Common.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 using System.Data.Common;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 
 namespace Fireasy.Data.Provider
 {

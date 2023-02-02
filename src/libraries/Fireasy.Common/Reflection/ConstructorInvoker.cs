@@ -192,7 +192,7 @@ namespace Fireasy.Common.Reflection
                 .newobj(constructorInfo)
                 .ret();
 
-            return (Func< TArg1, TArg2, TArg3, object>)dm.CreateDelegate(typeof(Func<TArg1, TArg2, TArg3, object>));
+            return (Func<TArg1, TArg2, TArg3, object>)dm.CreateDelegate(typeof(Func<TArg1, TArg2, TArg3, object>));
         }
 
         /// <summary>

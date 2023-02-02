@@ -6,8 +6,6 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using System.Text.RegularExpressions;
-
 namespace Fireasy.Data.Syntax
 {
     /// <summary>

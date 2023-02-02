@@ -65,7 +65,8 @@ CREATE TABLE "public"."customers" (
   "PostalCode" varchar(10),
   "Country" varchar(15),
   "Phone" varchar(24),
-  "Fax" varchar(24)
+  "Fax" varchar(24),
+  CONSTRAINT customers_pkey PRIMARY KEY ("CustomerID")
 )
 ;
 
@@ -2461,7 +2462,11 @@ CREATE TABLE "public"."orders" (
   "ShipCity" varchar(15),
   "ShipRegion" varchar(15),
   "ShipPostalCode" varchar(10),
-  "ShipCountry" varchar(15)
+  "ShipCountry" varchar(15),
+  CONSTRAINT orders_pk PRIMARY KEY ("OrderID"),
+  CONSTRAINT fk_orders_customers FOREIGN KEY ("CustomerID") REFERENCES public.customers("CustomerID"),
+  CONSTRAINT fk_orders_employees FOREIGN KEY ("EmployeeID") REFERENCES public.employees("EmployeeID"),
+  CONSTRAINT fk_orders_shippers FOREIGN KEY ("ShipVia") REFERENCES public.shippers("ShipperID")
 )
 ;
 
@@ -3315,7 +3320,8 @@ CREATE TABLE "public"."products" (
   "UnitsInStock" int2,
   "UnitsOnOrder" int2,
   "ReorderLevel" int2,
-  "Discontinued" varchar(1) NOT NULL
+  "Discontinued" varchar(1) NOT NULL,
+  CONSTRAINT products_pk PRIMARY KEY ("ProductID")
 )
 ;
 
@@ -3425,7 +3431,8 @@ DROP TABLE IF EXISTS "public"."shippers";
 CREATE TABLE "public"."shippers" (
   "ShipperID" int4 NOT NULL,
   "CompanyName" varchar(40) NOT NULL,
-  "Phone" varchar(24)
+  "Phone" varchar(24),
+  PRIMARY KEY ("ShipperID")
 )
 ;
 
@@ -3622,3 +3629,39 @@ ALTER TABLE "public"."customers" ADD CONSTRAINT "customers_pkey" PRIMARY KEY ("C
 CREATE INDEX "LastName" ON "public"."employees" USING btree (
   "LastName" "pg_catalog"."text_ops" ASC NULLS LAST
 );
+
+
+CREATE VIEW invoices AS SELECT
+orders."ShipName" AS "ShipName",
+orders."ShipAddress" AS "ShipAddress",
+orders."ShipCity" AS "ShipCity",
+orders."ShipRegion" AS "ShipRegion",
+orders."ShipPostalCode" AS "ShipPostalCode",
+orders."ShipCountry" AS "ShipCountry",
+orders."CustomerID" AS "CustomerID",
+customers."CompanyName" AS "CustomerName",
+customers."Address" AS "Address",
+customers."City" AS "City",
+customers."Region" AS "Region",
+customers."PostalCode" AS "PostalCode",
+customers."Country" AS "Country",
+( ( employees."FirstName" || ' ' ) || employees."LastName" ) AS "Salesperson",
+orders."OrderID" AS "OrderID",
+orders."OrderDate" AS "OrderDate",
+orders."RequiredDate" AS "RequiredDate",
+orders."ShippedDate" AS "ShippedDate",
+shippers."CompanyName" AS "ShipperName",details."ProductID" AS "ProductID",
+products."ProductName" AS "ProductName",
+details."UnitPrice" AS "UnitPrice",
+details."Quantity" AS "Quantity",
+details."Discount" AS "Discount",
+(
+( ( ( details."UnitPrice" * details."Quantity" ) * ( 1 -details."Discount" ) ) / 100 ) * 100 
+) AS "ExtendedPrice",
+orders."Freight" AS "Freight "
+FROM customers 
+JOIN orders ON customers."CustomerID" = orders."CustomerID"
+JOIN employees ON employees."EmployeeID" = orders."EmployeeID"
+JOIN "order details" details ON orders."OrderID" = details."OrderID"
+JOIN products ON products."ProductID" = details."ProductID"
+JOIN shippers ON shippers."ShipperID" = orders."ShipVia"

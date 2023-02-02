@@ -5,14 +5,11 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using System;
-using System.Collections.Generic;
-using System.Data;
 
 namespace Fireasy.Data.Schema
 {
     /// <summary>
-    /// PostgreSql相关数据库架构信息的获取方法。
+    /// PostgreSql 数据库架构信息的获取方法。
     /// </summary>
     public class PostgreSqlSchema : SchemaBase
     {
@@ -61,6 +58,12 @@ namespace Fireasy.Data.Schema
             AddDataType("timestampz", DbType.DateTime, typeof(DateTime));
         }
 
+        /// <summary>
+        /// 获取 <see cref="Database"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
         protected override IAsyncEnumerable<Database> GetDatabasesAsync(IDatabase database, RestrictionDictionary restrictionValues)
         {
             var parameters = new ParameterCollection();
@@ -76,6 +79,32 @@ SELECT DATNAME FROM PG_DATABASE WHERE (DATNAME = @NAME OR (@NAME IS NULL))";
             });
         }
 
+        /// <summary>
+        /// 获取 <see cref="User"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
+        protected override IAsyncEnumerable<User> GetUsersAsync(IDatabase database, RestrictionDictionary restrictionValues)
+        {
+            var parameters = new ParameterCollection();
+
+            SpecialCommand sql = "SELECT ROLNAME FROM PG_ROLES WHERE (ROLNAME = @NAME OR @NAME IS NULL)";
+
+            restrictionValues.Parameterize(parameters, "NAME", nameof(User.Name));
+
+            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new User
+            {
+                Name = wrapper!.GetString(reader, 0)
+            });
+        }
+
+        /// <summary>
+        /// 获取 <see cref="Table"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
         protected override IAsyncEnumerable<Table> GetTablesAsync(IDatabase database, RestrictionDictionary restrictionValues)
         {
             var parameters = new ParameterCollection();
@@ -83,19 +112,19 @@ SELECT DATNAME FROM PG_DATABASE WHERE (DATNAME = @NAME OR (@NAME IS NULL))";
 
             SpecialCommand sql = $@"
 SELECT
-  TValue.TABLE_CATALOG,
-  TValue.TABLE_SCHEMA,
-  TValue.TABLE_NAME,
-  TValue.TABLE_TYPE,
+  T.TABLE_CATALOG,
+  T.TABLE_SCHEMA,
+  T.TABLE_NAME,
+  T.TABLE_TYPE,
   C.TABLE_COMMENT
-FROM INFORMATION_SCHEMA.TABLES TValue
+FROM INFORMATION_SCHEMA.TABLES T
 JOIN (
   SELECT RELNAME AS TABLE_NAME, CAST(OBJ_DESCRIPTION(RELFILENODE, 'pg_class') AS VARCHAR) AS TABLE_COMMENT FROM PG_CLASS C 
   WHERE RELKIND = 'r'
-) C ON TValue.TABLE_NAME = C.TABLE_NAME
-WHERE (TValue.TABLE_CATALOG = '{connpar.Database}' AND TValue.TABLE_SCHEMA = ANY (CURRENT_SCHEMAS(false)))
-  AND (TValue.TABLE_NAME = :NAME OR :NAME IS NULL)
- ORDER BY TValue.TABLE_CATALOG, TValue.TABLE_SCHEMA, TValue.TABLE_NAME";
+) C ON T.TABLE_NAME = C.TABLE_NAME
+WHERE (T.TABLE_CATALOG = '{connpar.Database}' AND T.TABLE_SCHEMA = ANY (CURRENT_SCHEMAS(false)))
+  AND (T.TABLE_NAME = :NAME OR :NAME IS NULL)
+ ORDER BY T.TABLE_CATALOG, T.TABLE_SCHEMA, T.TABLE_NAME";
 
             restrictionValues
                 .Parameterize(parameters, "NAME", nameof(Table.Name));
@@ -110,6 +139,12 @@ WHERE (TValue.TABLE_CATALOG = '{connpar.Database}' AND TValue.TABLE_SCHEMA = ANY
             });
         }
 
+        /// <summary>
+        /// 获取 <see cref="Column"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
         protected override IAsyncEnumerable<Column> GetColumnsAsync(IDatabase database, RestrictionDictionary restrictionValues)
         {
             var parameters = new ParameterCollection();
@@ -142,11 +177,10 @@ LEFT JOIN PG_CLASS PCL
 LEFT JOIN PG_DESCRIPTION DES
     ON PCL.OID = DES.OBJOID AND COL.ORDINAL_POSITION = DES.OBJSUBID
 LEFT JOIN PG_CONSTRAINT CON
-	ON CON.CONRELID = PCL.OID
+	ON CON.CONRELID = PCL.OID AND CON.CONTYPE = 'p'
 WHERE (COL.TABLE_CATALOG = '{connpar.Database}' AND COL.TABLE_SCHEMA = ANY (CURRENT_SCHEMAS(false)))
   AND (COL.TABLE_NAME = :TABLENAME OR :TABLENAME IS NULL)
   AND (COL.COLUMN_NAME = :COLUMNNAME OR :COLUMNNAME IS NULL)
-  AND CON.CONTYPE = 'p'
 ORDER BY
   COL.TABLE_CATALOG, COL.TABLE_SCHEMA, COL.TABLE_NAME, COL.ORDINAL_POSITION";
 
@@ -171,6 +205,12 @@ ORDER BY
             }));
         }
 
+        /// <summary>
+        /// 获取 <see cref="ForeignKey"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
         protected override IAsyncEnumerable<ForeignKey> GetForeignKeysAsync(IDatabase database, RestrictionDictionary restrictionValues)
         {
             var parameters = new ParameterCollection();
@@ -212,6 +252,12 @@ WHERE (TC.CONSTRAINT_CATALOG = '{connpar.Database}' AND TC.TABLE_SCHEMA = ANY (C
             });
         }
 
+        /// <summary>
+        /// 获取 <see cref="View"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
         protected override IAsyncEnumerable<View> GetViewsAsync(IDatabase database, RestrictionDictionary restrictionValues)
         {
             var parameters = new ParameterCollection();
@@ -219,19 +265,19 @@ WHERE (TC.CONSTRAINT_CATALOG = '{connpar.Database}' AND TC.TABLE_SCHEMA = ANY (C
 
             SpecialCommand sql = $@"
 SELECT
-  TValue.TABLE_CATALOG,
-  TValue.TABLE_SCHEMA,
-  TValue.TABLE_NAME,
+  T.TABLE_CATALOG,
+  T.TABLE_SCHEMA,
+  T.TABLE_NAME,
   C.TABLE_COMMENT
-FROM INFORMATION_SCHEMA.VIEWS TValue
+FROM INFORMATION_SCHEMA.VIEWS T
 JOIN (
   SELECT RELNAME AS TABLE_NAME, CAST(OBJ_DESCRIPTION(RELFILENODE, 'pg_class') AS VARCHAR) AS TABLE_COMMENT FROM PG_CLASS C 
   WHERE RELKIND = 'v'
   ) C
     ON t.TABLE_NAME = C.TABLE_NAME
 WHERE (TABLE_CATALOG = '{connpar.Database}' AND TABLE_SCHEMA = ANY (CURRENT_SCHEMAS(false)))
-  AND (TValue.TABLE_NAME = :NAME OR :NAME IS NULL)
- ORDER BY TValue.TABLE_CATALOG, TValue.TABLE_SCHEMA, TValue.TABLE_NAME";
+  AND (T.TABLE_NAME = :NAME OR :NAME IS NULL)
+ ORDER BY T.TABLE_CATALOG, T.TABLE_SCHEMA, T.TABLE_NAME";
 
             restrictionValues
                 .Parameterize(parameters, "NAME", nameof(View.Name));
@@ -245,6 +291,12 @@ WHERE (TABLE_CATALOG = '{connpar.Database}' AND TABLE_SCHEMA = ANY (CURRENT_SCHE
             });
         }
 
+        /// <summary>
+        /// 获取 <see cref="ViewColumn"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
         protected override IAsyncEnumerable<ViewColumn> GetViewColumnsAsync(IDatabase database, RestrictionDictionary restrictionValues)
         {
             var parameters = new ParameterCollection();

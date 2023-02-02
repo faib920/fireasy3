@@ -6,9 +6,6 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using Fireasy.Common.Extensions;
-using System;
-
 namespace Fireasy.Data
 {
     /// <summary>

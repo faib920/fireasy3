@@ -5,14 +5,11 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using System;
-using System.Collections.Generic;
-using System.Data;
 
 namespace Fireasy.Data.Schema
 {
     /// <summary>
-    /// MsSql相关数据库架构信息的获取方法。
+    /// SqlServer 数据库架构信息的获取方法。
     /// </summary>
     public sealed class SqlServerSchema : SchemaBase
     {
@@ -65,7 +62,7 @@ namespace Fireasy.Data.Schema
         }
 
         /// <summary>
-        /// 
+        /// 获取 <see cref="Database"/> 元数据序列。
         /// </summary>
         /// <param name="database"></param>
         /// <param name="restrictionValues"></param>
@@ -87,7 +84,7 @@ SELECT NAME AS DATABASE_NAME, CRDATE AS CREATE_DATE FROM MASTER..SYSDATABASES WH
         }
 
         /// <summary>
-        /// 
+        /// 获取 <see cref="User"/> 元数据序列。
         /// </summary>
         /// <param name="database"></param>
         /// <param name="restrictionValues"></param>
@@ -97,7 +94,9 @@ SELECT NAME AS DATABASE_NAME, CRDATE AS CREATE_DATE FROM MASTER..SYSDATABASES WH
             var parameters = new ParameterCollection();
 
             SpecialCommand sql = @"
-SELECT UID, NAME AS USER_NAME, CREATEDATE, UPDATEDATE FROM SYSUSERS WHERE (NAME = @NAME OR (@NAME IS NULL))";
+SELECT UID, NAME AS USER_NAME, CREATEDATE, UPDATEDATE
+FROM SYSUSERS
+WHERE (NAME = @NAME OR (@NAME IS NULL))";
 
             restrictionValues.Parameterize(parameters, "NAME", nameof(User.Name));
 
@@ -109,7 +108,7 @@ SELECT UID, NAME AS USER_NAME, CREATEDATE, UPDATEDATE FROM SYSUSERS WHERE (NAME 
         }
 
         /// <summary>
-        /// 
+        /// 获取 <see cref="Table"/> 元数据序列。
         /// </summary>
         /// <param name="database"></param>
         /// <param name="restrictionValues"></param>
@@ -120,18 +119,17 @@ SELECT UID, NAME AS USER_NAME, CREATEDATE, UPDATEDATE FROM SYSUSERS WHERE (NAME 
             var connpar = GetConnectionParameter(database);
 
             SpecialCommand sql = $@"
-SELECT TValue.TABLE_CATALOG, 
-  TValue.TABLE_SCHEMA, 
-  TValue.TABLE_NAME, 
-  TValue.TABLE_TYPE,
-  (SELECT VALUE FROM ::FN_LISTEXTENDEDPROPERTY('MS_Description','user',TValue.TABLE_SCHEMA,'table',TValue.TABLE_NAME,NULL,NULL)) COMMENTS
+SELECT T.TABLE_CATALOG, 
+  T.TABLE_SCHEMA, 
+  T.TABLE_NAME, 
+  T.TABLE_TYPE,
+  (SELECT VALUE FROM ::FN_LISTEXTENDEDPROPERTY('MS_Description','user',T.TABLE_SCHEMA,'table',T.TABLE_NAME,NULL,NULL)) COMMENTS
 FROM 
-  INFORMATION_SCHEMA.TABLES TValue
-WHERE TABLE_TYPE <> 'view'
-  AND (TValue.TABLE_CATALOG = '{connpar.Database}')
-  AND (TValue.TABLE_NAME = @NAME OR (@NAME IS NULL))
-  AND ((TValue.TABLE_TYPE = 'BASE TABLE' AND (@TABLETYPE IS NULL OR @TABLETYPE = 0)) OR (TValue.TABLE_TYPE = 'SYSTEM TABLE' AND @TABLETYPE = 1))
- ORDER BY TValue.TABLE_CATALOG, TValue.TABLE_SCHEMA, TValue.TABLE_NAME";
+  INFORMATION_SCHEMA.TABLES T
+WHERE TABLE_TYPE <> 'view' AND
+  (T.TABLE_NAME = @NAME OR (@NAME IS NULL)) AND
+  ((T.TABLE_TYPE = 'BASE TABLE' AND (@TABLETYPE IS NULL OR @TABLETYPE = 0)) OR (T.TABLE_TYPE = 'SYSTEM TABLE' AND @TABLETYPE = 1))
+ ORDER BY T.TABLE_CATALOG, T.TABLE_SCHEMA, T.TABLE_NAME";
 
             restrictionValues
                 .Parameterize(parameters, "NAME", nameof(Table.Name))
@@ -148,7 +146,7 @@ WHERE TABLE_TYPE <> 'view'
         }
 
         /// <summary>
-        /// 
+        /// 获取 <see cref="Column"/> 元数据序列。
         /// </summary>
         /// <param name="database"></param>
         /// <param name="restrictionValues"></param>
@@ -159,29 +157,29 @@ WHERE TABLE_TYPE <> 'view'
             var connpar = GetConnectionParameter(database);
 
             SpecialCommand sql = $@"
-SELECT TValue.TABLE_CATALOG,
-       TValue.TABLE_SCHEMA,
-       TValue.TABLE_NAME,
-       TValue.COLUMN_NAME,
-       TValue.DATA_TYPE AS DATATYPE,
-       TValue.CHARACTER_MAXIMUM_LENGTH AS LENGTH,
-       TValue.NUMERIC_PRECISION AS PRECISION,
-       TValue.NUMERIC_SCALE AS SCALE,
-       TValue.IS_NULLABLE AS NULLABLE,
+SELECT T.TABLE_CATALOG,
+       T.TABLE_SCHEMA,
+       T.TABLE_NAME,
+       T.COLUMN_NAME,
+       T.DATA_TYPE AS DATATYPE,
+       T.CHARACTER_MAXIMUM_LENGTH AS LENGTH,
+       T.NUMERIC_PRECISION AS PRECISION,
+       T.NUMERIC_SCALE AS SCALE,
+       T.IS_NULLABLE AS NULLABLE,
        (SELECT COUNT(1) FROM SYSCOLUMNS A
-            JOIN SYSINDEXKEYS B ON A.ID=B.ID AND A.COLID=B.COLID AND A.ID=OBJECT_ID(TValue.TABLE_NAME)
-            JOIN SYSINDEXES C ON A.ID=C.ID AND B.INDID=C.INDID JOIN SYSOBJECTS D ON C.NAME=D.NAME AND D.XTYPE= 'PK' WHERE A.NAME = TValue.COLUMN_NAME) COLUMN_IS_PK,
-       TValue.COLUMN_DEFAULT,
-       (SELECT VALUE FROM ::FN_LISTEXTENDEDPROPERTY('MS_Description','user',TValue.TABLE_SCHEMA,'table',TValue.TABLE_NAME,'column',TValue.COLUMN_NAME)) COMMENTS,
+            JOIN SYSINDEXKEYS B ON A.ID=B.ID AND A.COLID=B.COLID AND A.ID=OBJECT_ID(T.TABLE_NAME)
+            JOIN SYSINDEXES C ON A.ID=C.ID AND B.INDID=C.INDID JOIN SYSOBJECTS D ON C.NAME=D.NAME AND D.XTYPE= 'PK' WHERE A.NAME = T.COLUMN_NAME) COLUMN_IS_PK,
+       T.COLUMN_DEFAULT,
+       (SELECT VALUE FROM ::FN_LISTEXTENDEDPROPERTY('MS_Description','user',T.TABLE_SCHEMA,'table',T.TABLE_NAME,'column',T.COLUMN_NAME)) COMMENTS,
        (SELECT C.COLSTAT FROM SYSCOLUMNS C
-            LEFT JOIN SYSOBJECTS O ON C.ID = O.ID WHERE O.XTYPE='U' AND O.NAME = TValue.TABLE_NAME AND C.NAME = TValue.COLUMN_NAME) AUTOINC
-  FROM INFORMATION_SCHEMA.COLUMNS TValue
+            LEFT JOIN SYSOBJECTS O ON C.ID = O.ID WHERE O.XTYPE='U' AND O.NAME = T.TABLE_NAME AND C.NAME = T.COLUMN_NAME) AUTOINC
+  FROM INFORMATION_SCHEMA.COLUMNS T
   JOIN INFORMATION_SCHEMA.TABLES O
-    ON O.TABLE_CATALOG = TValue.TABLE_CATALOG AND O.TABLE_SCHEMA = TValue.TABLE_SCHEMA AND TValue.TABLE_NAME = O.TABLE_NAME
-WHERE (O.TABLE_TYPE <> 'view' AND TValue.TABLE_CATALOG = '{connpar.Database}') AND
-  (TValue.TABLE_NAME = @TABLENAME OR (@TABLENAME IS NULL)) AND 
-  (TValue.COLUMN_NAME = @COLUMNNAME OR (@COLUMNNAME IS NULL))
- ORDER BY TValue.TABLE_CATALOG, TValue.TABLE_SCHEMA, TValue.TABLE_NAME, TValue.ORDINAL_POSITION";
+    ON O.TABLE_CATALOG = T.TABLE_CATALOG AND O.TABLE_SCHEMA = T.TABLE_SCHEMA AND T.TABLE_NAME = O.TABLE_NAME
+WHERE O.TABLE_TYPE <> 'view' AND
+  (T.TABLE_NAME = @TABLENAME OR (@TABLENAME IS NULL)) AND 
+  (T.COLUMN_NAME = @COLUMNNAME OR (@COLUMNNAME IS NULL))
+ ORDER BY T.TABLE_CATALOG, T.TABLE_SCHEMA, T.TABLE_NAME, T.ORDINAL_POSITION";
 
             restrictionValues
                 .Parameterize(parameters, "TABLENAME", nameof(Column.TableName))
@@ -206,7 +204,7 @@ WHERE (O.TABLE_TYPE <> 'view' AND TValue.TABLE_CATALOG = '{connpar.Database}') A
         }
 
         /// <summary>
-        /// 
+        /// 获取 <see cref="View"/> 元数据序列。
         /// </summary>
         /// <param name="database"></param>
         /// <param name="restrictionValues"></param>
@@ -217,16 +215,15 @@ WHERE (O.TABLE_TYPE <> 'view' AND TValue.TABLE_CATALOG = '{connpar.Database}') A
             var connpar = GetConnectionParameter(database);
 
             SpecialCommand sql = $@"
-SELECT TValue.TABLE_CATALOG,
-  TValue.TABLE_SCHEMA,
-  TValue.TABLE_NAME, 
-  (SELECT VALUE FROM ::FN_LISTEXTENDEDPROPERTY('MS_Description','user',t.TABLE_SCHEMA,'view',TValue.TABLE_NAME,NULL,NULL)) COMMENTS
+SELECT T.TABLE_CATALOG,
+  T.TABLE_SCHEMA,
+  T.TABLE_NAME, 
+  (SELECT VALUE FROM ::FN_LISTEXTENDEDPROPERTY('MS_Description','user',t.TABLE_SCHEMA,'view',T.TABLE_NAME,NULL,NULL)) COMMENTS
 FROM 
-  INFORMATION_SCHEMA.TABLES TValue
-WHERE TABLE_TYPE = 'view'
-  AND (TValue.TABLE_CATALOG = '{connpar.Database}')
-  AND (TValue.TABLE_NAME = @NAME OR (@NAME IS NULL))
- ORDER BY TValue.TABLE_CATALOG, TValue.TABLE_SCHEMA, TValue.TABLE_NAME";
+  INFORMATION_SCHEMA.TABLES T
+WHERE TABLE_TYPE = 'view' AND
+  (T.TABLE_NAME = @NAME OR (@NAME IS NULL))
+ ORDER BY T.TABLE_CATALOG, T.TABLE_SCHEMA, T.TABLE_NAME";
 
             restrictionValues.Parameterize(parameters, "NAME", nameof(View.Name));
 
@@ -240,7 +237,7 @@ WHERE TABLE_TYPE = 'view'
         }
 
         /// <summary>
-        /// 
+        /// 获取 <see cref="ViewColumn"/> 元数据序列。
         /// </summary>
         /// <param name="database"></param>
         /// <param name="restrictionValues"></param>
@@ -251,28 +248,28 @@ WHERE TABLE_TYPE = 'view'
             var connpar = GetConnectionParameter(database);
 
             SpecialCommand sql = $@"
-SELECT TValue.TABLE_CATALOG,
-       TValue.TABLE_SCHEMA,
-       TValue.TABLE_NAME,
-       TValue.COLUMN_NAME,
-       TValue.DATA_TYPE AS DATATYPE,
-       TValue.CHARACTER_MAXIMUM_LENGTH AS LENGTH,
-       TValue.NUMERIC_PRECISION AS PRECISION,
-       TValue.NUMERIC_SCALE AS SCALE,
-       TValue.IS_NULLABLE AS NULLABLE,
+SELECT T.TABLE_CATALOG,
+       T.TABLE_SCHEMA,
+       T.TABLE_NAME,
+       T.COLUMN_NAME,
+       T.DATA_TYPE AS DATATYPE,
+       T.CHARACTER_MAXIMUM_LENGTH AS LENGTH,
+       T.NUMERIC_PRECISION AS PRECISION,
+       T.NUMERIC_SCALE AS SCALE,
+       T.IS_NULLABLE AS NULLABLE,
        (SELECT COUNT(1) FROM SYSCOLUMNS A
-            JOIN SYSINDEXKEYS B ON A.ID=B.ID AND A.COLID=B.COLID AND A.ID=OBJECT_ID(TValue.TABLE_NAME)
-            JOIN SYSINDEXES C ON A.ID=C.ID AND B.INDID=C.INDID JOIN SYSOBJECTS D ON C.NAME=D.NAME AND D.XTYPE= 'PK' WHERE A.NAME = TValue.COLUMN_NAME) COLUMN_IS_PK,
-       TValue.COLUMN_DEFAULT,
-       (SELECT VALUE FROM ::FN_LISTEXTENDEDPROPERTY('MS_Description','user',TValue.TABLE_SCHEMA,'table',TValue.TABLE_NAME,'column',TValue.COLUMN_NAME)) COMMENTS,
+            JOIN SYSINDEXKEYS B ON A.ID=B.ID AND A.COLID=B.COLID AND A.ID=OBJECT_ID(T.TABLE_NAME)
+            JOIN SYSINDEXES C ON A.ID=C.ID AND B.INDID=C.INDID JOIN SYSOBJECTS D ON C.NAME=D.NAME AND D.XTYPE= 'PK' WHERE A.NAME = T.COLUMN_NAME) COLUMN_IS_PK,
+       T.COLUMN_DEFAULT,
+       (SELECT VALUE FROM ::FN_LISTEXTENDEDPROPERTY('MS_Description','user',T.TABLE_SCHEMA,'table',T.TABLE_NAME,'column',T.COLUMN_NAME)) COMMENTS,
        0 AUTOINC
-  FROM INFORMATION_SCHEMA.COLUMNS TValue
+  FROM INFORMATION_SCHEMA.COLUMNS T
   JOIN INFORMATION_SCHEMA.TABLES O
-    ON O.TABLE_CATALOG = TValue.TABLE_CATALOG AND O.TABLE_SCHEMA = TValue.TABLE_SCHEMA AND TValue.TABLE_NAME = O.TABLE_NAME
-WHERE (O.TABLE_TYPE = 'view' AND TValue.TABLE_CATALOG = '{connpar.Database}') AND
-  (TValue.TABLE_NAME = @TABLENAME OR (@TABLENAME IS NULL)) AND 
-  (TValue.COLUMN_NAME = @COLUMNNAME OR (@COLUMNNAME IS NULL))
- ORDER BY TValue.TABLE_CATALOG, TValue.TABLE_SCHEMA, TValue.TABLE_NAME, TValue.ORDINAL_POSITION";
+    ON O.TABLE_CATALOG = T.TABLE_CATALOG AND O.TABLE_SCHEMA = T.TABLE_SCHEMA AND T.TABLE_NAME = O.TABLE_NAME
+WHERE O.TABLE_TYPE = 'view' AND
+  (T.TABLE_NAME = @TABLENAME OR (@TABLENAME IS NULL)) AND 
+  (T.COLUMN_NAME = @COLUMNNAME OR (@COLUMNNAME IS NULL))
+ ORDER BY T.TABLE_CATALOG, T.TABLE_SCHEMA, T.TABLE_NAME, T.ORDINAL_POSITION";
 
             restrictionValues
                 .Parameterize(parameters, "TABLENAME", nameof(ViewColumn.ViewName))
@@ -297,7 +294,7 @@ WHERE (O.TABLE_TYPE = 'view' AND TValue.TABLE_CATALOG = '{connpar.Database}') AN
         }
 
         /// <summary>
-        /// 
+        /// 获取 <see cref="ForeignKey"/> 元数据序列。
         /// </summary>
         /// <param name="database"></param>
         /// <param name="restrictionValues"></param>
@@ -330,8 +327,7 @@ AND KCU.CONSTRAINT_NAME = FC.CONSTRAINT_NAME
 LEFT JOIN [INFORMATION_SCHEMA].[KEY_COLUMN_USAGE] FKCU
   ON FKCU.CONSTRAINT_SCHEMA = FC.UNIQUE_CONSTRAINT_SCHEMA
   AND FKCU.CONSTRAINT_NAME = FC.UNIQUE_CONSTRAINT_NAME
-WHERE TC.CONSTRAINT_TYPE = 'FOREIGN KEY' AND
-   (TC.CONSTRAINT_CATALOG = '{connpar.Database}') AND 
+WHERE TC.CONSTRAINT_TYPE = 'FOREIGN KEY' AND 
    (TC.TABLE_NAME = @TABLENAME OR @TABLENAME IS NULL) AND 
    (TC.CONSTRAINT_NAME = @NAME OR @NAME IS NULL)";
 
@@ -352,7 +348,7 @@ WHERE TC.CONSTRAINT_TYPE = 'FOREIGN KEY' AND
         }
 
         /// <summary>
-        /// 
+        /// 获取 <see cref="Index"/> 元数据序列。
         /// </summary>
         /// <param name="database"></param>
         /// <param name="restrictionValues"></param>
@@ -391,7 +387,7 @@ WHERE O.TYPE IN ('U') AND X.ID = O.ID  AND O.ID = XK.ID AND X.INDID = XK.INDID A
         }
 
         /// <summary>
-        /// 
+        /// 获取 <see cref="IndexColumn"/> 元数据序列。
         /// </summary>
         /// <param name="database"></param>
         /// <param name="restrictionValues"></param>
@@ -436,7 +432,7 @@ ORDER BY TABLE_NAME, INDEX_NAME";
         }
 
         /// <summary>
-        /// 
+        /// 获取 <see cref="Procedure"/> 元数据序列。
         /// </summary>
         /// <param name="database"></param>
         /// <param name="restrictionValues"></param>
@@ -477,7 +473,7 @@ ORDER BY SPECIFIC_CATALOG, SPECIFIC_SCHEMA, SPECIFIC_NAME";
         }
 
         /// <summary>
-        /// 
+        /// 获取 <see cref="ProcedureParameter"/> 元数据序列。
         /// </summary>
         /// <param name="database"></param>
         /// <param name="restrictionValues"></param>

@@ -6,8 +6,6 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using System;
-
 namespace Fireasy.Data.Syntax
 {
     /// <summary>
@@ -21,8 +19,8 @@ namespace Fireasy.Data.Syntax
         /// </summary>
         /// <param name="message">异常信息。</param>
         public SyntaxParseErrorException(string message)
-            : base(message) 
-        { 
+            : base(message)
+        {
         }
     }
 }

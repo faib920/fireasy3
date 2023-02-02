@@ -6,10 +6,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 using Fireasy.Data.Provider;
-using System;
 using System.Data.Common;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Fireasy.Data.Batcher
 {

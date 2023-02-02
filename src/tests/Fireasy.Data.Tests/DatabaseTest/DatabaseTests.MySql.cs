@@ -7,5 +7,7 @@
         protected override string ConnectionString => Constants.MySql_ConnectionString;
 
         protected override string InstanceName => Constants.MySql_InstanceName;
+
+        protected override string ProviderName => "MySql";
     }
 }

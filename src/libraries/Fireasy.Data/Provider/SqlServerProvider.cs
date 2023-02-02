@@ -5,14 +5,13 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-
 using Fireasy.Data.Batcher;
 using Fireasy.Data.Identity;
 using Fireasy.Data.RecordWrapper;
 using Fireasy.Data.Schema;
 using Fireasy.Data.Syntax;
 using Microsoft.Extensions.DependencyInjection;
-using System;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Fireasy.Data.Provider
 {
@@ -29,7 +28,7 @@ namespace Fireasy.Data.Provider
             : base(serviceProvider,
                   new InjectedProviderFactoryResolver<SqlServerProvider>(serviceProvider),
                   new AssemblyProviderFactoryResolver(
-                "Microsoft.Data.SqlClient.SqlClientFactory, Microsoft.Data.SqlClient", 
+                "Microsoft.Data.SqlClient.SqlClientFactory, Microsoft.Data.SqlClient",
                 "System.Data.SqlClient.SqlClientFactory, System.Data.SqlClient"))
         {
         }
@@ -48,7 +47,7 @@ namespace Fireasy.Data.Provider
             return new ConnectionParameter
             {
                 Server = connectionString.Properties.TryGetValue("data source", "server"),
-                Database = connectionString.Properties.TryGetValue("initial catalog", "database"),
+                Database = connectionString.Properties.TryGetValue("initial catalog", "database", "attachdbfilename"),
                 UserId = connectionString.Properties.TryGetValue("user id", "uid"),
                 Password = connectionString.Properties.TryGetValue("password", "pwd")
             };
@@ -62,7 +61,7 @@ namespace Fireasy.Data.Provider
         public override void UpdateConnectionString(ConnectionString connectionString, ConnectionParameter parameter)
         {
             connectionString.Properties.TrySetValue(parameter.Server, "data source", "server")
-                .TrySetValue(parameter.Database, "initial catalog", "database")
+                .TrySetValue(parameter.Database, "initial catalog", "database", "attachdbfilename")
                 .TrySetValue(parameter.UserId, "user id", "uid")
                 .TrySetValue(parameter.Password, "password", "pwd")
                 .Update();
@@ -75,11 +74,13 @@ namespace Fireasy.Data.Provider
         /// <returns></returns>
         public override IServiceCollection RegisterServices(IServiceCollection services)
         {
-            return services.AddSingleton<IGeneratorProvider, BaseSequenceGenerator>()
-                .AddSingleton<ISyntaxProvider, SqlServerSyntax>()
-                .AddSingleton<ISchemaProvider, SqlServerSchema>()
-                .AddSingleton<IBatcherProvider, SqlServerBatcher>()
-                .AddSingleton<IRecordWrapper, GeneralRecordWrapper>();
+            services.TryAddSingleton<IGeneratorProvider, BaseSequenceGenerator>();
+            services.TryAddSingleton<ISyntaxProvider, SqlServerSyntax>();
+            services.TryAddSingleton<ISchemaProvider, SqlServerSchema>();
+            services.TryAddSingleton<IBatcherProvider, SqlServerBatcher>();
+            services.TryAddSingleton<IRecordWrapper, GeneralRecordWrapper>();
+
+            return services;
         }
     }
 }

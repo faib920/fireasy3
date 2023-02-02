@@ -6,12 +6,12 @@
 // </copyright>
 // -----------------------------------------------------------------------
 using Fireasy.Data.RecordWrapper;
-using System;
-using System.Collections.Generic;
-using System.Data;
 
 namespace Fireasy.Data.Schema
 {
+    /// <summary>
+    /// Firebird 数据库架构信息的获取方法。
+    /// </summary>
     public class FirebirdSchema : SchemaBase
     {
         public FirebirdSchema()
@@ -43,17 +43,42 @@ namespace Fireasy.Data.Schema
             AddDataType("time", DbType.Int64, typeof(TimeSpan));
         }
 
+        /// <summary>
+        /// 获取 <see cref="Database"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
+        protected override IAsyncEnumerable<Database> GetDatabasesAsync(IDatabase database, RestrictionDictionary restrictionValues)
+        {
+            var parameters = new ParameterCollection();
+
+            SpecialCommand sql = @"
+SELECT * FROM RDB$DATABASE";
+
+            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new Database
+            {
+                Name = wrapper!.GetString(reader, 0)
+            });
+        }
+
+        /// <summary>
+        /// 获取 <see cref="Table"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
         protected override IAsyncEnumerable<Table> GetTablesAsync(IDatabase database, RestrictionDictionary restrictionValues)
         {
             var parameters = new ParameterCollection();
 
             SpecialCommand sql = @"
 SELECT
-null AS TABLE_CATALOG,
-null AS TABLE_SCHEMA,
-trim(rdb$relation_name) AS TABLE_NAME,
-(case when rdb$system_flag = 1 then 'SYSTEM_TABLE' else 'TABLE' end) AS TABLE_TYPE,
-rdb$description AS DESCRIPTION
+  null AS TABLE_CATALOG,
+  null AS TABLE_SCHEMA,
+  trim(rdb$relation_name) AS TABLE_NAME,
+  (case when rdb$system_flag = 1 then 'SYSTEM_TABLE' else 'TABLE' end) AS TABLE_TYPE,
+  rdb$description AS DESCRIPTION
 FROM rdb$relations
 WHERE 
   (rdb$relation_name = @NAME OR @NAME IS NULL) AND 
@@ -75,6 +100,12 @@ ORDER BY rdb$system_flag, rdb$owner_name, rdb$relation_name";
             });
         }
 
+        /// <summary>
+        /// 获取 <see cref="Column"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
         protected override IAsyncEnumerable<Column> GetColumnsAsync(IDatabase database, RestrictionDictionary restrictionValues)
         {
             var parameters = new ParameterCollection();
@@ -135,6 +166,12 @@ ORDER BY rfr.rdb$relation_name, rfr.rdb$field_position
             })));
         }
 
+        /// <summary>
+        /// 获取 <see cref="ForeignKey"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
         protected override IAsyncEnumerable<ForeignKey> GetForeignKeysAsync(IDatabase database, RestrictionDictionary restrictionValues)
         {
             var parameters = new ParameterCollection();
@@ -180,18 +217,24 @@ where co.rdb$constraint_type = 'FOREIGN KEY' AND
             });
         }
 
+        /// <summary>
+        /// 获取 <see cref="View"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
         protected override IAsyncEnumerable<View> GetViewsAsync(IDatabase database, RestrictionDictionary restrictionValues)
         {
             var parameters = new ParameterCollection();
 
             SpecialCommand sql = @"
 SELECT
-null AS TABLE_CATALOG,
-null AS TABLE_SCHEMA,
-trim(rdb$relation_name) AS TABLE_NAME,
-rdb$owner_name AS OWNER_NAME,
-rdb$description AS DESCRIPTION,
-rdb$view_source AS VIEW_SOURCE
+  null AS TABLE_CATALOG,
+  null AS TABLE_SCHEMA,
+  trim(rdb$relation_name) AS TABLE_NAME,
+  rdb$owner_name AS OWNER_NAME,
+  rdb$description AS DESCRIPTION,
+  rdb$view_source AS VIEW_SOURCE
 FROM rdb$relations
 WHERE 
   (rdb$relation_name = @NAME OR (@NAME IS NULL)) AND 
@@ -210,6 +253,12 @@ ORDER BY rdb$system_flag, rdb$owner_name, rdb$relation_name";
             });
         }
 
+        /// <summary>
+        /// 获取 <see cref="ViewColumn"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
         protected override IAsyncEnumerable<ViewColumn> GetViewColumnsAsync(IDatabase database, RestrictionDictionary restrictionValues)
         {
             var parameters = new ParameterCollection();

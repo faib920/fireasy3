@@ -6,8 +6,6 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using System.Data;
-
 namespace Fireasy.Data.Converter
 {
     /// <summary>

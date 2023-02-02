@@ -5,13 +5,9 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using Fireasy.Common.Extensions;
 using Fireasy.Data.Converter;
-using Fireasy.Data.Extensions;
 using Fireasy.Data.RecordWrapper;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Data;
 
 namespace Fireasy.Data
 {

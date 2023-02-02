@@ -5,11 +5,6 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using Fireasy.Common;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
 
 namespace Fireasy.Data.Batcher
 {

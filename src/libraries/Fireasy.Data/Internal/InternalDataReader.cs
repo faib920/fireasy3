@@ -5,16 +5,11 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using Fireasy.Common;
-using System;
-using System.Data;
 using System.Data.Common;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Fireasy.Data.Internal
 {
-    internal class InternalDataReader : DisposableBase, IDataReader
+    internal class InternalDataReader : DisposableBase, IAsyncIDataReader
     {
         private readonly IDbCommand _command;
         private readonly IDataReader _reader;

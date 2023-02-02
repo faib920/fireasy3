@@ -6,9 +6,6 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-
 namespace Fireasy.Data.Provider
 {
     /// <summary>
@@ -21,10 +18,10 @@ namespace Fireasy.Data.Provider
         /// </summary>
         /// <param name="providerName">提供者名称。</param>
         /// <returns></returns>
-        IProvider? GetDefinedProviderInstance(string providerName);
+        IProvider? GetDefinedProvider(string providerName);
 
         /// <summary>
-        /// 获取所提供的所有数据库提供者名称。
+        /// 获取注册的所有数据库提供者名称。
         /// </summary>
         /// <returns></returns>
         string[] GetSupportedProviderNames();

@@ -5,9 +5,7 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-
 using Fireasy.Common.Collections;
-using System.IO;
 using System.Reflection;
 using System.Reflection.Emit;
 

@@ -32,21 +32,21 @@ namespace Fireasy.Data.Syntax.SqlServer
             {
                 //去除子句中的Order并移到OVER后
                 return @$"
-                    SELECT TValue.* FROM 
+                    SELECT T.* FROM 
                     (
-                        SELECT TValue.*, ROW_NUMBER() OVER ({regAlias.Replace(orderBy, string.Empty)}) AS ROW_NUM 
-                        FROM ({commandText.Replace(orderBy, string.Empty).Trim()}) TValue
-                    ) TValue 
+                        SELECT T.*, ROW_NUMBER() OVER ({regAlias.Replace(orderBy, string.Empty)}) AS ROW_NUM 
+                        FROM ({commandText.Replace(orderBy, string.Empty).Trim()}) T
+                    ) T 
                     WHERE {segment.Condition("ROW_NUM")}";
             }
             else
             {
                 return @$"
-                    SELECT TValue.* FROM 
+                    SELECT T.* FROM 
                     (
-                        SELECT TValue.*, ROW_NUMBER() OVER (ORDER BY (SELECT 1)) AS ROW_NUM 
-                        FROM ({commandText}) TValue
-                    ) TValue 
+                        SELECT T.*, ROW_NUMBER() OVER (ORDER BY (SELECT 1)) AS ROW_NUM 
+                        FROM ({commandText}) T
+                    ) T 
                     WHERE {segment.Condition("ROW_NUM")}";
             }
         }

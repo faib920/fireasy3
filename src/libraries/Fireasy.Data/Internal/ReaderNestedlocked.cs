@@ -5,8 +5,6 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using System.Data;
-using System.Threading;
 
 namespace Fireasy.Data.Internal
 {

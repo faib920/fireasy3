@@ -5,10 +5,7 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using Fireasy.Common;
 using Fireasy.Data.Provider;
-using System;
-using System.IO;
 using System.Text;
 
 namespace Fireasy.Data
@@ -171,7 +168,7 @@ namespace Fireasy.Data
                 }
                 else if (constr[i] == '=' && !quote)
                 {
-                    name = constr.Slice(index, i - index);
+                    name = constr.Slice(index, i - index).Trim();
                     index = i + 1;
                 }
                 else if (constr[i] == ';' && !quote)

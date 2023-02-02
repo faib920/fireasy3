@@ -8,12 +8,7 @@
 
 using Fireasy.Data.Provider;
 using Fireasy.Data.RecordWrapper;
-using System;
-using System.Collections.Generic;
-using System.Data;
 using System.Data.Common;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Fireasy.Data
 {

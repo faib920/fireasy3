@@ -11,15 +11,8 @@ using Fireasy.Data.Extensions;
 using Fireasy.Data.Provider;
 using Fireasy.Data.Syntax;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Fireasy.Data.Batcher
 {

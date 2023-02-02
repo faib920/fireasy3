@@ -5,8 +5,6 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-
-
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;

@@ -9,8 +9,6 @@ using Fireasy.Common.Collections;
 using Fireasy.Common.Extensions;
 using Microsoft.Extensions.Logging;
 using System.Data.Common;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Transactions;
 
 namespace Fireasy.Data

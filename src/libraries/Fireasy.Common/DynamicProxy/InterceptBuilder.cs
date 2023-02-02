@@ -6,10 +6,8 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-
 using Fireasy.Common.Emit;
 using Fireasy.Common.Extensions;
-using Fireasy.Common.Reflection;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;

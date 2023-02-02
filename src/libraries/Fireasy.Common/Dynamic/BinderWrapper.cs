@@ -5,7 +5,6 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using Fireasy.Common.Extensions;
 using Fireasy.Common.Reflection;
 using Microsoft.CSharp.RuntimeBinder;
 using System.Runtime.CompilerServices;

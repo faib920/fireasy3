@@ -5,15 +5,13 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-
 using Fireasy.Data.Batcher;
 using Fireasy.Data.Identity;
 using Fireasy.Data.RecordWrapper;
 using Fireasy.Data.Schema;
 using Fireasy.Data.Syntax;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Data;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Fireasy.Data.Provider
 {
@@ -30,7 +28,7 @@ namespace Fireasy.Data.Provider
             : base(serviceProvider,
                   new InjectedProviderFactoryResolver<SQLiteProvider>(serviceProvider),
                   new AssemblyProviderFactoryResolver(
-                "System.Data.SQLite.SQLiteFactory, System.Data.SQLite", 
+                "System.Data.SQLite.SQLiteFactory, System.Data.SQLite",
                 "Microsoft.Data.Sqlite.SqliteFactory, Microsoft.Data.Sqlite"))
         {
         }
@@ -81,11 +79,13 @@ namespace Fireasy.Data.Provider
         /// <param name="services"></param>
         public override IServiceCollection RegisterServices(IServiceCollection services)
         {
-            return services.AddSingleton<IGeneratorProvider, BaseSequenceGenerator>()
-                .AddSingleton<ISyntaxProvider, SQLiteSyntax>()
-                .AddSingleton<ISchemaProvider, SQLiteSchema>()
-                .AddSingleton<IBatcherProvider, SQLiteBatcher>()
-                .AddSingleton<IRecordWrapper, GeneralRecordWrapper>();
+            services.TryAddSingleton<IGeneratorProvider, BaseSequenceGenerator>();
+            services.TryAddSingleton<ISyntaxProvider, SQLiteSyntax>();
+            services.TryAddSingleton<ISchemaProvider, SQLiteSchema>();
+            services.TryAddSingleton<IBatcherProvider, SQLiteBatcher>();
+            services.TryAddSingleton<IRecordWrapper, GeneralRecordWrapper>();
+
+            return services;
         }
     }
 }

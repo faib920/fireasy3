@@ -6,14 +6,10 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Data;
-
 namespace Fireasy.Data.Schema
 {
     /// <summary>
-    /// MySql相关数据库架构信息的获取方法。
+    /// MySql 数据库架构信息的获取方法。
     /// </summary>
     public sealed class MySqlSchema : SchemaBase
     {
@@ -67,6 +63,12 @@ namespace Fireasy.Data.Schema
             AddDataType("time", DbType.Int64, typeof(TimeSpan));
         }
 
+        /// <summary>
+        /// 获取 <see cref="Database"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
         protected override IAsyncEnumerable<Database> GetDatabasesAsync(IDatabase database, RestrictionDictionary restrictionValues)
         {
             var sql = "SHOW DATABASES";
@@ -82,11 +84,17 @@ namespace Fireasy.Data.Schema
             });
         }
 
+        /// <summary>
+        /// 获取 <see cref="User"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
         protected override IAsyncEnumerable<User> GetUsersAsync(IDatabase database, RestrictionDictionary restrictionValues)
         {
             var parameters = new ParameterCollection();
 
-            SpecialCommand sql = "SELECT HOST, USER FROM MYSQL.USER WHERE (NAME = ?NAME OR ?NAME IS NULL)";
+            SpecialCommand sql = "SELECT HOST, USER FROM MYSQL.USER WHERE (USER = ?NAME OR ?NAME IS NULL)";
 
             restrictionValues.Parameterize(parameters, "NAME", nameof(User.Name));
 
@@ -96,6 +104,12 @@ namespace Fireasy.Data.Schema
             });
         }
 
+        /// <summary>
+        /// 获取 <see cref="Table"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
         protected override IAsyncEnumerable<Table> GetTablesAsync(IDatabase database, RestrictionDictionary restrictionValues)
         {
             var parameters = new ParameterCollection();
@@ -108,12 +122,12 @@ SELECT
   TABLE_NAME,
   TABLE_TYPE,
   TABLE_COMMENT
-FROM INFORMATION_SCHEMA.TABLES TValue
-WHERE (TValue.TABLE_SCHEMA = '{connpar.Database}')
-  AND TValue.TABLE_TYPE <> 'VIEW'
-  AND (TValue.TABLE_NAME = ?NAME OR ?NAME IS NULL)
-  AND ((TValue.TABLE_TYPE = 'BASE TABLE' AND (@TABLETYPE IS NULL OR @TABLETYPE = 0)) OR (TValue.TABLE_TYPE = 'SYSTEM TABLE' AND @TABLETYPE = 1))
-ORDER BY TValue.TABLE_CATALOG, TValue.TABLE_SCHEMA, TValue.TABLE_NAME";
+FROM INFORMATION_SCHEMA.TABLES T
+WHERE (T.TABLE_SCHEMA = '{connpar.Database}')
+  AND T.TABLE_TYPE <> 'VIEW'
+  AND (T.TABLE_NAME = ?NAME OR ?NAME IS NULL)
+  AND ((T.TABLE_TYPE = 'BASE TABLE' AND (@TABLETYPE IS NULL OR @TABLETYPE = 0)) OR (T.TABLE_TYPE = 'SYSTEM TABLE' AND @TABLETYPE = 1))
+ORDER BY T.TABLE_CATALOG, T.TABLE_SCHEMA, T.TABLE_NAME";
 
             restrictionValues
                 .Parameterize(parameters, "NAME", nameof(Table.Name))
@@ -128,33 +142,39 @@ ORDER BY TValue.TABLE_CATALOG, TValue.TABLE_SCHEMA, TValue.TABLE_NAME";
             });
         }
 
+        /// <summary>
+        /// 获取 <see cref="Column"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
         protected override IAsyncEnumerable<Column> GetColumnsAsync(IDatabase database, RestrictionDictionary restrictionValues)
         {
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
 
             SpecialCommand sql = $@"
-SELECT TValue.TABLE_CATALOG,
-       TValue.TABLE_SCHEMA,
-       TValue.TABLE_NAME,
-       TValue.COLUMN_NAME,
-       TValue.DATA_TYPE,
-       TValue.CHARACTER_MAXIMUM_LENGTH,
-       TValue.NUMERIC_PRECISION,
-       TValue.NUMERIC_SCALE,
-       TValue.IS_NULLABLE,
-       TValue.COLUMN_KEY,
-       TValue.COLUMN_DEFAULT,
-       TValue.COLUMN_COMMENT,
-       TValue.EXTRA,
-       TValue.COLUMN_TYPE
-FROM INFORMATION_SCHEMA.COLUMNS TValue
+SELECT T.TABLE_CATALOG,
+       T.TABLE_SCHEMA,
+       T.TABLE_NAME,
+       T.COLUMN_NAME,
+       T.DATA_TYPE,
+       T.CHARACTER_MAXIMUM_LENGTH,
+       T.NUMERIC_PRECISION,
+       T.NUMERIC_SCALE,
+       T.IS_NULLABLE,
+       T.COLUMN_KEY,
+       T.COLUMN_DEFAULT,
+       T.COLUMN_COMMENT,
+       T.EXTRA,
+       T.COLUMN_TYPE
+FROM INFORMATION_SCHEMA.COLUMNS T
 JOIN INFORMATION_SCHEMA.TABLES O
-  ON O.TABLE_SCHEMA = TValue.TABLE_SCHEMA AND O.TABLE_NAME = TValue.TABLE_NAME
-WHERE (TValue.TABLE_SCHEMA = '{connpar.Database}') AND 
-  (TValue.TABLE_NAME = ?TABLENAME OR ?TABLENAME IS NULL) AND 
-  (TValue.COLUMN_NAME = ?COLUMNNAME OR ?COLUMNNAME IS NULL)
- ORDER BY TValue.TABLE_CATALOG, TValue.TABLE_SCHEMA, TValue.TABLE_NAME, TValue.ORDINAL_POSITION";
+  ON O.TABLE_SCHEMA = T.TABLE_SCHEMA AND O.TABLE_NAME = T.TABLE_NAME
+WHERE (T.TABLE_SCHEMA = '{connpar.Database}') AND 
+  (T.TABLE_NAME = ?TABLENAME OR ?TABLENAME IS NULL) AND 
+  (T.COLUMN_NAME = ?COLUMNNAME OR ?COLUMNNAME IS NULL)
+ ORDER BY T.TABLE_CATALOG, T.TABLE_SCHEMA, T.TABLE_NAME, T.ORDINAL_POSITION";
 
             restrictionValues
                 .Parameterize(parameters, "TABLENAME", nameof(Column.TableName))
@@ -179,20 +199,26 @@ WHERE (TValue.TABLE_SCHEMA = '{connpar.Database}') AND
             });
         }
 
+        /// <summary>
+        /// 获取 <see cref="View"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
         protected override IAsyncEnumerable<View> GetViewsAsync(IDatabase database, RestrictionDictionary restrictionValues)
         {
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
 
             SpecialCommand sql = $@"
-SELECT TValue.TABLE_CATALOG,
-  TValue.TABLE_SCHEMA,
-  TValue.TABLE_NAME
+SELECT T.TABLE_CATALOG,
+  T.TABLE_SCHEMA,
+  T.TABLE_NAME
 FROM 
-  INFORMATION_SCHEMA.VIEWS TValue
-WHERE (TValue.TABLE_SCHEMA = '{connpar.Database}') AND 
-  (TValue.TABLE_NAME = ?NAME OR ?NAME IS NULL)
- ORDER BY TValue.TABLE_CATALOG, TValue.TABLE_SCHEMA, TValue.TABLE_NAME";
+  INFORMATION_SCHEMA.VIEWS T
+WHERE (T.TABLE_SCHEMA = '{connpar.Database}') AND 
+  (T.TABLE_NAME = ?NAME OR ?NAME IS NULL)
+ ORDER BY T.TABLE_CATALOG, T.TABLE_SCHEMA, T.TABLE_NAME";
 
             restrictionValues.Parameterize(parameters, "NAME", nameof(View.Name));
 
@@ -204,32 +230,38 @@ WHERE (TValue.TABLE_SCHEMA = '{connpar.Database}') AND
             });
         }
 
+        /// <summary>
+        /// 获取 <see cref="ViewColumn"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
         protected override IAsyncEnumerable<ViewColumn> GetViewColumnsAsync(IDatabase database, RestrictionDictionary restrictionValues)
         {
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
 
             SpecialCommand sql = $@"
-SELECT TValue.TABLE_CATALOG,
-       TValue.TABLE_SCHEMA,
-       TValue.TABLE_NAME,
-       TValue.COLUMN_NAME,
-       TValue.DATA_TYPE,
-       TValue.CHARACTER_MAXIMUM_LENGTH,
-       TValue.NUMERIC_PRECISION,
-       TValue.NUMERIC_SCALE,
-       TValue.IS_NULLABLE,
-       TValue.COLUMN_KEY,
-       TValue.COLUMN_DEFAULT,
-       TValue.COLUMN_COMMENT,
-       TValue.EXTRA
-FROM INFORMATION_SCHEMA.COLUMNS TValue
+SELECT T.TABLE_CATALOG,
+       T.TABLE_SCHEMA,
+       T.TABLE_NAME,
+       T.COLUMN_NAME,
+       T.DATA_TYPE,
+       T.CHARACTER_MAXIMUM_LENGTH,
+       T.NUMERIC_PRECISION,
+       T.NUMERIC_SCALE,
+       T.IS_NULLABLE,
+       T.COLUMN_KEY,
+       T.COLUMN_DEFAULT,
+       T.COLUMN_COMMENT,
+       T.EXTRA
+FROM INFORMATION_SCHEMA.COLUMNS T
 JOIN INFORMATION_SCHEMA.VIEWS O
-  ON O.TABLE_SCHEMA = TValue.TABLE_SCHEMA AND O.TABLE_NAME = TValue.TABLE_NAME
-WHERE (TValue.TABLE_SCHEMA = '{connpar.Database}') AND 
-  (TValue.TABLE_NAME = ?TABLENAME OR ?TABLENAME IS NULL) AND 
-  (TValue.COLUMN_NAME = ?COLUMNNAME OR ?COLUMNNAME IS NULL)
- ORDER BY TValue.TABLE_CATALOG, TValue.TABLE_SCHEMA, TValue.TABLE_NAME, TValue.ORDINAL_POSITION";
+  ON O.TABLE_SCHEMA = T.TABLE_SCHEMA AND O.TABLE_NAME = T.TABLE_NAME
+WHERE (T.TABLE_SCHEMA = '{connpar.Database}') AND 
+  (T.TABLE_NAME = ?TABLENAME OR ?TABLENAME IS NULL) AND 
+  (T.COLUMN_NAME = ?COLUMNNAME OR ?COLUMNNAME IS NULL)
+ ORDER BY T.TABLE_CATALOG, T.TABLE_SCHEMA, T.TABLE_NAME, T.ORDINAL_POSITION";
 
             restrictionValues
                 .Parameterize(parameters, "TABLENAME", nameof(ViewColumn.ViewName))
@@ -253,6 +285,12 @@ WHERE (TValue.TABLE_SCHEMA = '{connpar.Database}') AND
             });
         }
 
+        /// <summary>
+        /// 获取 <see cref="ForeignKey"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
         protected override IAsyncEnumerable<ForeignKey> GetForeignKeysAsync(IDatabase database, RestrictionDictionary restrictionValues)
         {
             var parameters = new ParameterCollection();
@@ -260,18 +298,18 @@ WHERE (TValue.TABLE_SCHEMA = '{connpar.Database}') AND
 
             SpecialCommand sql = $@"
 SELECT 
-    TValue.CONSTRAINT_CATALOG, 
-    TValue.CONSTRAINT_SCHEMA, 
-    TValue.CONSTRAINT_NAME,
-    TValue.TABLE_NAME, 
-    TValue.COLUMN_NAME,     
-    TValue.REFERENCED_TABLE_NAME, 
-    TValue.REFERENCED_COLUMN_NAME 
+    T.CONSTRAINT_CATALOG, 
+    T.CONSTRAINT_SCHEMA, 
+    T.CONSTRAINT_NAME,
+    T.TABLE_NAME, 
+    T.COLUMN_NAME,     
+    T.REFERENCED_TABLE_NAME, 
+    T.REFERENCED_COLUMN_NAME 
 FROM  
-    INFORMATION_SCHEMA.KEY_COLUMN_USAGE TValue
-WHERE (TValue.CONSTRAINT_SCHEMA = '{connpar.Database}') AND 
-   (TValue.TABLE_NAME = ?TABLENAME OR ?TABLENAME IS NULL) AND 
-   (TValue.CONSTRAINT_NAME = ?NAME OR ?NAME IS NULL) AND
+    INFORMATION_SCHEMA.KEY_COLUMN_USAGE T
+WHERE (T.CONSTRAINT_SCHEMA = '{connpar.Database}') AND 
+   (T.TABLE_NAME = ?TABLENAME OR ?TABLENAME IS NULL) AND 
+   (T.CONSTRAINT_NAME = ?NAME OR ?NAME IS NULL) AND
    REFERENCED_TABLE_NAME IS NOT NULL";
 
             restrictionValues
@@ -290,6 +328,12 @@ WHERE (TValue.CONSTRAINT_SCHEMA = '{connpar.Database}') AND
             });
         }
 
+        /// <summary>
+        /// 获取 <see cref="Procedure"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
         protected override IAsyncEnumerable<Procedure> GetProceduresAsync(IDatabase database, RestrictionDictionary restrictionValues)
         {
             var parameters = new ParameterCollection();
@@ -321,6 +365,12 @@ ORDER BY ROUTINE_CATALOG, ROUTINE_SCHEMA, ROUTINE_NAME";
             });
         }
 
+        /// <summary>
+        /// 获取 <see cref="ProcedureParameter"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
         protected override IAsyncEnumerable<ProcedureParameter> GetProcedureParametersAsync(IDatabase database, RestrictionDictionary restrictionValues)
         {
             var parameters = new ParameterCollection();

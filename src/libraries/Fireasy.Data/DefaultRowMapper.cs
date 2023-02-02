@@ -7,12 +7,7 @@
 // -----------------------------------------------------------------------
 using Fireasy.Common.Extensions;
 using Fireasy.Data.Converter;
-using Fireasy.Data.Extensions;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 

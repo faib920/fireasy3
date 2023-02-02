@@ -6,7 +6,6 @@
 // </copyright>
 // -----------------------------------------------------------------------
 using Fireasy.Data.Syntax;
-using System;
 using System.Text.RegularExpressions;
 
 namespace Fireasy.Data

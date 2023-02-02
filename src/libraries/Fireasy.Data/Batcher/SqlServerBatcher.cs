@@ -8,15 +8,8 @@
 using Fireasy.Data.Provider;
 using Fireasy.Data.Syntax;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Data;
 using System.Data.Common;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Fireasy.Data.Batcher
 {

@@ -5,15 +5,12 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-
-using Fireasy.Data.Batcher;
 using Fireasy.Data.Identity;
 using Fireasy.Data.RecordWrapper;
 using Fireasy.Data.Schema;
 using Fireasy.Data.Syntax;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using System;
 
 namespace Fireasy.Data.Provider
 {
@@ -48,7 +45,7 @@ namespace Fireasy.Data.Provider
             {
                 Server = connectionString.Properties.TryGetValue("data source", "server", "host"),
                 Database = connectionString.Properties.TryGetValue("database", "initial catalog"),
-                UserId = connectionString.Properties.TryGetValue("user id", "userid", "uid", "user name", "username", "user"),
+                UserId = connectionString.Properties.TryGetValue("user id", "userid"),
                 Password = connectionString.Properties.TryGetValue("password", "pwd")
             };
         }
@@ -62,7 +59,7 @@ namespace Fireasy.Data.Provider
         {
             connectionString.Properties.TrySetValue(parameter.Server, "data source", "server", "host")
                 .TrySetValue(parameter.Database, "database", "initial catalog")
-                .TrySetValue(parameter.UserId, "user id", "userid", "uid", "user name", "username", "user")
+                .TrySetValue(parameter.UserId, "user id", "userid")
                 .TrySetValue(parameter.Password, "password", "pwd")
                 .Update();
         }
@@ -75,7 +72,7 @@ namespace Fireasy.Data.Provider
         {
             services.TryAddSingleton<IGeneratorProvider, BaseSequenceGenerator>();
             services.TryAddSingleton<ISyntaxProvider, DamengSyntax>();
-            //services.TryAddSingleton<ISchemaProvider, DamengSchema>();
+            services.TryAddSingleton<ISchemaProvider, DamengSchema>();
             services.TryAddSingleton<IRecordWrapper, GeneralRecordWrapper>();
 
             return services;

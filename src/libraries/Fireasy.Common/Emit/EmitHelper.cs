@@ -5,8 +5,6 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-
-using System.Diagnostics.SymbolStore;
 using System.Reflection;
 using System.Reflection.Emit;
 

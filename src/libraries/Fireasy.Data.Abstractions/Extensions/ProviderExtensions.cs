@@ -1,7 +1,4 @@
-﻿using Fireasy.Common;
-using Fireasy.Data.Provider;
-using System.Collections.Generic;
-using System.Data;
+﻿using Fireasy.Data.Provider;
 using System.Data.Common;
 
 namespace Fireasy.Data.Extensions

@@ -25,6 +25,7 @@
 		<PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.2" />
 		<PackageReference Include="System.Data.SQLite" Version="1.0.117" />
 		<ProjectReference Include="..\..\libraries\Fireasy.Data.Configuration\Fireasy.Data.Configuration.csproj" />
+		<ProjectReference Include="..\..\libraries\Fireasy.Data.OleDb\Fireasy.Data.OleDb.csproj" />
 		<ProjectReference Include="..\..\libraries\Fireasy.Data\Fireasy.Data.csproj" />
 		<ProjectReference Include="..\Fireasy.Tests.Base\Fireasy.Tests.Base.csproj" />
 	</ItemGroup>

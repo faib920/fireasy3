@@ -3987,3 +3987,39 @@ ALTER TABLE "SUPPLIERS" ADD CONSTRAINT "SYS_C007445" CHECK ("CompanyName" IS NOT
 ALTER TABLE "TERRITORIES" ADD CONSTRAINT "SYS_C007446" CHECK ("TerritoryID" IS NOT NULL) NOT DEFERRABLE INITIALLY IMMEDIATE NORELY VALIDATE;
 ALTER TABLE "TERRITORIES" ADD CONSTRAINT "SYS_C007447" CHECK ("TerritoryDescription" IS NOT NULL) NOT DEFERRABLE INITIALLY IMMEDIATE NORELY VALIDATE;
 ALTER TABLE "TERRITORIES" ADD CONSTRAINT "SYS_C007448" CHECK ("RegionID" IS NOT NULL) NOT DEFERRABLE INITIALLY IMMEDIATE NORELY VALIDATE;
+
+
+CREATE VIEW invoices AS SELECT
+orders."ShipName" AS "ShipName",
+orders."ShipAddress" AS "ShipAddress",
+orders."ShipCity" AS "ShipCity",
+orders."ShipRegion" AS "ShipRegion",
+orders."ShipPostalCode" AS "ShipPostalCode",
+orders."ShipCountry" AS "ShipCountry",
+orders."CustomerID" AS "CustomerID",
+customers."CompanyName" AS "CustomerName",
+customers."Address" AS "Address",
+customers."City" AS "City",
+customers."Region" AS "Region",
+customers."PostalCode" AS "PostalCode",
+customers."Country" AS "Country",
+( ( employees."FirstName" || ' ' ) || employees."LastName" ) AS "Salesperson",
+orders."OrderID" AS "OrderID",
+orders."OrderDate" AS "OrderDate",
+orders."RequiredDate" AS "RequiredDate",
+orders."ShippedDate" AS "ShippedDate",
+shippers."CompanyName" AS "ShipperName",details."ProductID" AS "ProductID",
+products."ProductName" AS "ProductName",
+details."UnitPrice" AS "UnitPrice",
+details."Quantity" AS "Quantity",
+details."Discount" AS "Discount",
+(
+( ( ( details."UnitPrice" * details."Quantity" ) * ( 1 -details."Discount" ) ) / 100 ) * 100 
+) AS "ExtendedPrice",
+orders."Freight" AS "Freight "
+FROM customers 
+JOIN orders ON customers."CustomerID" = orders."CustomerID"
+JOIN employees ON employees."EmployeeID" = orders."EmployeeID"
+JOIN "ORDER DETAILS" details ON orders."OrderID" = details."OrderID"
+JOIN products ON products."ProductID" = details."ProductID"
+JOIN shippers ON shippers."ShipperID" = orders."ShipVia"

@@ -5,10 +5,7 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using Fireasy.Common.Extensions;
-using System;
 using System.Data.Common;
-using System.Linq;
 using System.Reflection;
 
 namespace Fireasy.Data.Provider

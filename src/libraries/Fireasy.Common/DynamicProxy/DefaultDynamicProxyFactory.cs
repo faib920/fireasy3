@@ -6,9 +6,6 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using Fireasy.Common.ObjectActivator;
-using Fireasy.Common.Extensions;
-
 namespace Fireasy.Common.DynamicProxy
 {
     /// <summary>

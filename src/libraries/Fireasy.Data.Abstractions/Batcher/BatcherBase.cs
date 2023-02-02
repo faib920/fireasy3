@@ -5,22 +5,14 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using Fireasy.Common;
 using Fireasy.Common.Extensions;
 using Fireasy.Data.Converter;
 using Fireasy.Data.Provider;
 using Fireasy.Data.Syntax;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Data.Common;
-using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Fireasy.Data.Batcher
 {

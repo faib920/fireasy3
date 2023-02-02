@@ -1,7 +1,4 @@
-﻿using Fireasy.Common.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace Fireasy.Data.Tests
+﻿namespace Fireasy.Data.Tests
 {
     public abstract class DbInstanceBaseTests : ConfigurationBaseTests
     {
@@ -14,5 +11,10 @@ namespace Fireasy.Data.Tests
         /// 实例名称
         /// </summary>
         protected virtual string InstanceName => string.Empty;
+
+        /// <summary>
+        /// 提供者名称
+        /// </summary>
+        protected virtual string ProviderName => string.Empty;
     }
 }

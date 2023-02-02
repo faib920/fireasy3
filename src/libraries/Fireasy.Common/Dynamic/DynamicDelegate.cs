@@ -5,6 +5,7 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
+
 namespace Fireasy.Common.Dynamic
 {
     /// <summary>

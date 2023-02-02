@@ -7,8 +7,6 @@
 // -----------------------------------------------------------------------
 
 using Fireasy.Data.Provider;
-using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace Fireasy.Data.Schema

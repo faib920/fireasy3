@@ -14,7 +14,7 @@ namespace Fireasy.Data
     public interface IRowMapperFactory
     {
         /// <summary>
-        /// 
+        /// 创建一个 <see cref="IDataRowMapper{T}"/> 实例。
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>

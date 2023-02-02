@@ -11,8 +11,6 @@ using Fireasy.Configuration;
 using Fireasy.Data.Configuration;
 using Fireasy.Data.Provider;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
 
 namespace Fireasy.Data
 {
@@ -33,7 +31,7 @@ namespace Fireasy.Data
         }
 
         /// <summary>
-        /// 使用配置创建 <see cref="IDatabase"/> 实例。
+        /// 使用配置实例创建 <see cref="IDatabase"/> 实例。
         /// </summary>
         /// <param name="instanceName">配置实例名称。</param>
         /// <returns></returns>
@@ -74,13 +72,15 @@ namespace Fireasy.Data
         }
 
         /// <summary>
-        /// 创建 <see cref="IDatabase"/> 实例。
+        /// 使用提供者类型 <typeparamref name="TProvider"/> 及连接串创建 <see cref="IDatabase"/> 实例。
         /// </summary>
         /// <typeparam name="TProvider"></typeparam>
-        /// <param name="connectionString"></param>
+        /// <param name="connectionString">数据库连接字符串。</param>
         /// <returns></returns>
         public IDatabase CreateDatabase<TProvider>(string connectionString) where TProvider : IProvider
         {
+            Guard.ArgumentNull(connectionString, nameof(connectionString));
+
             var objActivator = _serviceProvider.GetRequiredService<IObjectActivator>();
             var provider = objActivator.CreateInstance(typeof(TProvider), _serviceProvider);
             if (provider is TProvider _provider)
@@ -90,7 +90,30 @@ namespace Fireasy.Data
                 return CreateDatabase(connectionString, _provider);
             }
 
-            throw new NotSupportedException();
+            throw new NotSupportedException("未指定数据库提供者。");
+        }
+
+        /// <summary>
+        /// 使用提供者名称及连接串创建 <see cref="IDatabase"/> 实例。
+        /// </summary>
+        /// <param name="providerName">提供者名称，可通过 <see cref="IProviderManager.GetSupportedProviderNames"/> 获取。</param>
+        /// <param name="connectionString">数据库连接字符串。</param>
+        /// <returns></returns>
+        public IDatabase CreateDatabase(string providerName, string connectionString)
+        {
+            Guard.ArgumentNull(providerName, nameof(providerName));
+            Guard.ArgumentNull(connectionString, nameof(connectionString));
+
+            var providerManager = _serviceProvider.GetRequiredService<IProviderManager>();
+            var provider = providerManager.GetDefinedProvider(providerName);
+            if (provider != null)
+            {
+                var _ = CreateServicePrivoder(provider);
+
+                return CreateDatabase(connectionString, provider);
+            }
+
+            throw new NotSupportedException($"未找到数据库提供者 {providerName}。");
         }
 
         /// <summary>

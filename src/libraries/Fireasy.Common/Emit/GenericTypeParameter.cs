@@ -1,4 +1,11 @@
-﻿using System.Reflection;
+﻿// -----------------------------------------------------------------------
+// <copyright company="Fireasy"
+//      email="faib920@126.com"
+//      qq="55570729">
+//   (c) Copyright Fireasy. All rights reserved.
+// </copyright>
+// -----------------------------------------------------------------------
+using System.Reflection;
 
 namespace Fireasy.Common.Emit
 {

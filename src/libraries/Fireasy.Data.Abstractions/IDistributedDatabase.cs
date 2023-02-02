@@ -7,7 +7,6 @@
 // -----------------------------------------------------------------------
 using System.Collections.ObjectModel;
 using System.Data.Common;
-using System.Threading.Tasks;
 
 namespace Fireasy.Data
 {

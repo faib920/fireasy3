@@ -5,14 +5,12 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-
-using Fireasy.Data.Batcher;
 using Fireasy.Data.Identity;
 using Fireasy.Data.RecordWrapper;
 using Fireasy.Data.Schema;
 using Fireasy.Data.Syntax;
 using Microsoft.Extensions.DependencyInjection;
-using System;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Fireasy.Data.Provider
 {
@@ -72,11 +70,12 @@ namespace Fireasy.Data.Provider
         /// <param name="services"></param>
         public override IServiceCollection RegisterServices(IServiceCollection services)
         {
-            return services.AddSingleton<IGeneratorProvider, BaseSequenceGenerator>()
-                .AddSingleton<ISyntaxProvider, FirebirdSyntax>()
-                .AddSingleton<ISchemaProvider, FirebirdSchema>()
-                .AddSingleton<IBatcherProvider, MySqlBatcher>()
-                .AddSingleton<IRecordWrapper, GeneralRecordWrapper>();
+            services.TryAddSingleton<IGeneratorProvider, BaseSequenceGenerator>();
+            services.AddSingleton<ISyntaxProvider, FirebirdSyntax>();
+            services.AddSingleton<ISchemaProvider, FirebirdSchema>();
+            services.AddSingleton<IRecordWrapper, GeneralRecordWrapper>();
+
+            return services;
         }
     }
 }

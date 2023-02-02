@@ -7,9 +7,6 @@
 // -----------------------------------------------------------------------
 using Fireasy.Common.Emit;
 using Fireasy.Common.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -27,7 +24,7 @@ namespace Fireasy.Data.Syntax
         private static readonly Type _funcType = "System.Data.SQLite.SQLiteFunction,System.Data.SQLite".ParseType();
         private static readonly Type _funcAttrType = "System.Data.SQLite.SQLiteFunctionAttribute,System.Data.SQLite".ParseType();
         private static readonly Type _funcTypeType = "System.Data.SQLite.FunctionType,System.Data.SQLite".ParseType();
-        private static readonly MethodInfo _mthRegister = _funcType.GetMethod("RegisterFunction", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(Type)}, null );
+        private static readonly MethodInfo _mthRegister = _funcType.GetMethod("RegisterFunction", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(Type) }, null);
 
         /// <summary>
         /// 注册一个新的自定义函数。

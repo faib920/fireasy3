@@ -6,7 +6,6 @@
 // </copyright>
 // -----------------------------------------------------------------------
 using Fireasy.Common.Extensions;
-using System.Collections.Generic;
 
 namespace Fireasy.Data
 {
@@ -37,9 +36,9 @@ namespace Fireasy.Data
             /// <summary>
             /// 获取或设置属性的值。
             /// </summary>
-            public string Value { get; set; }
+            public string? Value { get; set; }
 
-            public override string ToString()
+            public override string? ToString()
             {
                 return Value;
             }
@@ -81,7 +80,7 @@ namespace Fireasy.Data
         /// </summary>
         /// <param name="name">属性名称。</param>
         /// <returns></returns>
-        public string this[string name]
+        public string? this[string name]
         {
             get
             {
@@ -99,7 +98,7 @@ namespace Fireasy.Data
         /// </summary>
         /// <param name="names">一个数组，指定可能存在的属性名称。由于连接串可能有多种格式，因此属性名称可能有多个。</param>
         /// <returns></returns>
-        public string TryGetValue(params string[] names)
+        public string? TryGetValue(params string[] names)
         {
             foreach (var name in names)
             {
@@ -118,7 +117,7 @@ namespace Fireasy.Data
         /// <param name="defaultValue">缺省值。</param>
         /// <param name="names">一个数组，指定可能存在的属性名称。由于连接串可能有多种格式，因此属性名称可能有多个。</param>
         /// <returns></returns>
-        public string TryGetValueWithDefaultValue(string defaultValue, params string[] names)
+        public string? TryGetValueWithDefaultValue(string defaultValue, params string[] names)
         {
             foreach (var name in names)
             {
@@ -136,7 +135,7 @@ namespace Fireasy.Data
         /// </summary>
         /// <param name="value">设置的属性值。</param>
         /// <param name="name">属性名称。</param>
-        public ConnectionProperties TrySetValue(string value, string name)
+        public ConnectionProperties TrySetValue(string? value, string name)
         {
             if (_properties.ContainsKey(name))
             {
@@ -151,7 +150,7 @@ namespace Fireasy.Data
         /// </summary>
         /// <param name="value">设置的属性值。</param>
         /// <param name="names">一个数组，指定可能存在的属性名称。由于连接串可能有多种格式，因此属性名称可能有多个。</param>
-        public ConnectionProperties TrySetValue(string value, params string[] names)
+        public ConnectionProperties TrySetValue(string? value, params string[] names)
         {
             foreach (var name in names)
             {

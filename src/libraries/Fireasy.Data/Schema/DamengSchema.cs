@@ -6,22 +6,17 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Data;
-
 namespace Fireasy.Data.Schema
 {
-    /*
     /// <summary>
-    /// Dameng相关数据库架构信息的获取方法。
+    /// Dameng 数据库架构信息的获取方法。
     /// </summary>
     public sealed class DamengSchema : SchemaBase
     {
         public DamengSchema()
         {
             AddRestriction<Database>(s => s.Name);
-            AddRestriction<Table>(s => s.Name, s => s.Type);
+            AddRestriction<Table>(s => s.Name);
             AddRestriction<Column>(s => s.TableName, s => s.Name);
             AddRestriction<View>(s => s.Name);
             AddRestriction<ViewColumn>(s => s.ViewName, s => s.Name);
@@ -32,17 +27,25 @@ namespace Fireasy.Data.Schema
             AddRestriction<IndexColumn>(s => s.TableName, s => s.IndexName, s => s.ColumnName);
             AddRestriction<ForeignKey>(s => s.TableName, s => s.Name);
 
-            AddDataType("long", DbType.Int64, typeof(long));
-            AddDataType("interval year to month", DbType.Int64, typeof(long));
+            AddDataType("bit", DbType.Boolean, typeof(bool));
+            AddDataType("int", DbType.Int32, typeof(int));
+            AddDataType("integer", DbType.Int32, typeof(int));
+            AddDataType("smallint", DbType.Int16, typeof(short));
+            AddDataType("bigint", DbType.Int64, typeof(long));
+            AddDataType("byte", DbType.Byte, typeof(byte));
+            AddDataType("tinyint", DbType.Byte, typeof(byte));
             AddDataType("float", DbType.Single, typeof(float));
             AddDataType("binary_float", DbType.Single, typeof(float));
             AddDataType("binary_double", DbType.Double, typeof(double));
             AddDataType("number", DbType.Decimal, typeof(decimal));
+            AddDataType("decimal", DbType.Decimal, typeof(decimal));
+            AddDataType("dec", DbType.Decimal, typeof(decimal));
             AddDataType("bfile", DbType.Binary, typeof(byte[]));
             AddDataType("blob", DbType.Binary, typeof(byte[]));
             AddDataType("raw", DbType.Binary, typeof(byte[]));
             AddDataType("long raw", DbType.Binary, typeof(byte[]));
             AddDataType("char", DbType.String, typeof(string));
+            AddDataType("character", DbType.String, typeof(string));
             AddDataType("nchar", DbType.String, typeof(string));
             AddDataType("varchar2", DbType.String, typeof(string));
             AddDataType("nvarchar2", DbType.String, typeof(string));
@@ -57,13 +60,19 @@ namespace Fireasy.Data.Schema
             AddDataType("interval day to second", DbType.Int64, typeof(TimeSpan));
         }
 
+        /// <summary>
+        /// 获取 <see cref="Database"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
         protected override IAsyncEnumerable<Database> GetDatabasesAsync(IDatabase database, RestrictionDictionary restrictionValues)
         {
             var parameters = new ParameterCollection();
 
             SpecialCommand sql = @"
-SELECT NAME, CREATED FROM V$DATABASE TValue
-WHERE (TValue.NAME = :NAME OR (:NAME IS NULL))";
+SELECT NAME, CREATED FROM V$DATABASE T
+WHERE (T.NAME = :NAME OR (:NAME IS NULL))";
 
             restrictionValues
                 .Parameterize(parameters, "NAME", nameof(Database.Name));
@@ -75,13 +84,19 @@ WHERE (TValue.NAME = :NAME OR (:NAME IS NULL))";
             });
         }
 
+        /// <summary>
+        /// 获取 <see cref="User"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
         protected override IAsyncEnumerable<User> GetUsersAsync(IDatabase database, RestrictionDictionary restrictionValues)
         {
             var parameters = new ParameterCollection();
 
             SpecialCommand sql = @"
-SELECT USERNAME FROM USER_USERS TValue
-WHERE (TValue.USERNAME = :USERNAME OR (:USERNAME IS NULL))";
+SELECT USERNAME FROM USER_USERS T
+WHERE (T.USERNAME = :USERNAME OR (:USERNAME IS NULL))";
 
             restrictionValues
                 .Parameterize(parameters, "USERNAME", nameof(User.Name));
@@ -92,111 +107,71 @@ WHERE (TValue.USERNAME = :USERNAME OR (:USERNAME IS NULL))";
             });
         }
 
+        /// <summary>
+        /// 获取 <see cref="Table"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
         protected override IAsyncEnumerable<Table> GetTablesAsync(IDatabase database, RestrictionDictionary restrictionValues)
         {
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
 
             SpecialCommand sql = $@"
-SELECT * FROM (
-    SELECT TValue.OWNER,
-       TValue.TABLE_NAME,
-       DECODE(TValue.OWNER,
-              'SYS',
-              'SYSTEM',
-              'SYSTEM',
-              'SYSTEM',
-              'SYSMAN',
-              'SYSTEM',
-              'CTXSYS',
-              'SYSTEM',
-              'MDSYS',
-              'SYSTEM',
-              'OLAPSYS',
-              'SYSTEM',
-              'ORDSYS',
-              'SYSTEM',
-              'OUTLN',
-              'SYSTEM',
-              'WKSYS',
-              'SYSTEM',
-              'WMSYS',
-              'SYSTEM',
-              'XDB',
-              'SYSTEM',
-              'ORDPLUGINS',
-              'SYSTEM',
-              'USER') AS TYPE,
-       C.COMMENTS
-  FROM ALL_TABLES TValue
-  JOIN ALL_TAB_COMMENTS C
-    ON TValue.OWNER = C.OWNER
-   AND TValue.TABLE_NAME = C.TABLE_NAME
-) TValue
- WHERE (TValue.OWNER = '{connpar.UserId.ToUpper()}') AND 
-  (TValue.TABLE_NAME = :TABLENAME OR (:TABLENAME IS NULL)) AND
-  ((TValue.TYPE = 'USER' AND (:TABLETYPE IS NULL OR :TABLETYPE = 0)) OR (TValue.TYPE = 'SYSTEM' AND :TABLETYPE = 1))
-  ORDER BY OWNER, TABLE_NAME";
+SELECT T.OWNER,
+       T.TABLE_NAME,
+       C.COMMENTS 
+FROM DBA_TABLES T
+JOIN USER_TAB_COMMENTS C ON C.TABLE_NAME = T.TABLE_NAME
+WHERE (T.OWNER = '{connpar.UserId!.ToUpper()}') AND 
+  (T.TABLE_NAME = :TABLENAME OR (:TABLENAME IS NULL))
+  ORDER BY T.OWNER, T.TABLE_NAME";
 
             restrictionValues
-                .Parameterize(parameters, "TABLENAME", nameof(Table.Name))
-                .Parameterize(parameters, "TABLETYPE", nameof(Table.Type));
+                .Parameterize(parameters, "TABLENAME", nameof(Table.Name));
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new Table
             {
                 Schema = wrapper!.GetString(reader, 0),
                 Name = wrapper.GetString(reader, 1),
-                Type = wrapper.GetString(reader, 2) == "USER" ? TableType.BaseTable : TableType.SystemTable,
-                Description = wrapper.GetString(reader, 3)
+                Description = wrapper.GetString(reader, 2)
             });
         }
 
+        /// <summary>
+        /// 获取 <see cref="Column"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
         protected override IAsyncEnumerable<Column> GetColumnsAsync(IDatabase database, RestrictionDictionary restrictionValues)
         {
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
 
             SpecialCommand sql = $@"
-SELECT TValue.OWNER,
-       TValue.TABLE_NAME,
-       TValue.COLUMN_NAME,
-       TValue.DATA_TYPE AS DATATYPE,
-       TValue.DATA_LENGTH AS LENGTH,
-       TValue.DATA_PRECISION AS PRECISION,
-       TValue.DATA_SCALE AS SCALE,
-       TValue.NULLABLE AS NULLABLE,
-       (CASE
-         WHEN P.OWNER IS NULL THEN
-          'N'
-         ELSE
-          'Y'
-       END) PK,
-       D.DATA_DEFAULT,
-       C.COMMENTS
-  FROM ALL_TAB_COLUMNS TValue
-  JOIN ALL_TABLES V
-    ON TValue.OWNER = V.OWNER
-   AND TValue.TABLE_NAME = V.TABLE_NAME
-  LEFT JOIN ALL_COL_COMMENTS C
-    ON TValue.OWNER = C.OWNER
-   AND TValue.TABLE_NAME = C.TABLE_NAME
-   AND TValue.COLUMN_NAME = C.COLUMN_NAME
-  LEFT JOIN ALL_TAB_COLUMNS D
-    ON TValue.OWNER = D.OWNER
-   AND TValue.TABLE_NAME = D.TABLE_NAME
-   AND TValue.COLUMN_NAME = D.COLUMN_NAME
-  LEFT JOIN (SELECT AU.OWNER, AU.TABLE_NAME, CU.COLUMN_NAME
-               FROM ALL_CONS_COLUMNS CU, ALL_CONSTRAINTS AU
-              WHERE CU.OWNER = AU.OWNER
-                AND CU.CONSTRAINT_NAME = AU.CONSTRAINT_NAME
-                AND AU.CONSTRAINT_TYPE = 'P') P
-    ON TValue.OWNER = P.OWNER
-   AND TValue.TABLE_NAME =P.TABLE_NAME
-   AND TValue.COLUMN_NAME = P.COLUMN_NAME
- WHERE (TValue.OWNER = '{connpar.UserId.ToUpper()}') AND 
-   (TValue.TABLE_NAME = :TABLENAME OR :TABLENAME IS NULL) AND 
-   (TValue.COLUMN_NAME = :COLUMNNAME OR :COLUMNNAME IS NULL)
- ORDER BY TValue.OWNER, TValue.TABLE_NAME, TValue.COLUMN_ID";
+SELECT 
+    T.OWNER,
+    T.TABLE_NAME,
+    T.COLUMN_NAME,
+    T.DATA_TYPE,
+    T.DATA_LENGTH,
+    T.DATA_PRECISION,
+    T.DATA_SCALE,
+    T.NULLABLE,
+    (CASE WHEN B.COLUMN_NAME IS NULL THEN 'N' ELSE 'Y' END) ISPK,
+    (CASE WHEN D.INFO2 = 1 THEN 'Y' ELSE 'N' END) ISINC,
+    C.COMMENTS
+FROM DBA_TAB_COLUMNS T
+JOIN DBA_COL_COMMENTS C ON T.TABLE_NAME = C.TABLE_NAME AND T.COLUMN_NAME = C.COLUMN_NAME
+LEFT JOIN USER_IND_COLUMNS B ON T.TABLE_NAME = T.TABLE_NAME AND B.COLUMN_NAME = T.COLUMN_NAME
+LEFT JOIN SYSOBJECTS O ON O.NAME = T.TABLE_NAME AND O.SUBTYPE$='UTAB'
+LEFT JOIN SYSCOLUMNS D ON D.NAME = T.COLUMN_NAME AND D.ID = O.ID AND D.INFO2 & 1 = 1
+ WHERE (T.OWNER = '{connpar.UserId!.ToUpper()}') AND 
+   (T.TABLE_NAME = :TABLENAME OR :TABLENAME IS NULL) AND 
+   (T.COLUMN_NAME = :COLUMNNAME OR :COLUMNNAME IS NULL)
+ ORDER BY T.OWNER, T.TABLE_NAME, T.COLUMN_ID";
 
             restrictionValues
                 .Parameterize(parameters, "TABLENAME", nameof(Column.TableName))
@@ -213,205 +188,10 @@ SELECT TValue.OWNER,
                 NumericScale = reader.IsDBNull(6) ? (int?)null : wrapper.GetInt32(reader, 6),
                 IsNullable = wrapper.GetString(reader, 7) == "Y",
                 IsPrimaryKey = wrapper.GetString(reader, 8) == "Y",
-                Default = wrapper.GetString(reader, 9),
+                Autoincrement = wrapper.GetString(reader, 9) == "Y",
+                //Default = wrapper.GetString(reader, 9),
                 Description = wrapper.GetString(reader, 10),
             }));
         }
-
-        protected override IAsyncEnumerable<ForeignKey> GetForeignKeysAsync(IDatabase database, RestrictionDictionary restrictionValues)
-        {
-            var parameters = new ParameterCollection();
-            var connpar = GetConnectionParameter(database);
-
-            SpecialCommand sql = $@"
-SELECT PKCON.CONSTRAINT_NAME AS PRIMARY_KEY_CONSTRAINT_NAME,
-       PKCON.OWNER AS PRIMARY_KEY_OWNER,
-       PKCON.TABLE_NAME AS PRIMARY_KEY_TABLE_NAME,
-       FKCON.OWNER AS FOREIGN_KEY_OWNER,
-       FKCON.CONSTRAINT_NAME AS FOREIGN_KEY_CONSTRAINT_NAME,
-       FKCON.TABLE_NAME AS FOREIGN_KEY_TABLE_NAME,
-       FKCON.SEARCH_CONDITION,
-       FKCON.R_OWNER,
-       FKCON.R_CONSTRAINT_NAME,
-       FKCON.DELETE_RULE,
-       FKCON.STATUS,
-       (SELECT cu.COLUMN_NAME
-          FROM ALL_CONS_COLUMNS CU, ALL_CONSTRAINTS AU
-         WHERE CU.OWNER = AU.OWNER
-           AND CU.CONSTRAINT_NAME = AU.CONSTRAINT_NAME
-           AND AU.CONSTRAINT_TYPE = 'P'
-           and au.constraint_name = FKCON.r_constraint_name
-           and FKCON.owner = au.OWNER
-           and rownum = 1) PRIMARY_KEY_COLUMN_NAME,
-       (SELECT cu.COLUMN_NAME
-          FROM ALL_CONS_COLUMNS CU, ALL_CONSTRAINTS AU
-         WHERE CU.OWNER = AU.OWNER
-           AND CU.CONSTRAINT_NAME = AU.CONSTRAINT_NAME
-           AND AU.CONSTRAINT_TYPE = 'R'
-           and au.constraint_name = FKCON.CONSTRAINT_NAME
-           and PKCON.owner = au.OWNER
-           and rownum = 1) FOREIGN_KEY_COLUMN_NAME
-  FROM ALL_CONSTRAINTS FKCON, ALL_CONSTRAINTS PKCON
- WHERE PKCON.OWNER = FKCON.R_OWNER
-   AND PKCON.CONSTRAINT_NAME = FKCON.R_CONSTRAINT_NAME
-   AND FKCON.CONSTRAINT_TYPE = 'R'
-   and (FKCON.OWNER = '{connpar.UserId.ToUpper()}')
-   AND (FKCON.TABLE_NAME = :TABLENAME OR :TABLENAME is null) AND (FKCON.CONSTRAINT_NAME = :CONSTRAINTNAME OR :CONSTRAINTNAME is null)";
-
-            restrictionValues
-                .Parameterize(parameters, "TABLENAME", nameof(ForeignKey.TableName))
-                .Parameterize(parameters, "CONSTRAINTNAME", nameof(ForeignKey.Name));
-
-            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new ForeignKey
-            {
-                Schema = reader["FOREIGN_KEY_OWNER"].ToString(),
-                Name = reader["FOREIGN_KEY_CONSTRAINT_NAME"].ToString(),
-                TableName = reader["FOREIGN_KEY_TABLE_NAME"].ToString().Replace("\"", ""),
-                ColumnName = reader["FOREIGN_KEY_COLUMN_NAME"].ToString(),
-                PKTable = reader["PRIMARY_KEY_TABLE_NAME"].ToString(),
-                PKColumn = reader["PRIMARY_KEY_COLUMN_NAME"].ToString()
-            });
-        }
-
-        protected override IAsyncEnumerable<View> GetViewsAsync(IDatabase database, RestrictionDictionary restrictionValues)
-        {
-            var parameters = new ParameterCollection();
-            var connpar = GetConnectionParameter(database);
-
-            SpecialCommand sql = $@"
-SELECT * FROM (
-    SELECT TValue.OWNER,
-       TValue.VIEW_NAME,
-       C.COMMENTS
-  FROM ALL_VIEWS TValue
-  JOIN ALL_TAB_COMMENTS C
-    ON TValue.OWNER = C.OWNER
-   AND TValue.VIEW_NAME = C.TABLE_NAME
-) TValue
- WHERE (TValue.OWNER = '{connpar.UserId.ToUpper()}') AND 
-  (TValue.VIEW_NAME = :VIEWNAME OR (:VIEWNAME IS NULL))
-  ORDER BY OWNER, VIEW_NAME";
-
-            restrictionValues
-                .Parameterize(parameters, "VIEWNAME", nameof(Table.Name));
-
-            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new View
-            {
-                Schema = wrapper!.GetString(reader, 0),
-                Name = wrapper.GetString(reader, 1),
-                Description = wrapper.GetString(reader, 2)
-            });
-        }
-
-        protected override IAsyncEnumerable<ViewColumn> GetViewColumnsAsync(IDatabase database, RestrictionDictionary restrictionValues)
-        {
-            var parameters = new ParameterCollection();
-            var connpar = GetConnectionParameter(database);
-
-            SpecialCommand sql = $@"
-SELECT TValue.OWNER,
-       TValue.TABLE_NAME,
-       TValue.COLUMN_NAME,
-       TValue.DATA_TYPE AS DATATYPE,
-       TValue.DATA_LENGTH AS LENGTH,
-       TValue.DATA_PRECISION AS PRECISION,
-       TValue.DATA_SCALE AS SCALE,
-       TValue.NULLABLE AS NULLABLE,
-       C.COMMENTS
-  FROM ALL_TAB_COLUMNS TValue
-  JOIN ALL_VIEWS V
-    ON TValue.OWNER = V.OWNER
-   AND TValue.TABLE_NAME = V.VIEW_NAME
-  LEFT JOIN ALL_COL_COMMENTS C
-    ON TValue.OWNER = C.OWNER
-   AND TValue.TABLE_NAME = C.TABLE_NAME
-   AND TValue.COLUMN_NAME = C.COLUMN_NAME
-  LEFT JOIN ALL_TAB_COLUMNS D
-    ON TValue.OWNER = D.OWNER
-   AND TValue.TABLE_NAME = D.TABLE_NAME
-   AND TValue.COLUMN_NAME = D.COLUMN_NAME
- WHERE (TValue.OWNER = '{connpar.UserId.ToUpper()}') AND 
-   (TValue.TABLE_NAME = :VIEWNAME OR :VIEWNAME IS NULL) AND 
-   (TValue.COLUMN_NAME = :COLUMNNAME OR :COLUMNNAME IS NULL)
- ORDER BY TValue.OWNER, TValue.TABLE_NAME, TValue.COLUMN_ID";
-
-            restrictionValues
-                .Parameterize(parameters, "VIEWNAME", nameof(ViewColumn.ViewName))
-                .Parameterize(parameters, "COLUMNNAME", nameof(ViewColumn.Name));
-
-            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new ViewColumn
-            {
-                Schema = wrapper!.GetString(reader, 0),
-                ViewName = wrapper.GetString(reader, 1),
-                Name = wrapper.GetString(reader, 2),
-                DataType = wrapper.GetString(reader, 3),
-                Length = reader.IsDBNull(4) ? (long?)null : wrapper.GetInt32(reader, 4),
-                NumericPrecision = reader.IsDBNull(5) ? (int?)null : wrapper.GetInt32(reader, 5),
-                NumericScale = reader.IsDBNull(6) ? (int?)null : wrapper.GetInt32(reader, 6),
-                IsNullable = wrapper.GetString(reader, 7) == "Y",
-                Description = wrapper.GetString(reader, 8),
-            });
-        }
-
-        protected override IAsyncEnumerable<Index> GetIndexsAsync(IDatabase database, RestrictionDictionary restrictionValues)
-        {
-            var parameters = new ParameterCollection();
-            var connpar = GetConnectionParameter(database);
-
-            SpecialCommand sql = $@"
-SELECT TValue.OWNER,
-       TValue.INDEX_NAME, 
-       TValue.TABLE_NAME,
-       TValue.UNIQUENESS
- FROM ALL_INDEXES TValue
- WHERE (TValue.OWNER = '{connpar.UserId.ToUpper()}') AND 
-   (TValue.TABLE_NAME = :TABLENAME OR :TABLENAME IS NULL) AND 
-   (TValue.INDEX_NAME = :INDEXNAME OR :INDEXNAME IS NULL)
- ORDER BY TValue.OWNER, TValue.TABLE_NAME";
-
-            restrictionValues
-                .Parameterize(parameters, "TABLENAME", nameof(Index.TableName))
-                .Parameterize(parameters, "INDEXNAME", nameof(Index.Name));
-
-            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new Index
-            {
-                Schema = wrapper!.GetString(reader, 0),
-                Name = wrapper.GetString(reader, 1),
-                TableName = wrapper.GetString(reader, 2),
-                IsUnique = wrapper.GetString(reader, 3) == "UNIQUE"
-            });
-        }
-
-        protected override IAsyncEnumerable<IndexColumn> GetIndexColumnsAsync(IDatabase database, RestrictionDictionary restrictionValues)
-        {
-            var parameters = new ParameterCollection();
-            var connpar = GetConnectionParameter(database);
-
-            SpecialCommand sql = $@"
-SELECT TValue.INDEX_OWNER,
-       TValue.INDEX_NAME, 
-       TValue.TABLE_NAME,
-       TValue.COLUMN_NAME
- FROM ALL_IND_COLUMNS TValue
- WHERE (TValue.INDEX_OWNER = '{connpar.UserId.ToUpper()}') AND 
-   (TValue.TABLE_NAME = :TABLENAME OR :TABLENAME IS NULL) AND 
-   (TValue.INDEX_NAME = :INDEXNAME OR :INDEXNAME IS NULL) AND
-   (TValue.COLUMN_NAME = :COLUMNNAME OR :COLUMNNAME IS NULL) 
- ORDER BY TValue.INDEX_OWNER, TValue.TABLE_NAME";
-
-            restrictionValues
-                .Parameterize(parameters, "TABLENAME", nameof(IndexColumn.TableName))
-                .Parameterize(parameters, "INDEXNAME", nameof(IndexColumn.IndexName))
-                .Parameterize(parameters, "COLUMNNAME", nameof(IndexColumn.ColumnName));
-
-            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new IndexColumn
-            {
-                Schema = wrapper!.GetString(reader, 0),
-                TableName = wrapper.GetString(reader, 1),
-                IndexName = wrapper.GetString(reader, 2),
-                ColumnName = wrapper.GetString(reader, 3)
-            });
-        }
     }
-    */
 }

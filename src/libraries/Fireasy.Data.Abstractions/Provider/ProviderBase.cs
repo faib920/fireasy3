@@ -9,8 +9,6 @@
 using Fireasy.Common.Collections;
 using Fireasy.Common.Extensions;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Data;
 using System.Data.Common;
 
 namespace Fireasy.Data.Provider

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Fireasy.Common.Security
+﻿namespace Fireasy.Common.Security
 {
     /// <summary>
     /// xxHash is an extremely fast non-cryptographic Hash algorithm, working at speeds close to RAM limits.

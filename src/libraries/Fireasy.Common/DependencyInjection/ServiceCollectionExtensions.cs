@@ -20,6 +20,8 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     public static class ServiceCollectionExtensions
     {
+        private readonly static object _locker = new object();
+
         /// <summary>
         /// 添加框架的基本支持。
         /// </summary>
@@ -63,16 +65,43 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IObjectAccessor<T> AddObjectAccessor<T>(this IServiceCollection services, T? obj = default)
         {
-            ServiceDescriptor? descriptor;
-            if ((descriptor = services.FirstOrDefault(s => s.ServiceType == typeof(IObjectAccessor<T>))) != null && descriptor.ImplementationInstance != null)
+            lock (_locker)
             {
-                return (IObjectAccessor<T>)descriptor.ImplementationInstance;
+                ServiceDescriptor? descriptor;
+                if ((descriptor = services.FirstOrDefault(s => s.ServiceType == typeof(IObjectAccessor<T>))) != null && descriptor.ImplementationInstance != null)
+                {
+                    return (IObjectAccessor<T>)descriptor.ImplementationInstance;
+                }
+
+                var accessor = new DefaultObjectAccessor<T>(obj);
+                services.Insert(0, ServiceDescriptor.Singleton(typeof(IObjectAccessor<T>), accessor));
+
+                return accessor;
             }
+        }
 
-            var accessor = new DefaultObjectAccessor<T>(obj);
-            services.Insert(0, ServiceDescriptor.Singleton(typeof(IObjectAccessor<T>), accessor));
+        /// <summary>
+        /// 从 <paramref name="services"/> 中获取 <see cref="IObjectAccessor{T}"/> 的值，如果不存在则实例化一个对象，并添加到 <paramref name="services"/> 中。
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="services"></param>
+        /// <returns></returns>
+        public static T GetOrAddObjectAccessor<T>(this IServiceCollection services) where T : class, new()
+        {
+            lock (_locker)
+            {
+                ServiceDescriptor? descriptor;
+                if ((descriptor = services.FirstOrDefault(s => s.ServiceType == typeof(IObjectAccessor<T>))) != null && descriptor.ImplementationInstance != null)
+                {
+                    return ((IObjectAccessor<T>)descriptor.ImplementationInstance).Value!;
+                }
 
-            return accessor;
+                var obj = new T();
+                var accessor = new DefaultObjectAccessor<T>(obj);
+                services.Insert(0, ServiceDescriptor.Singleton(typeof(IObjectAccessor<T>), accessor));
+
+                return obj;
+            }
         }
 
         /// <summary>

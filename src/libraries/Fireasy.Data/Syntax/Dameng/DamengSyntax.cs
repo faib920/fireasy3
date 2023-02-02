@@ -5,8 +5,6 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using System;
-using System.Data;
 using System.Text;
 
 namespace Fireasy.Data.Syntax
@@ -55,7 +53,7 @@ namespace Fireasy.Data.Syntax
         /// <summary>
         /// 获取伪查询的表名称。
         /// </summary>
-        public string FakeSelect => string.Empty;
+        public string FakeTable => string.Empty;
 
         /// <summary>
         /// 获取存储参数的前缀。

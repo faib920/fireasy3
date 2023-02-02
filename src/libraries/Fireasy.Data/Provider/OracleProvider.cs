@@ -11,7 +11,7 @@ using Fireasy.Data.RecordWrapper;
 using Fireasy.Data.Schema;
 using Fireasy.Data.Syntax;
 using Microsoft.Extensions.DependencyInjection;
-using System;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Data.Common;
 
 namespace Fireasy.Data.Provider
@@ -87,12 +87,14 @@ namespace Fireasy.Data.Provider
         /// <param name="services"></param>
         public override IServiceCollection RegisterServices(IServiceCollection services)
         {
-            return services.AddSingleton<IGeneratorProvider, OracleSequenceGenerator>()
-                .AddSingleton<ISyntaxProvider, OracleSyntax>()
-                .AddSingleton<ISchemaProvider, OracleSchema>()
-                .AddSingleton<IBatcherProvider, OracleDABatcher>()
-                .AddSingleton<IRecordWrapper, OracleAccessRecordWrapper>()
-                .AddSingleton<IRecordWrapper, OracleRecordWrapper>();
+            services.TryAddSingleton<IGeneratorProvider, OracleSequenceGenerator>();
+            services.TryAddSingleton<ISyntaxProvider, OracleSyntax>();
+            services.TryAddSingleton<ISchemaProvider, OracleSchema>();
+            services.TryAddSingleton<IBatcherProvider, OracleDABatcher>();
+            services.TryAddSingleton<IRecordWrapper, OracleAccessRecordWrapper>();
+            services.TryAddSingleton<IRecordWrapper, OracleRecordWrapper>();
+
+            return services;
         }
     }
 }

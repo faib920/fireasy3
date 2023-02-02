@@ -5,9 +5,6 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using Fireasy.Common.Reflection;
-using System;
-using System.Data;
 using System.Reflection;
 
 namespace Fireasy.Data.RecordWrapper

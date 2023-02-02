@@ -5,7 +5,6 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Fireasy.Common.DependencyInjection
 {

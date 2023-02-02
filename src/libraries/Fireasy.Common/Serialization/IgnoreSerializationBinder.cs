@@ -5,7 +5,6 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using System;
 using System.Runtime.Serialization;
 
 namespace Fireasy.Common.Serialization

@@ -5,13 +5,7 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-
-using Fireasy.Common;
-using Fireasy.Data.Extensions;
 using Fireasy.Data.RecordWrapper;
-using System.Data;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Fireasy.Data
 {

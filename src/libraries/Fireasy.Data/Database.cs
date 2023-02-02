@@ -5,8 +5,6 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using Fireasy.Common;
-using Fireasy.Common.DependencyInjection;
 using Fireasy.Common.Dynamic;
 using Fireasy.Common.Extensions;
 using Fireasy.Data.Extensions;
@@ -17,19 +15,12 @@ using Fireasy.Data.RecordWrapper;
 using Fireasy.Data.Syntax;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Dynamic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Fireasy.Data
 {
@@ -260,8 +251,9 @@ namespace Fireasy.Data
             var rowMapperFactory = GetService<IRowMapperFactory>();
 
             rowMapper ??= rowMapperFactory?.CreateRowMapper<T>();
-            rowMapper.RecordWrapper = Provider.GetService<IRecordWrapper>();
-            using var reader = (InternalDataReader)await ExecuteReaderAsync(queryCommand, segment, parameters, null, cancellationToken);
+            rowMapper!.RecordWrapper = Provider.GetService<IRecordWrapper>();
+
+            using var reader = (IAsyncIDataReader)await ExecuteReaderAsync(queryCommand, segment, parameters, null, cancellationToken);
             while (await reader!.ReadAsync(cancellationToken))
             {
                 yield return rowMapper.Map(reader);
@@ -282,7 +274,7 @@ namespace Fireasy.Data
         {
             Guard.ArgumentNull(queryCommand, nameof(queryCommand));
 
-            using var reader = (InternalDataReader)await ExecuteReaderAsync(queryCommand, segment, parameters, null, cancellationToken);
+            using var reader = (IAsyncIDataReader)await ExecuteReaderAsync(queryCommand, segment, parameters, null, cancellationToken);
             var wrapper = Provider.GetService<IRecordWrapper>();
 
             while (await reader!.ReadAsync(cancellationToken))
@@ -326,9 +318,9 @@ namespace Fireasy.Data
 
             var result = new List<T>();
             rowMapper ??= rowMapperFactory?.CreateRowMapper<T>();
-            rowMapper.RecordWrapper = Provider.GetService<IRecordWrapper>();
+            rowMapper!.RecordWrapper = Provider.GetService<IRecordWrapper>();
 
-            using var reader = (InternalDataReader)await ExecuteReaderAsync(queryCommand, segment, parameters, null, cancellationToken);
+            using var reader = (IAsyncIDataReader)await ExecuteReaderAsync(queryCommand, segment, parameters, null, cancellationToken);
             while (await reader!.ReadAsync(cancellationToken))
             {
                 result.Add(rowMapper.Map(reader));
@@ -358,7 +350,7 @@ namespace Fireasy.Data
             var result = new List<T>();
             var wrapper = Provider.GetService<IRecordWrapper>();
 
-            using var reader = (InternalDataReader)await ExecuteReaderAsync(queryCommand, segment, parameters, null, cancellationToken);
+            using var reader = (IAsyncIDataReader)await ExecuteReaderAsync(queryCommand, segment, parameters, null, cancellationToken);
             while (await reader!.ReadAsync(cancellationToken))
             {
                 result.Add(rowMapper(wrapper, reader));
@@ -383,7 +375,7 @@ namespace Fireasy.Data
             cancellationToken.ThrowIfCancellationRequested();
 
             var result = new List<dynamic>();
-            using var reader = (InternalDataReader)await ExecuteReaderAsync(queryCommand, segment, parameters, null, cancellationToken);
+            using var reader = (IAsyncIDataReader)await ExecuteReaderAsync(queryCommand, segment, parameters, null, cancellationToken);
             var wrapper = Provider.GetService<IRecordWrapper>();
 
             while (await reader!.ReadAsync(cancellationToken))
@@ -851,7 +843,7 @@ namespace Fireasy.Data
         /// </summary>
         /// <param name="adapter">适配器。</param>
         /// <param name="tableName">表的名称。</param>
-        private void HandleAdapterTableMapping(IDataAdapter adapter, string tableName)
+        private void HandleAdapterTableMapping(IDataAdapter adapter, string? tableName)
         {
             const string defaultTableName = "Table";
 

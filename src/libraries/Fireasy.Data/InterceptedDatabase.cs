@@ -5,14 +5,8 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using Fireasy.Common.Extensions;
 using Fireasy.Data.Provider;
 using Fireasy.Data.RecordWrapper;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Fireasy.Data
 {
@@ -29,7 +23,7 @@ namespace Fireasy.Data
         /// </summary>
         /// <param name="provider">数据库提供者。</param>
         protected InterceptedDatabase(IProvider provider)
-            : base (provider)
+            : base(provider)
         {
         }
 

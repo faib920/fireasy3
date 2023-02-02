@@ -6,10 +6,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 using Fireasy.Common.Extensions;
-using System;
-using System.Collections.Generic;
 using System.Data.Common;
-using System.Linq;
 using System.Reflection;
 
 namespace Fireasy.Data.Provider
@@ -51,6 +48,7 @@ namespace Fireasy.Data.Provider
         /// <summary>
         /// 遍列所有数据库提供者的映射。
         /// </summary>
+        /// <param name="action">遍列的方法。</param>
         public void EachDbProviderTypes(Action<string, Type> action)
         {
             foreach (var kvp in _providerMappers)

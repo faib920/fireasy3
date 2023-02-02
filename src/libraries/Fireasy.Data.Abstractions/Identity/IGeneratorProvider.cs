@@ -7,7 +7,6 @@
 // -----------------------------------------------------------------------
 
 using Fireasy.Data.Provider;
-using System.Threading.Tasks;
 
 namespace Fireasy.Data.Identity
 {

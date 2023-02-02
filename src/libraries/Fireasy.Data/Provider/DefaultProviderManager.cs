@@ -11,9 +11,6 @@ using Fireasy.Common.Threading;
 using Fireasy.Configuration;
 using Fireasy.Data.Configuration.Providers;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Fireasy.Data.Provider
 {
@@ -22,7 +19,7 @@ namespace Fireasy.Data.Provider
     /// </summary>
     public class DefaultProviderManager : IProviderManager
     {
-        private List<ProviderWrapper> _providerWappers;
+        private List<ProviderWrapper>? _providerWappers;
         private readonly IServiceProvider _serviceProvider;
         private readonly ConfigurationUnity? _configurationUnity;
         private readonly ProviderCustomizer? _customizer;
@@ -45,9 +42,9 @@ namespace Fireasy.Data.Provider
         /// </summary>
         /// <param name="providerName">提供者名称。</param>
         /// <returns></returns>
-        public IProvider? GetDefinedProviderInstance(string providerName)
+        public IProvider? GetDefinedProvider(string providerName)
         {
-            var wapper = GetWrapper().FirstOrDefault(s => s.Contains(providerName));
+            var wapper = GetWrapper().Where(s => s.Contains(providerName)).OrderBy(s => s.Priority).FirstOrDefault();
             if (wapper != null)
             {
                 var objActivator = _serviceProvider.GetRequiredService<IObjectActivator>();
@@ -58,7 +55,7 @@ namespace Fireasy.Data.Provider
         }
 
         /// <summary>
-        /// 获取所提供的所有数据库提供者名称。
+        /// 获取注册的所有数据库提供者名称。
         /// </summary>
         /// <returns></returns>
         public string[] GetSupportedProviderNames()
@@ -66,17 +63,17 @@ namespace Fireasy.Data.Provider
             return GetWrapper().SelectMany(s => s.Alias).ToArray();
         }
 
-        private void AddProvider<T>(string providerName) where T : IProvider
+        private void AddProvider<T>(string providerName, int priority = 2) where T : IProvider
         {
-            AddProvider(providerName, typeof(T));
+            AddProvider(providerName, typeof(T), priority);
         }
 
-        private void AddProvider(string providerName, Type providerType)
+        private void AddProvider(string providerName, Type providerType, int priority = 2)
         {
-            AddProvider(new[] { providerName }, providerType);
+            AddProvider(new[] { providerName }, providerType, priority);
         }
 
-        private void AddProvider(string[] providerNames, Type providerType)
+        private void AddProvider(string[] providerNames, Type providerType, int priority = 2)
         {
             ProviderWrapper? wapper = null;
             if ((wapper = GetWrapper().FirstOrDefault(s => s.ProviderType == providerType)) != null)
@@ -94,6 +91,7 @@ namespace Fireasy.Data.Provider
                 GetWrapper().Add(new ProviderWrapper
                 {
                     Alias = new List<string>(providerNames),
+                    Priority = priority,
                     ProviderType = providerType
                 });
             }
@@ -101,7 +99,7 @@ namespace Fireasy.Data.Provider
 
         private List<ProviderWrapper> GetWrapper()
         {
-            return SingletonLocker.Lock(ref _providerWappers, InitializeProviders);
+            return SingletonLocker.Lock(ref _providerWappers!, InitializeProviders)!;
         }
 
         /// <summary>
@@ -112,7 +110,7 @@ namespace Fireasy.Data.Provider
             _providerWappers = new List<ProviderWrapper>();
 
             //预配置
-            _customizer?.EachDbProviderTypes((n, t) => AddProvider(n, t));
+            _customizer?.EachDbProviderTypes((n, t) => AddProvider(n, t, 0));
 
             RegisterCustomProviders();
 
@@ -150,7 +148,7 @@ namespace Fireasy.Data.Provider
                     continue;
                 }
 
-                AddProvider(setting.Name, setting.Type);
+                AddProvider(setting.Name, setting.Type, 1);
             }
         }
     }
@@ -160,6 +158,8 @@ namespace Fireasy.Data.Provider
         internal List<string> Alias { get; set; } = new List<string>();
 
         internal Type ProviderType { get; set; }
+
+        internal int Priority { get; set; }
 
         internal bool Contains(string name)
         {

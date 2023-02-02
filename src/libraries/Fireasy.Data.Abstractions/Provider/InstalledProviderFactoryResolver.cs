@@ -5,7 +5,6 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using System;
 using System.Data.Common;
 using System.IO;
 
@@ -15,15 +14,15 @@ namespace Fireasy.Data.Provider
     /// <summary>
     /// 通过 DbProviderFactories.GetFactory 从系统环境中安装的驱动中解析。
     /// </summary>
-    public class InstallerProviderFactoryResolver : IProviderFactoryResolver
+    public class InstalledProviderFactoryResolver : IProviderFactoryResolver
     {
         private readonly string _providerName;
 
         /// <summary>
-        /// 初始化类 <see cref="InstallerProviderFactoryResolver"/> 类的新实例。
+        /// 初始化类 <see cref="InstalledProviderFactoryResolver"/> 类的新实例。
         /// </summary>
         /// <param name="providerName">固定的驱动名称。</param>
-        public InstallerProviderFactoryResolver(string providerName)
+        public InstalledProviderFactoryResolver(string providerName)
         {
             _providerName = providerName;
         }

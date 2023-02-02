@@ -21,7 +21,7 @@ namespace Fireasy.Data
         /// <param name="connectionString">数据库连接字符串。</param>
         /// <param name="dbTransaction">数据库事务实例。</param>
         public DbTransactionScope(ConnectionString? connectionString, DbTransaction dbTransaction)
-            : base (false)
+            : base(false)
         {
             ConnectionString = connectionString;
             DbTransaction = dbTransaction;

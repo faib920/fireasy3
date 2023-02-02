@@ -69,6 +69,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fireasy.Tests.Base", "tests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fireasy.Data.Tests", "tests\Fireasy.Data.Tests\Fireasy.Data.Tests.csproj", "{9F8CDCD2-B15A-4EA5-94F6-585225875F44}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fireasy.Data.OleDb", "libraries\Fireasy.Data.OleDb\Fireasy.Data.OleDb.csproj", "{EAA313FA-D43A-4B5D-B71E-9229BAA54518}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -162,6 +164,10 @@ Global
 		{9F8CDCD2-B15A-4EA5-94F6-585225875F44}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F8CDCD2-B15A-4EA5-94F6-585225875F44}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F8CDCD2-B15A-4EA5-94F6-585225875F44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EAA313FA-D43A-4B5D-B71E-9229BAA54518}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EAA313FA-D43A-4B5D-B71E-9229BAA54518}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EAA313FA-D43A-4B5D-B71E-9229BAA54518}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EAA313FA-D43A-4B5D-B71E-9229BAA54518}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -198,6 +204,7 @@ Global
 		{C435747A-9512-4D2C-818E-52C995804689} = {2AE709CC-12C5-4B25-9006-2453CA8E572F}
 		{1C4654F4-7508-436C-892E-0196A632C163} = {2AE709CC-12C5-4B25-9006-2453CA8E572F}
 		{9F8CDCD2-B15A-4EA5-94F6-585225875F44} = {2AE709CC-12C5-4B25-9006-2453CA8E572F}
+		{EAA313FA-D43A-4B5D-B71E-9229BAA54518} = {65C5FBD5-3AE9-443E-ABCB-02FAAD788B52}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {66A18F4B-7001-4004-A6E3-2A16BCD54E2F}

@@ -7,5 +7,7 @@
         protected override string ConnectionString => Constants.SqlServer_ConnectionString;
 
         protected override string InstanceName => Constants.SqlServer_InstanceName;
+
+        protected override string ProviderName => "SqlServer";
     }
 }

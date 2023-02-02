@@ -7,7 +7,6 @@
 // -----------------------------------------------------------------------
 
 using Fireasy.Data.Provider;
-using System.Collections.Generic;
 using System.Data.Common;
 
 namespace Fireasy.Data
@@ -47,7 +46,7 @@ namespace Fireasy.Data
         /// <typeparam name="TProvider"></typeparam>
         /// <typeparam name="TFactory"><see cref="DbProviderFactory"/> 的实现类。</typeparam>
         /// <returns></returns>
-        public DataSetupBuildOptions AddProivderFactory<TProvider, TFactory>() 
+        public DataSetupBuildOptions AddProivderFactory<TProvider, TFactory>()
             where TProvider : IProvider
             where TFactory : DbProviderFactory
         {

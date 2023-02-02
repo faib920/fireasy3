@@ -6,8 +6,6 @@
 // </copyright>
 // -----------------------------------------------------------------------
 using Fireasy.Data.RecordWrapper;
-using System;
-using System.Data;
 
 namespace Fireasy.Data
 {

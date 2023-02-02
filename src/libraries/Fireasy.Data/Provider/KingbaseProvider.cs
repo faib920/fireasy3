@@ -5,9 +5,7 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace Fireasy.Data.Provider
 {

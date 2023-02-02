@@ -5,12 +5,8 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-
-using Fireasy.Common;
 using Fireasy.Data.Provider;
 using Fireasy.Data.Syntax;
-using System;
-using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;

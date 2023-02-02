@@ -7,5 +7,7 @@
         protected override string ConnectionString => Constants.Firebird_ConnectionString;
 
         protected override string InstanceName => Constants.Firebird_InstanceName;
+
+        protected override string ProviderName => "Firebird";
     }
 }

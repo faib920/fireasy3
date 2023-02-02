@@ -5,7 +5,6 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-
 using Fireasy.Data.Batcher;
 using Fireasy.Data.Identity;
 using Fireasy.Data.RecordWrapper;
@@ -13,7 +12,6 @@ using Fireasy.Data.Schema;
 using Fireasy.Data.Syntax;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using System;
 
 namespace Fireasy.Data.Provider
 {
@@ -30,7 +28,7 @@ namespace Fireasy.Data.Provider
             : base(serviceProvider,
                   new InjectedProviderFactoryResolver<MySqlProvider>(serviceProvider),
                   new AssemblyProviderFactoryResolver(
-                "MySql.Data.MySqlClient.MySqlClientFactory, MySql.Data", 
+                "MySql.Data.MySqlClient.MySqlClientFactory, MySql.Data",
                 "MySqlConnector.MySqlConnectorFactory, MySqlConnector"))
         {
         }

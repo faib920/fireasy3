@@ -5,8 +5,6 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using System;
-using System.Data;
 using System.Text;
 
 namespace Fireasy.Data.Syntax
@@ -55,7 +53,7 @@ namespace Fireasy.Data.Syntax
         /// <summary>
         /// 获取伪查询的表名称。
         /// </summary>
-        public string FakeSelect => " FROM DUAL";
+        public string FakeTable => " FROM DUAL";
 
         /// <summary>
         /// 获取存储参数的前缀。
@@ -109,11 +107,11 @@ namespace Fireasy.Data.Syntax
         {
             //** rownnum <= n 放在内层能够提高10倍的速度!
             return @$"
-                SELECT TValue.* FROM
+                SELECT T.* FROM
                 (
-                    SELECT TValue.*, ROWNUM ROW_NUM
-                    FROM ({commandText}) TValue {(segment.End != null ? $"WHERE ROWNUM <= {segment.End}" : string.Empty)}
-                ) TValue {(segment.Start != null ? $"WHERE ROW_NUM >= {segment.Start}" : string.Empty)}";
+                    SELECT T.*, ROWNUM ROW_NUM
+                    FROM ({commandText}) T {(segment.End != null ? $"WHERE ROWNUM <= {segment.End}" : string.Empty)}
+                ) T {(segment.Start != null ? $"WHERE ROW_NUM >= {segment.Start}" : string.Empty)}";
         }
 
         /// <summary>

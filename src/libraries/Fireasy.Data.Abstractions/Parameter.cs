@@ -5,8 +5,6 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using System;
-using System.Data;
 using System.Diagnostics;
 
 namespace Fireasy.Data
@@ -45,7 +43,7 @@ namespace Fireasy.Data
         /// <param name="parameterName">参数名。</param>
         /// <param name="value">参数值。</param>
         public Parameter(string parameterName, object value)
-            : this ()
+            : this()
         {
             ParameterName = parameterName;
             Value = value;

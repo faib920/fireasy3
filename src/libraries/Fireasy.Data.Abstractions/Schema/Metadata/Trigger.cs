@@ -1,6 +1,4 @@
-﻿
-using System;
-namespace Fireasy.Data.Schema
+﻿namespace Fireasy.Data.Schema
 {
     /// <summary>
     /// 触发器信息。

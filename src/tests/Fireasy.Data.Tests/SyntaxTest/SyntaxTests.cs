@@ -30,7 +30,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
             }
             else
             {
-                throw new SyntaxNotSupportedException("NewGuid");
+                throw new SyntaxNotSupportedException("IdentityValue");
             }
         }
 
@@ -60,7 +60,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         }
 
         /// <summary>
-        /// 测试 FakeSelect
+        /// 测试 FakeTable
         /// </summary>
         /// <returns></returns>
         [TestMethod]
@@ -71,7 +71,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
             using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
-            var sql = $"select 120{syntax!.FakeSelect}";
+            var sql = $"select 120{syntax!.FakeTable}";
 
             var ret = await database.ExecuteScalarAsync<int>(sql);
             Assert.AreEqual(120, ret);
@@ -95,7 +95,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         }
 
         /// <summary>
-        /// 测试 Segment
+        /// 测试 Coalesce
         /// </summary>
         /// <returns></returns>
         [TestMethod]
@@ -292,7 +292,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
             using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
-            var sql = $"select {syntax!.Convert("'34.6'", DbType.Decimal)}{syntax.FakeSelect}";
+            var sql = $"select {syntax!.Convert("'34.6'", DbType.Decimal)}{syntax.FakeTable}";
 
             var ret = await database.ExecuteScalarAsync<decimal>(sql);
 
@@ -957,7 +957,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
             using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
-            var sql = $"select {syntax!.Math.Random()}{syntax.FakeSelect}";
+            var sql = $"select {syntax!.Math.Random()}{syntax.FakeTable}";
 
             var ret = await database.ExecuteScalarAsync<decimal>(sql);
 
@@ -1014,7 +1014,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
             using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
-            var sql = $"select {syntax!.DateTime.Now()}{syntax.FakeSelect}";
+            var sql = $"select {syntax!.DateTime.Now()}{syntax.FakeTable}";
 
             var ret = await database.ExecuteScalarAsync<DateTime>(sql);
 
@@ -1033,7 +1033,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
             using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
-            var sql = $"select {syntax!.DateTime.UtcNow()}{syntax.FakeSelect}";
+            var sql = $"select {syntax!.DateTime.UtcNow()}{syntax.FakeTable}";
 
             var ret = await database.ExecuteScalarAsync<DateTime>(sql);
 
@@ -1052,7 +1052,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
             using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
-            var sql = $"select {syntax!.DateTime.New(2023, 1, 1)}{syntax.FakeSelect}";
+            var sql = $"select {syntax!.DateTime.New(2023, 1, 1)}{syntax.FakeTable}";
 
             var ret = await database.ExecuteScalarAsync<DateTime>(sql);
 
@@ -1071,7 +1071,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
             using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
-            var sql = $"select {syntax!.DateTime.New(2023, 1, 1, 12, 20, 33)}{syntax.FakeSelect}";
+            var sql = $"select {syntax!.DateTime.New(2023, 1, 1, 12, 20, 33)}{syntax.FakeTable}";
 
             var ret = await database.ExecuteScalarAsync<DateTime>(sql);
 
@@ -1204,7 +1204,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
             using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
-            var sql = $"select {syntax!.DateTime.Hour(syntax.DateTime.Now())}{syntax.FakeSelect}";
+            var sql = $"select {syntax!.DateTime.Hour(syntax.DateTime.Now())}{syntax.FakeTable}";
 
             var ret = await database.ExecuteScalarAsync<int>(sql);
 
@@ -1223,7 +1223,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
             using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
-            var sql = $"select {syntax!.DateTime.Minute(syntax.DateTime.Now())}{syntax.FakeSelect}";
+            var sql = $"select {syntax!.DateTime.Minute(syntax.DateTime.Now())}{syntax.FakeTable}";
 
             var ret = await database.ExecuteScalarAsync<int>(sql);
 
@@ -1242,7 +1242,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
             using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
-            var sql = $"select {syntax!.DateTime.Second("'2023-01-01 12:22:45'")}{syntax.FakeSelect}";
+            var sql = $"select {syntax!.DateTime.Second("'2023-01-01 12:22:45'")}{syntax.FakeTable}";
 
             var ret = await database.ExecuteScalarAsync<int>(sql);
 
@@ -1261,7 +1261,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
             using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
-            var sql = $"select {syntax!.DateTime.Millisecond(syntax.DateTime.Now())}{syntax.FakeSelect}";
+            var sql = $"select {syntax!.DateTime.Millisecond(syntax.DateTime.Now())}{syntax.FakeTable}";
 
             var ret = await database.ExecuteScalarAsync<int>(sql);
 
@@ -1432,7 +1432,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
             using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
-            var sql = $"select {syntax!.DateTime.DiffMinutes("'2023-01-01 14:20:44'", "'2023-01-01 14:21:44'")}{syntax.FakeSelect}";
+            var sql = $"select {syntax!.DateTime.DiffMinutes("'2023-01-01 14:20:44'", "'2023-01-01 14:21:44'")}{syntax.FakeTable}";
 
             var ret = await database.ExecuteScalarAsync<int>(sql);
 
@@ -1451,7 +1451,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
             using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
-            var sql = $"select {syntax!.DateTime.DiffSeconds("'2023-01-01 14:20:44'", "'2023-01-01 14:21:44'")}{syntax.FakeSelect}";
+            var sql = $"select {syntax!.DateTime.DiffSeconds("'2023-01-01 14:20:44'", "'2023-01-01 14:21:44'")}{syntax.FakeTable}";
 
             var ret = await database.ExecuteScalarAsync<int>(sql);
 
