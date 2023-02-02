@@ -7,6 +7,7 @@
 // -----------------------------------------------------------------------
 
 using Fireasy.Common.Collections;
+using Fireasy.Common.DependencyInjection;
 using Fireasy.Common.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using System.Data.Common;
@@ -29,6 +30,7 @@ namespace Fireasy.Data.Provider
         /// <param name="resolvers"></param>
         protected ProviderBase(IServiceProvider serviceProvider, params IProviderFactoryResolver[] resolvers)
         {
+            ServiceProvider = serviceProvider;
             _resolvers = resolvers;
         }
 
@@ -81,7 +83,7 @@ namespace Fireasy.Data.Provider
         /// </summary>
         /// <param name="services"></param>
         /// <returns></returns>
-        public abstract IServiceCollection RegisterServices(IServiceCollection services);
+        public virtual IServiceCollection RegisterServices(IServiceCollection services) => AddFromCustomizer(services);
 
         /// <summary>
         /// 获取服务。
@@ -155,6 +157,25 @@ namespace Fireasy.Data.Provider
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// 从 <see cref="ProviderCustomizer"/> 中注册 <see cref="IProviderService"/> 插件服务。
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
+        protected IServiceCollection AddFromCustomizer(IServiceCollection services)
+        {
+            var accessor = ServiceProvider.GetService<IObjectAccessor<ProviderCustomizer>>();
+            if (accessor != null && accessor.Value is ProviderCustomizer customizer)
+            {
+                foreach (var map in customizer.GetProviderServiceMappers(this.GetType()))
+                {
+                    services.AddSingleton(map.DefinedType, map.ServiceType);
+                }
+            }
+
+            return services;
         }
     }
 }

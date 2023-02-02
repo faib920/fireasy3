@@ -74,6 +74,7 @@ namespace Fireasy.Data.Provider
         /// <returns></returns>
         public override IServiceCollection RegisterServices(IServiceCollection services)
         {
+            services = base.RegisterServices(services);
             services.TryAddSingleton<IGeneratorProvider, BaseSequenceGenerator>();
             services.TryAddSingleton<ISyntaxProvider, SqlServerSyntax>();
             services.TryAddSingleton<ISchemaProvider, SqlServerSchema>();

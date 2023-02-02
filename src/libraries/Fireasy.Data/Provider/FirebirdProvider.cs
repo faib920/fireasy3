@@ -70,6 +70,7 @@ namespace Fireasy.Data.Provider
         /// <param name="services"></param>
         public override IServiceCollection RegisterServices(IServiceCollection services)
         {
+            services = base.RegisterServices(services);
             services.TryAddSingleton<IGeneratorProvider, BaseSequenceGenerator>();
             services.AddSingleton<ISyntaxProvider, FirebirdSyntax>();
             services.AddSingleton<ISchemaProvider, FirebirdSchema>();

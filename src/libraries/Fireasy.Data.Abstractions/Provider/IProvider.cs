@@ -53,7 +53,7 @@ namespace Fireasy.Data.Provider
         /// </summary>
         /// <typeparam name="TService"></typeparam>
         /// <returns></returns>
-        TService GetService<TService>() where TService : IProviderService;
+        TService? GetService<TService>() where TService : IProviderService;
 
         /// <summary>
         /// 处理 <see cref="DbConnection"/> 对象。

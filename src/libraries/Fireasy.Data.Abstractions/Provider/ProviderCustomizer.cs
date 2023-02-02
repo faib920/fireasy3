@@ -18,6 +18,7 @@ namespace Fireasy.Data.Provider
     {
         private readonly Dictionary<Type, DbProviderFactory?> _providerFactoryMappers = new();
         private readonly Dictionary<string, Type> _providerMappers = new();
+        private readonly Dictionary<Type, List<(Type DefinedType, Type ServiceType)>> _providerServiceTypes = new();
 
         /// <summary>
         /// 添加数据库提供者。
@@ -100,7 +101,7 @@ namespace Fireasy.Data.Provider
         /// <summary>
         /// 获取指定 <see cref="IProvider"/> 的 <see cref="DbProviderFactory"/> 实例。
         /// </summary>
-        /// <param name="providerType"></param>
+        /// <param name="providerType">数据库提供者类型。</param>
         /// <returns></returns>
         public DbProviderFactory? GetDbProviderFactory(Type providerType)
         {
@@ -110,6 +111,59 @@ namespace Fireasy.Data.Provider
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// 为数据库提供者添加插件服务。
+        /// </summary>
+        /// <typeparam name="TProvider">数据库提供者类型。</typeparam>
+        /// <typeparam name="TService">插件服务类型。</typeparam>
+        /// <returns></returns>
+        public void AddProivderService<TProvider, TService>()
+            where TProvider : IProvider
+            where TService : IProviderService
+        {
+            var providerType = typeof(TProvider);
+            var serviceType = typeof(TService);
+
+            //从插件服务中查找实现 IProviderService 的接口
+            var definedType = serviceType.GetInterfaces().FirstOrDefault(s => s != typeof(IProviderService) && typeof(IProviderService).IsAssignableFrom(s));
+            if (definedType == null)
+            {
+                return;
+            }
+
+            if (!_providerServiceTypes.TryGetValue(providerType, out var mappers))
+            {
+                mappers = new();
+                _providerServiceTypes.Add(providerType, mappers);
+            }
+
+            var map = mappers.FirstOrDefault(s => s.DefinedType == definedType);
+            if (map.ServiceType == null)
+            {
+                mappers.Add((definedType, serviceType));
+            }
+            else
+            {
+                map.ServiceType = serviceType;
+            }
+        }
+
+        /// <summary>
+        /// 获取指定 <see cref="IProvider"/> 所有指定的 <see cref="IProviderService"/> 映射。
+        /// </summary>
+        /// <param name="providerType">数据库提供者类型。</param>
+        /// <returns></returns>
+        public IEnumerable<(Type DefinedType, Type ServiceType)> GetProviderServiceMappers(Type providerType)
+        {
+            if (_providerServiceTypes.TryGetValue(providerType, out var mappers))
+            {
+                foreach (var map in mappers)
+                {
+                    yield return map;
+                }
+            }
         }
     }
 }

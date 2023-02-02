@@ -71,6 +71,7 @@ namespace Fireasy.Data.Provider
         /// <param name="services"></param>
         public override IServiceCollection RegisterServices(IServiceCollection services)
         {
+            services = base.RegisterServices(services);
             services.TryAddSingleton<IGeneratorProvider, BaseSequenceGenerator>();
             services.TryAddSingleton<ISyntaxProvider, PostgreSqlSyntax>();
             services.TryAddSingleton<ISchemaProvider, PostgreSqlSchema>();

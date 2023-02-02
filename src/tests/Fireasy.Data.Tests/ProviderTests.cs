@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Fireasy.Data.Syntax;
+using Fireasy.Data.Syntax.SqlServer;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Fireasy.Data.Tests
 {
@@ -20,7 +22,8 @@ namespace Fireasy.Data.Tests
             builder.ConfigureData(s => s.AddProivderFactory<SqlServerProvider>(System.Data.SqlClient.SqlClientFactory.Instance));
 
             //用于替换数据库提供者
-            builder.ConfigureData(s => s.AddProvider<TestProvider>("MySql"));
+            //sqlserver使用2012以下版本的语法
+            builder.ConfigureData(s => s.AddProvider<TestProvider>("MySql").AddProivderService<SqlServerProvider, SqlServerSyntaxLessThan2012>());
         }
 
         /// <summary>
@@ -101,6 +104,29 @@ namespace Fireasy.Data.Tests
 
             //自定义provider
             Assert.IsInstanceOfType(database.Provider, typeof(TestProvider));
+        }
+
+        /// <summary>
+        /// 测试自定义提供者插件服务
+        /// </summary>
+        [TestMethod]
+        public async Task TestCustomizedProviderService()
+        {
+            var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
+
+            using var database = factory.CreateDatabase<SqlServerProvider>(Constants.SqlServer_ConnectionString);
+            Assert.IsNotNull(database);
+
+            var syntax = database.Provider.GetService<ISyntaxProvider>();
+
+            //切换使用2012以下版本的语法
+            Assert.IsInstanceOfType(syntax, typeof(SqlServerSyntaxLessThan2012));
+
+            //分页语法变为 ROW_NUMBER() OVER
+            var pager = new DataPager(10, 0);
+            var list = await database.ExecuteEnumerableAsync("select * from customers", pager);
+
+            Assert.AreEqual(10, list.Count());
         }
     }
 }
