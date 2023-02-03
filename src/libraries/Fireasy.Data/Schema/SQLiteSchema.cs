@@ -30,7 +30,13 @@ namespace Fireasy.Data.Schema
             AddRestriction<Index>(s => s.TableName, s => s.Name);
             AddRestriction<IndexColumn>(s => s.TableName, s => s.IndexName, s => s.ColumnName);
             AddRestriction<ForeignKey>(s => s.TableName, s => s.Name);
+        }
 
+        /// <summary>
+        /// 添加数据类型映射。
+        /// </summary>
+        protected override void AddDataTypeMappers()
+        {
             AddDataType("bit", DbType.Boolean, typeof(bool));
             AddDataType("yesno", DbType.Boolean, typeof(bool));
             AddDataType("logical", DbType.Boolean, typeof(bool));

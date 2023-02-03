@@ -260,6 +260,38 @@ namespace Fireasy.Data.Tests.SchemaTest
         }
 
         /// <summary>
+        /// 测试获取 Column
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task TestGetAllDataTypesAsync()
+        {
+            var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
+
+            using var database = factory.CreateDatabase<T>(ConnectionString);
+            var syntax = database.GetService<ISyntaxProvider>();
+            var schema = database.GetService<ISchemaProvider>();
+
+            var columns = await schema!.GetSchemasAsync<Data.Schema.Column>(database, s => s.TableName == syntax!.ToggleCase("all_datatypes")).ToListAsync();
+
+            foreach (var item in columns)
+            {
+                Console.WriteLine($"{item.TableName}.{item.Name},pk:{item.IsPrimaryKey},datatype:{item.DataType},dbtype:{item.DbType},clrtype:{item.ClrType}");
+            }
+
+            using var reader = await database.ExecuteReaderAsync("select * from all_datatypes");
+            while (reader.Read())
+            {
+                for (var i = 0; i < reader.FieldCount; i++) 
+                {
+                    Assert.AreEqual(reader.GetFieldType(i), columns[i].ClrType, columns[i].DataType);
+                }
+            }
+
+            Assert.IsTrue(columns.Any());
+        }
+
+        /// <summary>
         /// 测试获取 ForeignKey
         /// </summary>
         /// <returns></returns>

@@ -26,35 +26,62 @@ namespace Fireasy.Data.Schema
             AddRestriction<Index>(s => s.TableName, s => s.Name);
             AddRestriction<IndexColumn>(s => s.TableName, s => s.IndexName, s => s.ColumnName);
             AddRestriction<ForeignKey>(s => s.TableName, s => s.Name);
+        }
 
+        /// <summary>
+        /// 添加数据类型映射。
+        /// </summary>
+        protected override void AddDataTypeMappers()
+        {
             AddDataType("bit", DbType.Boolean, typeof(bool));
             AddDataType("int", DbType.Int32, typeof(int));
             AddDataType("integer", DbType.Int32, typeof(int));
             AddDataType("smallint", DbType.Int16, typeof(short));
             AddDataType("bigint", DbType.Int64, typeof(long));
-            AddDataType("byte", DbType.Byte, typeof(byte));
-            AddDataType("tinyint", DbType.Byte, typeof(byte));
-            AddDataType("float", DbType.Single, typeof(float));
+            AddDataType("byte", DbType.SByte, typeof(sbyte));
+            AddDataType("tinyint", DbType.SByte, typeof(sbyte));
+            AddDataType("float", DbType.Double, typeof(double));
+            AddDataType("double", DbType.Double, typeof(double));
+            AddDataType("double precision", DbType.Double, typeof(double));
             AddDataType("number", DbType.Decimal, typeof(decimal));
+            AddDataType("numeric", DbType.Decimal, typeof(decimal));
             AddDataType("decimal", DbType.Decimal, typeof(decimal));
             AddDataType("dec", DbType.Decimal, typeof(decimal));
-            AddDataType("bfile", DbType.Binary, typeof(byte[]));
+            AddDataType("real", DbType.Single, typeof(float));
+            AddDataType("bfile", DbType.String, typeof(string));
             AddDataType("blob", DbType.Binary, typeof(byte[]));
             AddDataType("binary", DbType.Binary, typeof(byte[]));
+            AddDataType("varbinary", DbType.Binary, typeof(byte[]));
+            AddDataType("longvarbinary", DbType.Binary, typeof(byte[]));
             AddDataType("image", DbType.Binary, typeof(byte[]));
             AddDataType("char", DbType.String, typeof(string));
             AddDataType("character", DbType.String, typeof(string));
+            AddDataType("longvarchar", DbType.String, typeof(string));
             AddDataType("varchar", DbType.String, typeof(string));
             AddDataType("varchar2", DbType.String, typeof(string));
+            AddDataType("text", DbType.String, typeof(string));
             AddDataType("clob", DbType.String, typeof(string));
-            AddDataType("timestamp with time zone", DbType.DateTime, typeof(DateTime));
+            AddDataType("timestamp with time zone", DbType.Object, typeof(object));
             AddDataType("timestamp with local time zone", DbType.DateTime, typeof(DateTime));
             AddDataType("timestamp", DbType.DateTime, typeof(DateTime));
             AddDataType("date", DbType.DateTime, typeof(DateTime));
             AddDataType("time", DbType.DateTime, typeof(DateTime));
-            AddDataType("time with time zone", DbType.DateTime, typeof(DateTime));
+            AddDataType("time with time zone", DbType.Object, typeof(object));
             AddDataType("datetime", DbType.DateTime, typeof(DateTime));
-            AddDataType("interval day to second", DbType.Int64, typeof(TimeSpan));
+            AddDataType("datetime with time zone", DbType.Object, typeof(object));
+            AddDataType("interval year", DbType.Object, typeof(object));
+            AddDataType("interval year to month", DbType.Object, typeof(object));
+            AddDataType("interval month", DbType.Object, typeof(object));
+            AddDataType("interval day", DbType.Object, typeof(object));
+            AddDataType("interval day to hour", DbType.Object, typeof(object));
+            AddDataType("interval day to minute", DbType.Object, typeof(object));
+            AddDataType("interval day to second", DbType.Object, typeof(object));
+            AddDataType("interval hour", DbType.Object, typeof(object));
+            AddDataType("interval hour to minute", DbType.Object, typeof(object));
+            AddDataType("interval hour to second", DbType.Object, typeof(object));
+            AddDataType("interval minute", DbType.Object, typeof(object));
+            AddDataType("interval minute to second", DbType.Object, typeof(object));
+            AddDataType("interval second", DbType.Object, typeof(object));
         }
 
         /// <summary>
@@ -174,7 +201,7 @@ LEFT JOIN SYSCOLUMNS D ON D.NAME = T.COLUMN_NAME AND D.ID = O.ID AND D.INFO2 & 1
                 .Parameterize(parameters, "TABLENAME", nameof(Column.TableName))
                 .Parameterize(parameters, "COLUMNNAME", nameof(Column.Name));
 
-            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetColumnType(new Column
+            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetDataType(SetColumnType(new Column
             {
                 Schema = wrapper!.GetString(reader, 0),
                 TableName = wrapper.GetString(reader, 1),
@@ -188,7 +215,7 @@ LEFT JOIN SYSCOLUMNS D ON D.NAME = T.COLUMN_NAME AND D.ID = O.ID AND D.INFO2 & 1
                 Autoincrement = wrapper.GetString(reader, 9) == "Y",
                 //Default = wrapper.GetString(reader, 9),
                 Description = wrapper.GetString(reader, 10),
-            }));
+            })));
         }
     }
 }

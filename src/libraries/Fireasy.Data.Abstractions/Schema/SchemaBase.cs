@@ -26,6 +26,19 @@ namespace Fireasy.Data.Schema
         /// <summary>
         /// 
         /// </summary>
+        public SchemaBase()
+        {
+            AddDataTypeMappers();
+        }
+
+        /// <summary>
+        /// 添加数据类型映射。
+        /// </summary>
+        protected abstract void AddDataTypeMappers();
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="database"></param>
         /// <returns></returns>
         protected ConnectionParameter GetConnectionParameter(IDatabase database)
@@ -139,7 +152,16 @@ namespace Fireasy.Data.Schema
         /// <param name="systemType"></param>
         protected void AddDataType(string name, DbType dbType, Type systemType)
         {
-            _dataTypes.Add(new DataType { Name = name, DbType = dbType, SystemType = systemType });
+            var map = _dataTypes.FirstOrDefault(s => s.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            if (map != null)
+            {
+                map.DbType = dbType;
+                map.SystemType = systemType;
+            }
+            else
+            {
+                _dataTypes.Add(new DataType { Name = name, DbType = dbType, SystemType = systemType });
+            }
         }
 
         /// <summary>
@@ -342,7 +364,7 @@ namespace Fireasy.Data.Schema
         }
 
         /// <summary>
-        /// 
+        /// 设置数据类型。
         /// </summary>
         /// <param name="column"></param>
         /// <returns></returns>
@@ -363,6 +385,23 @@ namespace Fireasy.Data.Schema
             else
             {
                 column.ColumnType = column.DataType;
+            }
+
+            return column;
+        }
+
+        /// <summary>
+        /// 设置数据类型。
+        /// </summary>
+        /// <param name="column"></param>
+        /// <returns></returns>
+        protected Column SetDataType(Column column)
+        {
+            var map = _dataTypes.FirstOrDefault(s => s.Name.Equals(column.DataType, StringComparison.OrdinalIgnoreCase));
+            if (map != null)
+            {
+                column.DbType = map.DbType;
+                column.ClrType = map.SystemType;
             }
 
             return column;

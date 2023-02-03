@@ -87,5 +87,15 @@ namespace Fireasy.Data.Schema
         /// 获取或设置列类型。
         /// </summary>
         public string ColumnType { get; set; }
+
+        /// <summary>
+        /// 获取或设置对应的 <see cref="DbType"/> 类型。
+        /// </summary>
+        public DbType? DbType { get; set; }
+
+        /// <summary>
+        /// 获取或设置运行库类型。
+        /// </summary>
+        public Type? ClrType { get; set; }
     }
 }

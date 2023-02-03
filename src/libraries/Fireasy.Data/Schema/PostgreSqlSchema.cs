@@ -21,7 +21,13 @@ namespace Fireasy.Data.Schema
             AddRestriction<ForeignKey>(s => s.TableName, s => s.Name);
             AddRestriction<View>(s => s.Name);
             AddRestriction<ViewColumn>(s => s.ViewName, s => s.Name);
+        }
 
+        /// <summary>
+        /// 添加数据类型映射。
+        /// </summary>
+        protected override void AddDataTypeMappers()
+        {
             AddDataType("bit", DbType.Byte, typeof(byte));
             AddDataType("varbit", DbType.Byte, typeof(byte));
             AddDataType("bool", DbType.Boolean, typeof(bool));

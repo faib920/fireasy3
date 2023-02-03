@@ -26,7 +26,13 @@ namespace Fireasy.Data.Schema
             AddRestriction<Index>(s => s.TableName, s => s.Name);
             AddRestriction<IndexColumn>(s => s.TableName, s => s.IndexName, s => s.ColumnName);
             AddRestriction<ForeignKey>(s => s.TableName, s => s.Name);
+        }
 
+        /// <summary>
+        /// 添加数据类型映射。
+        /// </summary>
+        protected override void AddDataTypeMappers()
+        {
             AddDataType("long", DbType.Int64, typeof(long));
             AddDataType("interval year to month", DbType.Int64, typeof(long));
             AddDataType("float", DbType.Single, typeof(float));
