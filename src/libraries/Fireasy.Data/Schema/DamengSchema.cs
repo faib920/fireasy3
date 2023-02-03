@@ -41,6 +41,7 @@ namespace Fireasy.Data.Schema
             AddDataType("bfile", DbType.Binary, typeof(byte[]));
             AddDataType("blob", DbType.Binary, typeof(byte[]));
             AddDataType("binary", DbType.Binary, typeof(byte[]));
+            AddDataType("image", DbType.Binary, typeof(byte[]));
             AddDataType("char", DbType.String, typeof(string));
             AddDataType("character", DbType.String, typeof(string));
             AddDataType("varchar", DbType.String, typeof(string));
