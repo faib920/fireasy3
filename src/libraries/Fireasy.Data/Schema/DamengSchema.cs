@@ -35,28 +35,24 @@ namespace Fireasy.Data.Schema
             AddDataType("byte", DbType.Byte, typeof(byte));
             AddDataType("tinyint", DbType.Byte, typeof(byte));
             AddDataType("float", DbType.Single, typeof(float));
-            AddDataType("binary_float", DbType.Single, typeof(float));
-            AddDataType("binary_double", DbType.Double, typeof(double));
             AddDataType("number", DbType.Decimal, typeof(decimal));
             AddDataType("decimal", DbType.Decimal, typeof(decimal));
             AddDataType("dec", DbType.Decimal, typeof(decimal));
             AddDataType("bfile", DbType.Binary, typeof(byte[]));
             AddDataType("blob", DbType.Binary, typeof(byte[]));
-            AddDataType("raw", DbType.Binary, typeof(byte[]));
-            AddDataType("long raw", DbType.Binary, typeof(byte[]));
+            AddDataType("binary", DbType.Binary, typeof(byte[]));
             AddDataType("char", DbType.String, typeof(string));
             AddDataType("character", DbType.String, typeof(string));
-            AddDataType("nchar", DbType.String, typeof(string));
+            AddDataType("varchar", DbType.String, typeof(string));
             AddDataType("varchar2", DbType.String, typeof(string));
-            AddDataType("nvarchar2", DbType.String, typeof(string));
             AddDataType("clob", DbType.String, typeof(string));
-            AddDataType("nclob", DbType.String, typeof(string));
-            AddDataType("xmltype", DbType.String, typeof(string));
-            AddDataType("rowid", DbType.String, typeof(string));
-            AddDataType("date", DbType.Date, typeof(DateTime));
             AddDataType("timestamp with time zone", DbType.DateTime, typeof(DateTime));
             AddDataType("timestamp with local time zone", DbType.DateTime, typeof(DateTime));
             AddDataType("timestamp", DbType.DateTime, typeof(DateTime));
+            AddDataType("date", DbType.DateTime, typeof(DateTime));
+            AddDataType("time", DbType.DateTime, typeof(DateTime));
+            AddDataType("time with time zone", DbType.DateTime, typeof(DateTime));
+            AddDataType("datetime", DbType.DateTime, typeof(DateTime));
             AddDataType("interval day to second", DbType.Int64, typeof(TimeSpan));
         }
 
