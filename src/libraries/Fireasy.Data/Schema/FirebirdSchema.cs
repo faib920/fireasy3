@@ -36,20 +36,19 @@ namespace Fireasy.Data.Schema
         /// </summary>
         protected override void InitializeDataTypes()
         {
-            AddDataType("boolean", DbType.Boolean, typeof(bool));
-            AddDataType("smallint", DbType.Int16, typeof(short));
-            AddDataType("integer", DbType.Int32, typeof(int));
             AddDataType("bigint", DbType.Int64, typeof(long));
-            AddDataType("float", DbType.Single, typeof(float));
-            AddDataType("numeric", DbType.Decimal, typeof(decimal));
-            AddDataType("decimal", DbType.Decimal, typeof(decimal));
-            AddDataType("double precision", DbType.Double, typeof(double));
             AddDataType("blob", DbType.Binary, typeof(byte[]));
             AddDataType("char", DbType.String, typeof(string));
-            AddDataType("varchar", DbType.String, typeof(string));
-            AddDataType("timestamp", DbType.DateTime, typeof(DateTime));
             AddDataType("date", DbType.Date, typeof(DateTime));
+            AddDataType("decimal", DbType.Decimal, typeof(decimal));
+            AddDataType("double precision", DbType.Double, typeof(double));
+            AddDataType("float", DbType.Single, typeof(float));
+            AddDataType("integer", DbType.Int32, typeof(int));
+            AddDataType("numeric", DbType.Decimal, typeof(decimal));
+            AddDataType("smallint", DbType.Int16, typeof(short));
             AddDataType("time", DbType.Int64, typeof(TimeSpan));
+            AddDataType("timestamp", DbType.DateTime, typeof(DateTime));
+            AddDataType("varchar", DbType.String, typeof(string));
         }
 
         /// <summary>
