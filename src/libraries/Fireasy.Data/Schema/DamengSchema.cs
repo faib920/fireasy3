@@ -13,7 +13,10 @@ namespace Fireasy.Data.Schema
     /// </summary>
     public sealed class DamengSchema : SchemaBase
     {
-        public DamengSchema()
+        /// <summary>
+        /// 初始化约定查询限制。
+        /// </summary>
+        protected override void InitializeRestrictions()
         {
             AddRestriction<Database>(s => s.Name);
             AddRestriction<Table>(s => s.Name);
@@ -29,46 +32,30 @@ namespace Fireasy.Data.Schema
         }
 
         /// <summary>
-        /// 添加数据类型映射。
+        /// 初始化数据类型映射。
         /// </summary>
-        protected override void AddDataTypeMappers()
+        protected override void InitializeDataTypes()
         {
             AddDataType("bit", DbType.Boolean, typeof(bool));
-            AddDataType("int", DbType.Int32, typeof(int));
-            AddDataType("integer", DbType.Int32, typeof(int));
-            AddDataType("smallint", DbType.Int16, typeof(short));
             AddDataType("bigint", DbType.Int64, typeof(long));
             AddDataType("byte", DbType.SByte, typeof(sbyte));
-            AddDataType("tinyint", DbType.SByte, typeof(sbyte));
-            AddDataType("float", DbType.Double, typeof(double));
-            AddDataType("double", DbType.Double, typeof(double));
-            AddDataType("double precision", DbType.Double, typeof(double));
-            AddDataType("number", DbType.Decimal, typeof(decimal));
-            AddDataType("numeric", DbType.Decimal, typeof(decimal));
-            AddDataType("decimal", DbType.Decimal, typeof(decimal));
-            AddDataType("dec", DbType.Decimal, typeof(decimal));
-            AddDataType("real", DbType.Single, typeof(float));
-            AddDataType("bfile", DbType.String, typeof(string));
-            AddDataType("blob", DbType.Binary, typeof(byte[]));
             AddDataType("binary", DbType.Binary, typeof(byte[]));
-            AddDataType("varbinary", DbType.Binary, typeof(byte[]));
-            AddDataType("longvarbinary", DbType.Binary, typeof(byte[]));
-            AddDataType("image", DbType.Binary, typeof(byte[]));
+            AddDataType("blob", DbType.Binary, typeof(byte[]));
+            AddDataType("bfile", DbType.String, typeof(string));
             AddDataType("char", DbType.String, typeof(string));
             AddDataType("character", DbType.String, typeof(string));
-            AddDataType("longvarchar", DbType.String, typeof(string));
-            AddDataType("varchar", DbType.String, typeof(string));
-            AddDataType("varchar2", DbType.String, typeof(string));
-            AddDataType("text", DbType.String, typeof(string));
             AddDataType("clob", DbType.String, typeof(string));
-            AddDataType("timestamp with time zone", DbType.Object, typeof(object));
-            AddDataType("timestamp with local time zone", DbType.DateTime, typeof(DateTime));
-            AddDataType("timestamp", DbType.DateTime, typeof(DateTime));
+            AddDataType("decimal", DbType.Decimal, typeof(decimal));
+            AddDataType("dec", DbType.Decimal, typeof(decimal));
+            AddDataType("double", DbType.Double, typeof(double));
+            AddDataType("double precision", DbType.Double, typeof(double));
             AddDataType("date", DbType.DateTime, typeof(DateTime));
-            AddDataType("time", DbType.DateTime, typeof(DateTime));
-            AddDataType("time with time zone", DbType.Object, typeof(object));
             AddDataType("datetime", DbType.DateTime, typeof(DateTime));
             AddDataType("datetime with time zone", DbType.Object, typeof(object));
+            AddDataType("float", DbType.Double, typeof(double));
+            AddDataType("image", DbType.Binary, typeof(byte[]));
+            AddDataType("int", DbType.Int32, typeof(int));
+            AddDataType("integer", DbType.Int32, typeof(int));
             AddDataType("interval year", DbType.Object, typeof(object));
             AddDataType("interval year to month", DbType.Object, typeof(object));
             AddDataType("interval month", DbType.Object, typeof(object));
@@ -82,6 +69,22 @@ namespace Fireasy.Data.Schema
             AddDataType("interval minute", DbType.Object, typeof(object));
             AddDataType("interval minute to second", DbType.Object, typeof(object));
             AddDataType("interval second", DbType.Object, typeof(object));
+            AddDataType("longvarchar", DbType.String, typeof(string));
+            AddDataType("longvarbinary", DbType.Binary, typeof(byte[]));
+            AddDataType("numeric", DbType.Decimal, typeof(decimal));
+            AddDataType("number", DbType.Decimal, typeof(decimal));
+            AddDataType("real", DbType.Single, typeof(float));
+            AddDataType("smallint", DbType.Int16, typeof(short));
+            AddDataType("text", DbType.String, typeof(string));
+            AddDataType("time", DbType.DateTime, typeof(DateTime));
+            AddDataType("time with time zone", DbType.Object, typeof(object));
+            AddDataType("timestamp", DbType.DateTime, typeof(DateTime));
+            AddDataType("timestamp with local time zone", DbType.DateTime, typeof(DateTime));
+            AddDataType("timestamp with time zone", DbType.Object, typeof(object));
+            AddDataType("tinyint", DbType.SByte, typeof(sbyte));
+            AddDataType("varbinary", DbType.Binary, typeof(byte[]));
+            AddDataType("varchar", DbType.String, typeof(string));
+            AddDataType("varchar2", DbType.String, typeof(string));
         }
 
         /// <summary>

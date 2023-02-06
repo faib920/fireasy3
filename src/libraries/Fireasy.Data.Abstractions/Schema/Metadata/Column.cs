@@ -11,7 +11,7 @@ namespace Fireasy.Data.Schema
     /// <summary>
     /// 数据库列信息。
     /// </summary>
-    public class Column : ISchemaMetadata
+    public class Column : ISchemaMetadata, IDbTypeColumn
     {
         /// <summary>
         /// 获取表分录名称。

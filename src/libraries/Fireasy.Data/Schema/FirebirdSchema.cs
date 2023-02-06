@@ -14,7 +14,10 @@ namespace Fireasy.Data.Schema
     /// </summary>
     public class FirebirdSchema : SchemaBase
     {
-        public FirebirdSchema()
+        /// <summary>
+        /// 初始化约定查询限制。
+        /// </summary>
+        protected override void InitializeRestrictions()
         {
             AddRestriction<Table>(s => s.Name, s => s.Type);
             AddRestriction<Column>(s => s.TableName, s => s.Name);
@@ -29,9 +32,9 @@ namespace Fireasy.Data.Schema
         }
 
         /// <summary>
-        /// 添加数据类型映射。
+        /// 初始化数据类型映射。
         /// </summary>
-        protected override void AddDataTypeMappers()
+        protected override void InitializeDataTypes()
         {
             AddDataType("boolean", DbType.Boolean, typeof(bool));
             AddDataType("smallint", DbType.Int16, typeof(short));
@@ -156,7 +159,7 @@ ORDER BY rfr.rdb$relation_name, rfr.rdb$field_position
                 .Parameterize(parameters, "TABLENAME", nameof(Column.TableName))
                 .Parameterize(parameters, "COLUMNNAME", nameof(Column.Name));
 
-            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetColumnType(SetDataType(wrapper, reader, new Column
+            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetColumnType(SetDataType(wrapper!, reader, new Column
             {
                 Catalog = wrapper!.GetString(reader, 0),
                 Schema = wrapper.GetString(reader, 1),
@@ -310,7 +313,7 @@ ORDER BY rfr.rdb$relation_name, rfr.rdb$field_position
                 .Parameterize(parameters, "TABLENAME", nameof(ViewColumn.ViewName))
                 .Parameterize(parameters, "COLUMNNAME", nameof(ViewColumn.Name));
 
-            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetDataType(wrapper, reader, new ViewColumn
+            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetDataType(wrapper!, reader, new ViewColumn
             {
                 Catalog = wrapper!.GetString(reader, 0),
                 Schema = wrapper.GetString(reader, 1),
@@ -441,7 +444,7 @@ ORDER BY rfr.rdb$relation_name, rfr.rdb$field_position
 
             column.NumericScale = tuple.Item3;
             column.DataType = GetDbDataType(tuple.Item1, tuple.Item2, tuple.Item3);
-            return column;
+            return SetDataType(column);
         }
 
         private ViewColumn SetDataType(IRecordWrapper wrapper, IDataReader reader, ViewColumn column)
@@ -450,7 +453,7 @@ ORDER BY rfr.rdb$relation_name, rfr.rdb$field_position
 
             column.NumericScale = tuple.Item3;
             column.DataType = GetDbDataType(tuple.Item1, tuple.Item2, tuple.Item3);
-            return column;
+            return SetDataType(column);
         }
     }
 }

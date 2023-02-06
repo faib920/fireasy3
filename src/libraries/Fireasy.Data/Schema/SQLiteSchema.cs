@@ -16,9 +16,9 @@ namespace Fireasy.Data.Schema
     public class SQLiteSchema : SchemaBase
     {
         /// <summary>
-        /// 
+        /// 初始化约定查询限制。
         /// </summary>
-        public SQLiteSchema()
+        protected override void InitializeRestrictions()
         {
             AddRestriction<Table>(s => s.Name, s => s.Type);
             AddRestriction<Column>(s => s.TableName, s => s.Name);
@@ -33,57 +33,63 @@ namespace Fireasy.Data.Schema
         }
 
         /// <summary>
-        /// 添加数据类型映射。
+        /// 初始化数据类型映射。
         /// </summary>
-        protected override void AddDataTypeMappers()
+        protected override void InitializeDataTypes()
         {
-            AddDataType("bit", DbType.Boolean, typeof(bool));
-            AddDataType("yesno", DbType.Boolean, typeof(bool));
-            AddDataType("logical", DbType.Boolean, typeof(bool));
+            AddDataType("bigint", DbType.Int64, typeof(long));
+            AddDataType("binary", DbType.Binary, typeof(byte[]));
+            AddDataType("blob", DbType.Binary, typeof(byte[]));
             AddDataType("bool", DbType.Boolean, typeof(bool));
             AddDataType("boolean", DbType.Boolean, typeof(bool));
-            AddDataType("smallint", DbType.Int16, typeof(short));
-            AddDataType("tinyint", DbType.Byte, typeof(byte));
-            AddDataType("integer", DbType.Int32, typeof(int));
-            AddDataType("counter", DbType.Int64, typeof(long));
-            AddDataType("autoincrement", DbType.Int64, typeof(long));
-            AddDataType("identity", DbType.Int64, typeof(long));
-            AddDataType("long", DbType.Int64, typeof(long));
-            AddDataType("bigint", DbType.Int64, typeof(long));
-            AddDataType("real", DbType.Single, typeof(float));
-            AddDataType("single", DbType.Single, typeof(float));
-            AddDataType("float", DbType.Double, typeof(double));
-            AddDataType("double", DbType.Double, typeof(double));
-            AddDataType("money", DbType.Decimal, typeof(decimal));
-            AddDataType("currency", DbType.Decimal, typeof(decimal));
-            AddDataType("decimal", DbType.Decimal, typeof(decimal));
-            AddDataType("numeric", DbType.Decimal, typeof(decimal));
-            AddDataType("varbinary", DbType.Binary, typeof(byte[]));
-            AddDataType("blob", DbType.Binary, typeof(byte[]));
-            AddDataType("binary", DbType.Binary, typeof(byte[]));
-            AddDataType("image", DbType.Binary, typeof(byte[]));
-            AddDataType("general", DbType.Binary, typeof(byte[]));
-            AddDataType("oleobject", DbType.Binary, typeof(byte[]));
             AddDataType("char", DbType.String, typeof(string));
-            AddDataType("nchar", DbType.String, typeof(string));
-            AddDataType("varchar", DbType.String, typeof(string));
-            AddDataType("nvarchar", DbType.String, typeof(string));
+            AddDataType("character", DbType.String, typeof(string));
+            AddDataType("clob", DbType.String, typeof(string));
+            AddDataType("counter", DbType.Int64, typeof(long));
+            AddDataType("currency", DbType.Decimal, typeof(decimal));
+            AddDataType("date", DbType.Date, typeof(DateTime));
+            AddDataType("datetime", DbType.DateTime, typeof(DateTime));
+            AddDataType("decimal", DbType.Decimal, typeof(decimal));
+            AddDataType("double", DbType.Double, typeof(double));
+            AddDataType("double precision", DbType.Double, typeof(double));
+            AddDataType("float", DbType.Double, typeof(double));
+            AddDataType("general", DbType.Binary, typeof(byte[]));
+            AddDataType("guid", DbType.Guid, typeof(Guid));
+            AddDataType("identity", DbType.Int64, typeof(long));
+            AddDataType("image", DbType.Binary, typeof(byte[]));
+            AddDataType("int", DbType.Int32, typeof(int));
+            AddDataType("int2", DbType.Int64, typeof(long));
+            AddDataType("int8", DbType.SByte, typeof(sbyte));
+            AddDataType("integer", DbType.Int64, typeof(long));
+            AddDataType("logical", DbType.Boolean, typeof(bool));
+            AddDataType("long", DbType.Int64, typeof(long));
+            AddDataType("longtext", DbType.String, typeof(string));
+            AddDataType("mediumint", DbType.Int32, typeof(int));
             AddDataType("memo", DbType.String, typeof(string));
+            AddDataType("money", DbType.Decimal, typeof(decimal));
+            AddDataType("native character", DbType.String, typeof(string));
+            AddDataType("nchar", DbType.String, typeof(string));
             AddDataType("note", DbType.String, typeof(string));
+            AddDataType("ntext", DbType.String, typeof(string));
+            AddDataType("numeric", DbType.Decimal, typeof(decimal));
+            AddDataType("nvarchar", DbType.String, typeof(string));
+            AddDataType("oleobject", DbType.Binary, typeof(byte[]));
+            AddDataType("real", DbType.Double, typeof(double));
+            AddDataType("single", DbType.Single, typeof(float));
+            AddDataType("smalldate", DbType.DateTime, typeof(DateTime));
+            AddDataType("smallint", DbType.Int16, typeof(short));
             AddDataType("string", DbType.String, typeof(string));
             AddDataType("text", DbType.String, typeof(string));
-            AddDataType("ntext", DbType.String, typeof(string));
-            AddDataType("longtext", DbType.String, typeof(string));
-            AddDataType("xml", DbType.Xml, typeof(string));
-            AddDataType("decimal", DbType.Decimal, typeof(decimal));
-            AddDataType("numeric", DbType.Decimal, typeof(decimal));
-            AddDataType("guid", DbType.Guid, typeof(Guid));
-            AddDataType("uniqueidentifier", DbType.Guid, typeof(Guid));
-            AddDataType("datetime", DbType.DateTime, typeof(DateTime));
-            AddDataType("smalldate", DbType.DateTime, typeof(DateTime));
-            AddDataType("date", DbType.Date, typeof(DateTime));
             AddDataType("time", DbType.Time, typeof(DateTime));
             AddDataType("timestamp", DbType.DateTime, typeof(DateTime));
+            AddDataType("tinyint", DbType.Byte, typeof(byte));
+            AddDataType("unsigned big int", DbType.Int64, typeof(long));
+            AddDataType("varbinary", DbType.Binary, typeof(byte[]));
+            AddDataType("varchar", DbType.String, typeof(string));
+            AddDataType("varying character", DbType.String, typeof(string));
+            AddDataType("uniqueidentifier", DbType.Guid, typeof(Guid));
+            AddDataType("xml", DbType.Int64, typeof(long));
+            AddDataType("yesno", DbType.Boolean, typeof(bool));
         }
 
         /// <summary>
@@ -245,7 +251,7 @@ PRAGMA main.TABLE_INFO('{tb.Name}')";
         [SuppressMessage("Security", "CA2100")]
         private async Task<List<Column>> GetColumnsAsync(IDatabase database, string tableName)
         {
-            var columns = await ExecuteAndParseMetadataAsync(database, $"PRAGMA main.TABLE_INFO('{tableName}')", null, (wrapper, reader) => new Column
+            var columns = await ExecuteAndParseMetadataAsync(database, $"PRAGMA main.TABLE_INFO('{tableName}')", null, (wrapper, reader) => SetDataType(new Column
             {
                 Catalog = "main",
                 TableName = tableName,
@@ -254,7 +260,7 @@ PRAGMA main.TABLE_INFO('{tb.Name}')";
                 IsNullable = wrapper.GetInt32(reader, 3) == 0,
                 Default = wrapper.GetString(reader, 4),
                 IsPrimaryKey = wrapper.GetInt32(reader, 5) == 1
-            }).ToListAsync();
+            })).ToListAsync();
 
             if (database.Provider.DbProviderFactory.GetType().Assembly.GetName().Name != "System.Data.SQLite")
             {
@@ -287,7 +293,7 @@ PRAGMA main.TABLE_INFO('{tb.Name}')";
                 column.NumericScale = row["NumericScale"] == DBNull.Value ? (int?)null : Convert.ToInt32(row["NumericScale"]);
                 column.DataType = row["DataTypeName"].ToString().ToLower();
                 column.Length = row["ColumnSize"] == DBNull.Value ? (long?)null : Convert.ToInt64(row["ColumnSize"]);
-                SetColumnType(column);
+                SetDataType(SetColumnType(column));
             }
 
             return columns;

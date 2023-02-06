@@ -284,7 +284,8 @@ namespace Fireasy.Data.Tests.SchemaTest
             {
                 for (var i = 0; i < reader.FieldCount; i++) 
                 {
-                    Assert.AreEqual(reader.GetFieldType(i), columns[i].ClrType, columns[i].DataType);
+                    Assert.AreEqual(columns[i].ClrType, reader.GetFieldType(i), columns[i].DataType);
+                    Console.WriteLine(columns[i].DataType + " " + reader.GetValue(i));
                 }
             }
 

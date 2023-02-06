@@ -14,9 +14,9 @@ namespace Fireasy.Data.Schema
     public sealed class SqlServerSchema : SchemaBase
     {
         /// <summary>
-        /// 
+        /// 初始化约定查询限制。
         /// </summary>
-        public SqlServerSchema()
+        protected override void InitializeRestrictions()
         {
             AddRestriction<Database>(s => s.Name);
             AddRestriction<Table>(s => s.Name, s => s.Type);
@@ -32,39 +32,40 @@ namespace Fireasy.Data.Schema
         }
 
         /// <summary>
-        /// 添加数据类型映射。
+        /// 初始化数据类型映射。
         /// </summary>
-        protected override void AddDataTypeMappers()
+        protected override void InitializeDataTypes()
         {
-            AddDataType("bit", DbType.Boolean, typeof(bool));
-            AddDataType("smallint", DbType.Int16, typeof(short));
-            AddDataType("tinyint", DbType.SByte, typeof(sbyte));
-            AddDataType("int", DbType.Int32, typeof(int));
             AddDataType("bigint", DbType.Int64, typeof(long));
-            AddDataType("real", DbType.Single, typeof(float));
-            AddDataType("float", DbType.Single, typeof(float));
-            AddDataType("money", DbType.Decimal, typeof(decimal));
-            AddDataType("smallmoney", DbType.Decimal, typeof(decimal));
-            AddDataType("varbinary", DbType.Binary, typeof(byte[]));
-            AddDataType("timestamp", DbType.Binary, typeof(byte[]));
             AddDataType("binary", DbType.Binary, typeof(byte[]));
-            AddDataType("image", DbType.Binary, typeof(byte[]));
+            AddDataType("bit", DbType.Boolean, typeof(bool));
             AddDataType("char", DbType.String, typeof(string));
-            AddDataType("nchar", DbType.String, typeof(string));
-            AddDataType("varchar", DbType.String, typeof(string));
-            AddDataType("nvarchar", DbType.String, typeof(string));
-            AddDataType("text", DbType.String, typeof(string));
-            AddDataType("ntext", DbType.String, typeof(string));
-            AddDataType("xml", DbType.Xml, typeof(string));
-            AddDataType("decimal", DbType.Decimal, typeof(decimal));
-            AddDataType("numeric", DbType.Decimal, typeof(decimal));
-            AddDataType("uniqueidentifier", DbType.Guid, typeof(Guid));
-            AddDataType("datetime", DbType.DateTime, typeof(DateTime));
-            AddDataType("smalldatetime", DbType.DateTime, typeof(DateTime));
             AddDataType("date", DbType.Date, typeof(DateTime));
-            AddDataType("time", DbType.Time, typeof(DateTime));
+            AddDataType("datetime", DbType.DateTime, typeof(DateTime));
             AddDataType("datetime2", DbType.DateTime2, typeof(DateTime));
             AddDataType("datetimeoffset", DbType.Int64, typeof(DateTimeOffset));
+            AddDataType("decimal", DbType.Decimal, typeof(decimal));
+            AddDataType("float", DbType.Double, typeof(double));
+            AddDataType("image", DbType.Binary, typeof(byte[]));
+            AddDataType("int", DbType.Int32, typeof(int));
+            AddDataType("money", DbType.Decimal, typeof(decimal));
+            AddDataType("nchar", DbType.String, typeof(string));
+            AddDataType("ntext", DbType.String, typeof(string));
+            AddDataType("numeric", DbType.Decimal, typeof(decimal));
+            AddDataType("nvarchar", DbType.String, typeof(string));
+            AddDataType("real", DbType.Single, typeof(float));
+            AddDataType("smalldatetime", DbType.DateTime, typeof(DateTime));
+            AddDataType("smallint", DbType.Int16, typeof(short));
+            AddDataType("smallmoney", DbType.Decimal, typeof(decimal));
+            AddDataType("sql_variant", DbType.Object, typeof(object));
+            AddDataType("text", DbType.String, typeof(string));
+            AddDataType("time", DbType.Time, typeof(TimeSpan));
+            AddDataType("timestamp", DbType.Binary, typeof(byte[]));
+            AddDataType("tinyint", DbType.Byte, typeof(byte));
+            AddDataType("uniqueidentifier", DbType.Guid, typeof(Guid));
+            AddDataType("varbinary", DbType.Binary, typeof(byte[]));
+            AddDataType("varchar", DbType.String, typeof(string));
+            AddDataType("xml", DbType.Xml, typeof(string));
         }
 
         /// <summary>
@@ -191,7 +192,7 @@ WHERE O.TABLE_TYPE <> 'view' AND
                 .Parameterize(parameters, "TABLENAME", nameof(Column.TableName))
                 .Parameterize(parameters, "COLUMNNAME", nameof(Column.Name));
 
-            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetColumnType(new Column
+            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetDataType(SetColumnType(new Column
             {
                 Catalog = wrapper!.GetString(reader, 0),
                 Schema = wrapper.GetString(reader, 1),
@@ -206,7 +207,7 @@ WHERE O.TABLE_TYPE <> 'view' AND
                 Default = wrapper.GetString(reader, 10),
                 Description = wrapper.GetString(reader, 11),
                 Autoincrement = wrapper.GetInt16(reader, 12) == 1
-            }));
+            })));
         }
 
         /// <summary>

@@ -14,9 +14,9 @@ namespace Fireasy.Data.Schema
     public sealed class MySqlSchema : SchemaBase
     {
         /// <summary>
-        /// 初始化 <see cref="MySqlSchema"/> 类的新实例。
+        /// 初始化约定查询限制。
         /// </summary>
-        public MySqlSchema()
+        protected override void InitializeRestrictions()
         {
             AddRestriction<Database>(s => s.Name);
             AddRestriction<Table>(s => s.Name, s => s.Type);
@@ -32,41 +32,47 @@ namespace Fireasy.Data.Schema
         }
 
         /// <summary>
-        /// 添加数据类型映射。
+        /// 初始化数据类型映射。
         /// </summary>
-        protected override void AddDataTypeMappers()
+        protected override void InitializeDataTypes()
         {
-            AddDataType("bit", DbType.Boolean, typeof(bool));
-            AddDataType("smallint", DbType.Int16, typeof(short));
-            AddDataType("tinyint", DbType.Byte, typeof(byte));
-            AddDataType("int", DbType.Int32, typeof(int));
-            AddDataType("mediumint", DbType.Int32, typeof(int));
             AddDataType("bigint", DbType.Int64, typeof(long));
-            AddDataType("float", DbType.Single, typeof(float));
-            AddDataType("double", DbType.Double, typeof(double));
-            AddDataType("decimal", DbType.Decimal, typeof(decimal));
             AddDataType("binary", DbType.Binary, typeof(byte[]));
-            AddDataType("varbinary", DbType.Binary, typeof(byte[]));
+            AddDataType("bit", DbType.Boolean, typeof(UInt64));
             AddDataType("blob", DbType.Binary, typeof(byte[]));
-            AddDataType("tinyblob", DbType.Binary, typeof(byte[]));
-            AddDataType("mediumblob", DbType.Binary, typeof(byte[]));
-            AddDataType("longblob", DbType.Binary, typeof(byte[]));
-            AddDataType("timestamp", DbType.Binary, typeof(byte[]));
-            AddDataType("binary", DbType.Binary, typeof(byte[]));
-            AddDataType("image", DbType.Binary, typeof(byte[]));
             AddDataType("char", DbType.String, typeof(string));
-            AddDataType("nchar", DbType.String, typeof(string));
-            AddDataType("varchar", DbType.String, typeof(string));
-            AddDataType("nvarchar", DbType.String, typeof(string));
-            AddDataType("set", DbType.String, typeof(string));
-            AddDataType("enum", DbType.String, typeof(string));
-            AddDataType("tinytext", DbType.String, typeof(string));
-            AddDataType("text", DbType.String, typeof(string));
-            AddDataType("mediumtext", DbType.String, typeof(string));
-            AddDataType("longtext", DbType.String, typeof(string));
             AddDataType("date", DbType.Date, typeof(DateTime));
             AddDataType("datetime", DbType.DateTime, typeof(DateTime));
-            AddDataType("time", DbType.Int64, typeof(TimeSpan));
+            AddDataType("decimal", DbType.Decimal, typeof(decimal));
+            AddDataType("double", DbType.Double, typeof(double));
+            AddDataType("enum", DbType.String, typeof(string));
+            AddDataType("float", DbType.Single, typeof(float));
+            AddDataType("geometry", DbType.Binary, typeof(byte[]));
+            AddDataType("geometrycollection", DbType.Binary, typeof(byte[]));
+            AddDataType("int", DbType.Int32, typeof(int));
+            AddDataType("json", DbType.String, typeof(string));
+            AddDataType("linestring", DbType.String, typeof(byte[]));
+            AddDataType("longblob", DbType.Binary, typeof(byte[]));
+            AddDataType("longtext", DbType.String, typeof(string));
+            AddDataType("mediumblob", DbType.Binary, typeof(byte[]));
+            AddDataType("mediumint", DbType.Int32, typeof(int));
+            AddDataType("mediumtext", DbType.String, typeof(string));
+            AddDataType("multilinestring", DbType.Binary, typeof(byte[]));
+            AddDataType("multipoint", DbType.Binary, typeof(byte[]));
+            AddDataType("multipolygon", DbType.Binary, typeof(byte[]));
+            AddDataType("numeric", DbType.Decimal, typeof(decimal));
+            AddDataType("point", DbType.Binary, typeof(byte[]));
+            AddDataType("polygon", DbType.Binary, typeof(byte[]));
+            AddDataType("set", DbType.String, typeof(string));
+            AddDataType("smallint", DbType.Int16, typeof(short));
+            AddDataType("text", DbType.String, typeof(string));
+            AddDataType("time", DbType.DateTimeOffset, typeof(TimeSpan));
+            AddDataType("timestamp", DbType.DateTime, typeof(DateTime));
+            AddDataType("tinyblob", DbType.Binary, typeof(byte[]));
+            AddDataType("tinyint", DbType.SByte, typeof(sbyte));
+            AddDataType("tinytext", DbType.String, typeof(string));
+            AddDataType("varbinary", DbType.Binary, typeof(byte[]));
+            AddDataType("varchar", DbType.String, typeof(string));
         }
 
         /// <summary>
@@ -186,7 +192,7 @@ WHERE (T.TABLE_SCHEMA = '{connpar.Database}') AND
                 .Parameterize(parameters, "TABLENAME", nameof(Column.TableName))
                 .Parameterize(parameters, "COLUMNNAME", nameof(Column.Name));
 
-            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new Column
+            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetDataType(SetColumnType(new Column
             {
                 Catalog = wrapper!.GetString(reader, 0),
                 Schema = wrapper.GetString(reader, 1),
@@ -202,7 +208,7 @@ WHERE (T.TABLE_SCHEMA = '{connpar.Database}') AND
                 Description = wrapper.GetString(reader, 11),
                 Autoincrement = !wrapper.IsDbNull(reader, 12) && wrapper.GetString(reader, 12).IndexOf("auto_increment") != -1,
                 ColumnType = wrapper.GetString(reader, 13)
-            });
+            })));
         }
 
         /// <summary>
@@ -273,7 +279,7 @@ WHERE (T.TABLE_SCHEMA = '{connpar.Database}') AND
                 .Parameterize(parameters, "TABLENAME", nameof(ViewColumn.ViewName))
                 .Parameterize(parameters, "COLUMNNAME", nameof(ViewColumn.Name));
 
-            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new ViewColumn
+            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetDataType(new ViewColumn
             {
                 Catalog = wrapper!.GetString(reader, 0),
                 Schema = wrapper.GetString(reader, 1),
@@ -288,7 +294,7 @@ WHERE (T.TABLE_SCHEMA = '{connpar.Database}') AND
                 Default = wrapper.GetString(reader, 10),
                 Description = wrapper.GetString(reader, 11),
                 Autoincrement = false
-            });
+            }));
         }
 
         /// <summary>

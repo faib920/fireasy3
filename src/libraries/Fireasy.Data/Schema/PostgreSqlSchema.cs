@@ -13,7 +13,10 @@ namespace Fireasy.Data.Schema
     /// </summary>
     public class PostgreSqlSchema : SchemaBase
     {
-        public PostgreSqlSchema()
+        /// <summary>
+        /// 初始化约定查询限制。
+        /// </summary>
+        protected override void InitializeRestrictions()
         {
             AddRestriction<Database>(s => s.Name);
             AddRestriction<Table>(s => s.Name, s => s.Type);
@@ -24,9 +27,9 @@ namespace Fireasy.Data.Schema
         }
 
         /// <summary>
-        /// 添加数据类型映射。
+        /// 初始化数据类型映射。
         /// </summary>
-        protected override void AddDataTypeMappers()
+        protected override void InitializeDataTypes()
         {
             AddDataType("bit", DbType.Byte, typeof(byte));
             AddDataType("varbit", DbType.Byte, typeof(byte));

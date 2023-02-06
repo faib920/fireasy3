@@ -11,7 +11,7 @@ namespace Fireasy.Data.Schema
     /// <summary>
     /// 视图的列信息。
     /// </summary>
-    public class ViewColumn : ISchemaMetadata
+    public class ViewColumn : ISchemaMetadata, IDbTypeColumn
     {
         /// <summary>
         /// 获取表分录名称。
@@ -82,5 +82,15 @@ namespace Fireasy.Data.Schema
         /// 获取列的位置。
         /// </summary>
         public int Position { get; set; }
+
+        /// <summary>
+        /// 获取或设置对应的 <see cref="DbType"/> 类型。
+        /// </summary>
+        public DbType? DbType { get; set; }
+
+        /// <summary>
+        /// 获取或设置运行库类型。
+        /// </summary>
+        public Type? ClrType { get; set; }
     }
 }

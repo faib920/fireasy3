@@ -28,13 +28,19 @@ namespace Fireasy.Data.Schema
         /// </summary>
         public SchemaBase()
         {
-            AddDataTypeMappers();
+            InitializeRestrictions();
+            InitializeDataTypes();
         }
 
         /// <summary>
-        /// 添加数据类型映射。
+        /// 初始化约定查询限制。
         /// </summary>
-        protected abstract void AddDataTypeMappers();
+        protected abstract void InitializeRestrictions();
+
+        /// <summary>
+        /// 初始化数据类型映射。
+        /// </summary>
+        protected abstract void InitializeDataTypes();
 
         /// <summary>
         /// 
@@ -395,7 +401,7 @@ namespace Fireasy.Data.Schema
         /// </summary>
         /// <param name="column"></param>
         /// <returns></returns>
-        protected Column SetDataType(Column column)
+        protected T SetDataType<T>(T column) where T : IDbTypeColumn
         {
             var map = _dataTypes.FirstOrDefault(s => s.Name.Equals(column.DataType, StringComparison.OrdinalIgnoreCase));
             if (map != null)
