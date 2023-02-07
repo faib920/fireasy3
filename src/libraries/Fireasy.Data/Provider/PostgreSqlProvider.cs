@@ -76,7 +76,7 @@ namespace Fireasy.Data.Provider
             services.TryAddSingleton<ISyntaxProvider, PostgreSqlSyntax>();
             services.TryAddSingleton<ISchemaProvider, PostgreSqlSchema>();
             services.TryAddSingleton<IBatcherProvider, MySqlBatcher>();
-            services.TryAddSingleton<IRecordWrapper, GeneralRecordWrapper>();
+            services.TryAddSingleton<IRecordWrapper, PostgreSqlRecordWrapper>();
 
             return services;
         }

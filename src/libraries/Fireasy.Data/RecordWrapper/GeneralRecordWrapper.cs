@@ -31,6 +31,29 @@ namespace Fireasy.Data.RecordWrapper
         }
 
         /// <summary>
+        /// 获取指定索引处的字段类型。
+        /// </summary>
+        /// <param name="reader">一个 <see cref="IDataRecord"/> 对象。</param>
+        /// <param name="i">字段的索引。</param>
+        /// <returns></returns>
+        public virtual Type GetFieldType(IDataReader reader, int i)
+        {
+            return reader.GetFieldType(i);
+        }
+
+        /// <summary>
+        /// 获取指定索引处的字段类型。
+        /// </summary>
+        /// <param name="reader">一个 <see cref="IDataRecord"/> 对象。</param>
+        /// <param name="name">字段的名称。</param>
+        /// <returns></returns>
+        public virtual Type GetFieldType(IDataReader reader, string name)
+        {
+            var index = reader.GetOrdinal(name);
+            return GetFieldType(reader, index);
+        }
+
+        /// <summary>
         /// 返回指定字段的值。
         /// </summary>
         /// <param name="reader">一个 <see cref="IDataRecord"/> 对象。</param>

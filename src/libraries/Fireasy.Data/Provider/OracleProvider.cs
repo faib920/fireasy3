@@ -92,7 +92,6 @@ namespace Fireasy.Data.Provider
             services.TryAddSingleton<ISyntaxProvider, OracleSyntax>();
             services.TryAddSingleton<ISchemaProvider, OracleSchema>();
             services.TryAddSingleton<IBatcherProvider, OracleDABatcher>();
-            services.TryAddSingleton<IRecordWrapper, OracleAccessRecordWrapper>();
             services.TryAddSingleton<IRecordWrapper, OracleRecordWrapper>();
 
             return services;

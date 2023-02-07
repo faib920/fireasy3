@@ -1,5 +1,6 @@
 ﻿/// 测试获取 ViewColumn
 using Fireasy.Common.Extensions;
+using Fireasy.Data.RecordWrapper;
 using Microsoft.Extensions.DependencyInjection;
 using System.Data.Entity;
 
@@ -271,6 +272,7 @@ namespace Fireasy.Data.Tests.SchemaTest
             using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
             var schema = database.GetService<ISchemaProvider>();
+            var recordWrapper = database.GetService<IRecordWrapper>();
 
             var columns = await schema!.GetSchemasAsync<Data.Schema.Column>(database, s => s.TableName == syntax!.ToggleCase("all_datatypes")).ToListAsync();
 
@@ -284,7 +286,8 @@ namespace Fireasy.Data.Tests.SchemaTest
             {
                 for (var i = 0; i < reader.FieldCount; i++) 
                 {
-                    Assert.AreEqual(columns[i].ClrType, reader.GetFieldType(i), columns[i].DataType);
+                    var fieldType = recordWrapper!.GetFieldType(reader, i);
+                    Assert.AreEqual(columns[i].ClrType, fieldType, columns[i].DataType);
                     Console.WriteLine(columns[i].DataType + " " + reader.GetValue(i));
                 }
             }

@@ -5,6 +5,8 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
+using System.Net;
+using System.Net.NetworkInformation;
 
 namespace Fireasy.Data.Schema
 {
@@ -31,40 +33,77 @@ namespace Fireasy.Data.Schema
         /// </summary>
         protected override void InitializeDataTypes()
         {
-            AddDataType("bit", DbType.Byte, typeof(byte));
-            AddDataType("varbit", DbType.Byte, typeof(byte));
-            AddDataType("bool", DbType.Boolean, typeof(bool));
-            AddDataType("int2", DbType.Int16, typeof(short));
-            AddDataType("smallint", DbType.Int16, typeof(short));
-            AddDataType("int4", DbType.Int32, typeof(int));
-            AddDataType("int", DbType.Int32, typeof(int));
-            AddDataType("integer", DbType.Int32, typeof(int));
-            AddDataType("int8", DbType.Int64, typeof(long));
             AddDataType("bigint", DbType.Int64, typeof(long));
-            AddDataType("serial2", DbType.Int16, typeof(short));
-            AddDataType("smallserial", DbType.Int16, typeof(short));
-            AddDataType("serial4", DbType.Int32, typeof(int));
-            AddDataType("serial", DbType.Int32, typeof(int));
-            AddDataType("serial8", DbType.Int64, typeof(long));
             AddDataType("bigserial", DbType.Int64, typeof(long));
-            AddDataType("interval", DbType.Int64, typeof(long));
-            AddDataType("decimal", DbType.Decimal, typeof(decimal));
-            AddDataType("numeric", DbType.Decimal, typeof(decimal));
-            AddDataType("money", DbType.Currency, typeof(decimal));
-            AddDataType("float4", DbType.Single, typeof(float));
-            AddDataType("float8", DbType.Double, typeof(double));
-            AddDataType("real", DbType.Double, typeof(double));
+            AddDataType("bit", DbType.Boolean, typeof(bool));
+            AddDataType("bit varying", DbType.Byte, typeof(byte));
+            AddDataType("bool", DbType.Boolean, typeof(bool));
+            AddDataType("boolean", DbType.Boolean, typeof(bool));
+            AddDataType("box", DbType.String, typeof(object)); //NpgsqlTypes.NpgsqlBox
+            AddDataType("bpchar", DbType.String, typeof(string));
             AddDataType("bytea", DbType.Binary, typeof(byte[]));
             AddDataType("char", DbType.String, typeof(string));
-            AddDataType("varchar", DbType.String, typeof(string));
-            AddDataType("text", DbType.String, typeof(string));
-            AddDataType("xml", DbType.Xml, typeof(string));
-            AddDataType("uuid", DbType.Guid, typeof(Guid));
+            AddDataType("character", DbType.String, typeof(string));
+            AddDataType("character varying", DbType.String, typeof(string));
+            AddDataType("cidr", DbType.String, typeof(ValueTuple<IPAddress, int>));
+            AddDataType("circle", DbType.String, typeof(object)); //NpgsqlTypes.NpgsqlCircle
             AddDataType("date", DbType.Date, typeof(DateTime));
-            AddDataType("time", DbType.Time, typeof(DateTime));
-            AddDataType("timez", DbType.Time, typeof(DateTime));
+            AddDataType("decimal", DbType.Decimal, typeof(decimal));
+            AddDataType("double precision", DbType.Double, typeof(double));
+            AddDataType("float4", DbType.Single, typeof(float));
+            AddDataType("float8", DbType.Double, typeof(double));
+            AddDataType("inet", DbType.String, typeof(IPAddress));
+            AddDataType("int", DbType.Int32, typeof(int));
+            AddDataType("int2", DbType.Int16, typeof(short));
+            AddDataType("int4", DbType.Int32, typeof(int));
+            AddDataType("int8", DbType.Int64, typeof(long));
+            AddDataType("integer", DbType.Int32, typeof(int));
+            AddDataType("interval", DbType.DateTimeOffset, typeof(TimeSpan));
+            AddDataType("interval year", DbType.DateTimeOffset, typeof(TimeSpan));
+            AddDataType("interval year to month", DbType.DateTimeOffset, typeof(TimeSpan));
+            AddDataType("interval month", DbType.DateTimeOffset, typeof(TimeSpan));
+            AddDataType("interval day", DbType.DateTimeOffset, typeof(TimeSpan));
+            AddDataType("interval day to hour", DbType.DateTimeOffset, typeof(TimeSpan));
+            AddDataType("interval day to minute", DbType.DateTimeOffset, typeof(TimeSpan));
+            AddDataType("interval day to second", DbType.DateTimeOffset, typeof(TimeSpan));
+            AddDataType("interval hour", DbType.DateTimeOffset, typeof(TimeSpan));
+            AddDataType("interval hour to minute", DbType.DateTimeOffset, typeof(TimeSpan));
+            AddDataType("interval hour to second", DbType.DateTimeOffset, typeof(TimeSpan));
+            AddDataType("interval minute", DbType.DateTimeOffset, typeof(TimeSpan));
+            AddDataType("interval minute to second", DbType.DateTimeOffset, typeof(TimeSpan));
+            AddDataType("interval second", DbType.DateTimeOffset, typeof(TimeSpan));
+            AddDataType("json", DbType.String, typeof(string));
+            AddDataType("jsonb", DbType.String, typeof(string));
+            AddDataType("line", DbType.String, typeof(object)); //NpgsqlTypes.NpgsqlLine
+            AddDataType("lseg", DbType.String, typeof(object)); //NpgsqlTypes.NpgsqlLSeg
+            AddDataType("macaddr", DbType.String, typeof(PhysicalAddress));
+            AddDataType("macaddr8", DbType.String, typeof(PhysicalAddress));
+            AddDataType("money", DbType.Currency, typeof(decimal));
+            AddDataType("numeric", DbType.Decimal, typeof(decimal));
+            AddDataType("path", DbType.String, typeof(object)); //NpgsqlTypes.NpgsqlPath
+            AddDataType("pg_lsn", DbType.String, typeof(object)); //NpgsqlTypes.NpgsqlLogSequenceNumber
+            AddDataType("pg_snapshot", DbType.String, typeof(string));
+            AddDataType("point", DbType.String, typeof(object)); //NpgsqlTypes.NpgsqlPoint
+            AddDataType("polygon", DbType.String, typeof(object)); //NpgsqlTypes.NpgsqlPolygon
+            AddDataType("real", DbType.Double, typeof(double));
+            AddDataType("smallint", DbType.Int16, typeof(short));
+            AddDataType("smallserial", DbType.Int16, typeof(short));
+            AddDataType("serial", DbType.Int32, typeof(int));
+            AddDataType("serial2", DbType.Int16, typeof(short));
+            AddDataType("serial4", DbType.Int32, typeof(int));
+            AddDataType("serial8", DbType.Int64, typeof(long));
+            AddDataType("text", DbType.String, typeof(string));
+            AddDataType("time", DbType.Time, typeof(TimeSpan));
+            AddDataType("timetz", DbType.Time, typeof(DateTimeOffset));
             AddDataType("timestamp", DbType.DateTime, typeof(DateTime));
-            AddDataType("timestampz", DbType.DateTime, typeof(DateTime));
+            AddDataType("timestamptz", DbType.DateTime, typeof(DateTimeOffset));
+            AddDataType("tsquery", DbType.String, typeof(object)); //NpgsqlTypes.NpgsqlTsQuery
+            AddDataType("tsvector", DbType.String, typeof(object)); //NpgsqlTypes.NpgsqlTsVector
+            AddDataType("txid_snapshot", DbType.String, typeof(string));
+            AddDataType("uuid", DbType.Guid, typeof(Guid));
+            AddDataType("varbit", DbType.Binary, typeof(byte[]));
+            AddDataType("varchar", DbType.String, typeof(string));
+            AddDataType("xml", DbType.Xml, typeof(string));
         }
 
         /// <summary>
@@ -197,7 +236,7 @@ ORDER BY
                 .Parameterize(parameters, "TABLENAME", nameof(Column.TableName))
                 .Parameterize(parameters, "COLUMNNAME", nameof(Column.Name));
 
-            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetColumnType(new Column
+            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetDataType(SetColumnType(new Column
             {
                 Catalog = wrapper!.GetString(reader, 0),
                 Schema = wrapper.GetString(reader, 1),
@@ -211,7 +250,7 @@ ORDER BY
                 IsPrimaryKey = wrapper.GetString(reader, 12) == "YES",
                 Default = wrapper.GetString(reader, 10),
                 Description = wrapper.GetString(reader, 11),
-            }));
+            })));
         }
 
         /// <summary>
