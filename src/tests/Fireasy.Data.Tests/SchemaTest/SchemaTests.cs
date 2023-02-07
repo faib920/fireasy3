@@ -288,7 +288,7 @@ namespace Fireasy.Data.Tests.SchemaTest
                 {
                     var fieldType = recordWrapper!.GetFieldType(reader, i);
                     Assert.AreEqual(columns[i].ClrType, fieldType, columns[i].DataType);
-                    Console.WriteLine(columns[i].DataType + " " + reader.GetValue(i));
+                    Console.WriteLine(columns[i].DataType + " " + recordWrapper.GetValue(reader, i));
                 }
             }
 

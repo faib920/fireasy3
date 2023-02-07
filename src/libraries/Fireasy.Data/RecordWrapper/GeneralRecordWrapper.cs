@@ -72,7 +72,8 @@ namespace Fireasy.Data.RecordWrapper
         /// <returns>该字段包含的对象。</returns>
         public virtual object GetValue(IDataRecord reader, string name)
         {
-            return reader[name];
+            var index = reader.GetOrdinal(name);
+            return GetValue(reader, index);
         }
 
         /// <summary>
