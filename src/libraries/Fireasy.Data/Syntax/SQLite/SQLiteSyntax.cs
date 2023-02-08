@@ -174,19 +174,21 @@ LIMIT {(segment.Length != 0 ? segment.Length : 1000)}{(segment.Start != null ? $
                 case DbType.Decimal:
                 case DbType.Double:
                 case DbType.Single:
+                case DbType.Currency:
                 case DbType.VarNumeric:
                     return "REAL";
                 case DbType.Int16:
                 case DbType.Int32:
                 case DbType.Int64:
-                case DbType.Byte:
                     return "INTEGER";
+                case DbType.Byte:
+                    return "TINYINT";
                 case DbType.Date:
                     return "DATE";
                 case DbType.DateTime:
                 case DbType.DateTime2:
                 case DbType.DateTimeOffset:
-                    return "DATETIME";
+                    return "TIMESTAMP";
                 case DbType.Time:
                     return "TIME";
                 case DbType.Guid:

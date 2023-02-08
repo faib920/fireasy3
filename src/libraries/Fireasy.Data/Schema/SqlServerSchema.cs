@@ -43,7 +43,7 @@ namespace Fireasy.Data.Schema
             AddDataType("date", DbType.Date, typeof(DateTime));
             AddDataType("datetime", DbType.DateTime, typeof(DateTime));
             AddDataType("datetime2", DbType.DateTime2, typeof(DateTime));
-            AddDataType("datetimeoffset", DbType.Int64, typeof(DateTimeOffset));
+            AddDataType("datetimeoffset", DbType.DateTimeOffset, typeof(DateTimeOffset));
             AddDataType("decimal", DbType.Decimal, typeof(decimal));
             AddDataType("float", DbType.Double, typeof(double));
             AddDataType("image", DbType.Binary, typeof(byte[]));

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.Data;
+using System.Text;
 
 namespace Fireasy.Data.Tests.SyntaxTest
 {
@@ -354,6 +355,43 @@ namespace Fireasy.Data.Tests.SyntaxTest
             var ret = await database.ExecuteScalarAsync<double>(sql);
 
             Assert.AreEqual(3d, ret);
+        }
+
+        /// <summary>
+        /// 测试创建列
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task TestCreateColumnsAsync()
+        {
+            var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
+
+            using var database = factory.CreateDatabase<T>(ConnectionString);
+            var syntax = database.GetService<ISyntaxProvider>();
+
+            var sb = new StringBuilder();
+            sb.AppendLine("create table tmp_1(");
+            sb.AppendLine($"c1 {syntax!.Column(DbType.Int16)},");
+            sb.AppendLine($"c2 {syntax.Column(DbType.Int32)} NOT NULL PRIMARY KEY {syntax.IdentityColumn},");
+            sb.AppendLine($"c3 {syntax.Column(DbType.Int64)},");
+            sb.AppendLine($"c4 {syntax.Column(DbType.Boolean)},");
+            sb.AppendLine($"c5 {syntax.Column(DbType.Byte)},");
+            sb.AppendLine($"c6 {syntax.Column(DbType.Date)},");
+            sb.AppendLine($"c7 {syntax.Column(DbType.DateTime)},");
+            sb.AppendLine($"c8 {syntax.Column(DbType.Time)},");
+            sb.AppendLine($"c9 {syntax.Column(DbType.DateTimeOffset)},");
+            sb.AppendLine($"c10 {syntax.Column(DbType.Single)},");
+            sb.AppendLine($"c11 {syntax.Column(DbType.Double)},");
+            sb.AppendLine($"c12 {syntax.Column(DbType.Decimal)},");
+            sb.AppendLine($"c13 {syntax.Column(DbType.Currency)},");
+            sb.AppendLine($"c14 {syntax.Column(DbType.Guid)},");
+            sb.AppendLine($"c15 {syntax.Column(DbType.StringFixedLength, 200)},");
+            sb.AppendLine($"c16 {syntax.Column(DbType.Binary)}");
+            sb.AppendLine(")");
+
+            var ret = await database.ExecuteNonQueryAsync(sb.ToString());
+
+            await database.ExecuteNonQueryAsync("drop table tmp_1");
         }
 
         /// <summary>

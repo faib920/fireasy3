@@ -149,6 +149,8 @@ LIMIT {(segment.Length != 0 ? segment.Length : 1000)}{(segment.Start != null ? $
                     return $"CAST({sourceExp} AS DATETIME)";
                 case DbType.Time:
                     return $"CAST({sourceExp} AS TIME)";
+                case DbType.DateTimeOffset:
+                    return $"CAST({sourceExp} AS TIMESTAMP)";
             }
 
             throw new SyntaxParseErrorException($"{nameof(Convert)} 无法转换 {dbType} 类型");
@@ -203,20 +205,9 @@ LIMIT {(segment.Length != 0 ? segment.Length : 1000)}{(segment.Start != null ? $
                     }
                     //length > 65535 && length <= 16777215
                     return "MEDIUMBLOB";
+                case DbType.Currency:
                 case DbType.Decimal:
-                    if (precision == null && scale == null)
-                    {
-                        return "DECIMAL(19, 5)";
-                    }
-                    if (precision == null)
-                    {
-                        return $"DECIMAL(19, {scale})";
-                    }
-                    if (scale == null)
-                    {
-                        return $"DECIMAL({precision}, 5)";
-                    }
-                    return $"DECIMAL({precision}, {scale})";
+                    return $"DECIMAL({precision ?? 19}, {scale ?? 6})";
                 case DbType.Double:
                     return "DOUBLE";
                 case DbType.Single:
@@ -224,17 +215,14 @@ LIMIT {(segment.Length != 0 ? segment.Length : 1000)}{(segment.Start != null ? $
                 case DbType.Boolean:
                     return "TINYINT(1)";
                 case DbType.Byte:
-                    return "TINY INT";
-                case DbType.Currency:
-                    return "MONEY";
+                case DbType.SByte:
+                    return "TINYINT";
                 case DbType.Int16:
                     return "SMALLINT";
                 case DbType.Int32:
                     return "INT";
                 case DbType.Int64:
                     return "BIGINT";
-                case DbType.SByte:
-                    return "TINYINT";
                 case DbType.UInt16:
                     return "SMALLINT";
                 case DbType.UInt32:
@@ -247,6 +235,8 @@ LIMIT {(segment.Length != 0 ? segment.Length : 1000)}{(segment.Start != null ? $
                     return "DATETIME";
                 case DbType.Time:
                     return "TIME";
+                case DbType.DateTimeOffset:
+                    return "TIMESTAMP";
             }
 
             throw new SyntaxParseErrorException($"{nameof(Column)} 无法构造 {dbType} 类型");

@@ -135,7 +135,6 @@ namespace Fireasy.Data.Syntax
                 case DbType.Currency:
                     return $"CAST({sourceExp} AS MONEY)";
                 case DbType.Date:
-                    return $"CAST({sourceExp} AS DATETIME)";
                 case DbType.DateTime:
                     return $"CAST({sourceExp} AS DATETIME)";
                 case DbType.DateTime2:
@@ -145,7 +144,7 @@ namespace Fireasy.Data.Syntax
                 case DbType.Decimal:
                     return $"CAST({sourceExp} AS DECIMAL(12,6))";
                 case DbType.Double:
-                    return $"CAST({sourceExp} AS DOUBLE PRECISION)";
+                    return $"CAST({sourceExp} AS FLOAT)";
                 case DbType.Guid:
                     return $"CAST({sourceExp} AS UNIQUEIDENTIFIER)";
                 case DbType.Int16:
@@ -206,11 +205,11 @@ namespace Fireasy.Data.Syntax
                 case DbType.Boolean:
                     return "BIT";
                 case DbType.Byte:
+                case DbType.SByte:
                     return "TINYINT";
                 case DbType.Currency:
                     return "MONEY";
                 case DbType.Date:
-                    return "DATETIME";
                 case DbType.DateTime:
                     return "DATETIME";
                 case DbType.DateTime2:
@@ -218,31 +217,20 @@ namespace Fireasy.Data.Syntax
                 case DbType.DateTimeOffset:
                     return "DATETIMEOFFSET";
                 case DbType.Decimal:
-                    if (precision == null && scale == null)
-                    {
-                        return "DECIMAL(19, 5)";
-                    }
-                    if (precision == null)
-                    {
-                        return $"DECIMAL(19, {scale})";
-                    }
-                    if (scale == null)
-                    {
-                        return $"DECIMAL({precision}, 5)";
-                    }
-                    return $"DECIMAL({precision}, {scale})";
+                    return $"DECIMAL({precision ?? 19}, {scale ?? 6})";
                 case DbType.Double:
-                    return "DOUBLE PRECISION";
+                    return "FLOAT";
                 case DbType.Guid:
                     return "UNIQUEIDENTIFIER";
                 case DbType.Int16:
+                case DbType.UInt16:
                     return "SMALLINT";
                 case DbType.Int32:
+                case DbType.UInt32:
                     return "INT";
                 case DbType.Int64:
+                case DbType.UInt64:
                     return "BIGINT";
-                case DbType.SByte:
-                    return "TINYINT";
                 case DbType.Single:
                     return "REAL";
                 case DbType.String:
@@ -262,7 +250,7 @@ namespace Fireasy.Data.Syntax
                     }
                     return $"NCHAR({length})";
                 case DbType.Time:
-                    return "DATETIME";
+                    return "TIME";
                 case DbType.Xml:
                     return "XML";
             }

@@ -120,9 +120,14 @@ LIMIT {(segment.Length != 0 ? segment.Length : 1000)}{(segment.Start != null ? $
             switch (dbType)
             {
                 case DbType.String:
+                case DbType.AnsiString:
+                case DbType.StringFixedLength:
+                case DbType.AnsiStringFixedLength:
                     return $"CAST({sourceExp} AS VARCHAR)";
                 case DbType.Int16:
                 case DbType.UInt16:
+                case DbType.Byte:
+                case DbType.SByte:
                     return $"CAST({sourceExp} AS SMALLINT)";
                 case DbType.Int32:
                 case DbType.UInt32:
@@ -130,19 +135,24 @@ LIMIT {(segment.Length != 0 ? segment.Length : 1000)}{(segment.Start != null ? $
                 case DbType.Int64:
                 case DbType.UInt64:
                     return $"CAST({sourceExp} AS BIGINT)";
-                case DbType.Byte:
-                case DbType.SByte:
-                    return $"CAST({sourceExp} AS SMALLINT)";
                 case DbType.Decimal:
                     return $"CAST({sourceExp} AS DECIMAL)";
                 case DbType.Single:
-                    return $"CAST({sourceExp} AS REAL)";
+                    return $"CAST({sourceExp} AS FLOAT4)";
                 case DbType.Double:
-                    return $"CAST({sourceExp} AS FLOAT)";
+                    return $"CAST({sourceExp} AS REAL)";
+                case DbType.Currency:
+                    return $"CAST({sourceExp} AS MONEY)";
                 case DbType.DateTime:
                     return $"CAST({sourceExp} AS TIMESTAMP)";
+                case DbType.Date:
+                    return $"CAST({sourceExp} AS DATE)";
+                case DbType.Time:
+                    return $"CAST({sourceExp} AS TIME)";
                 case DbType.Boolean:
                     return $"CAST({sourceExp} AS BOOLEAN)";
+                case DbType.Guid:
+                    return $"CAST({sourceExp} AS UUID)";
             }
 
             throw new SyntaxParseErrorException($"{nameof(Convert)} 无法转换 {dbType} 类型");
@@ -162,85 +172,51 @@ LIMIT {(segment.Length != 0 ? segment.Length : 1000)}{(segment.Start != null ? $
             {
                 case DbType.String:
                 case DbType.AnsiString:
-                    if (length == null || length <= 255)
-                    {
-                        return $"VARCHAR({length ?? 255})";
-                    }
-                    if (length > 255 && length <= 65535)
+                    if (length == null)
                     {
                         return "TEXT";
                     }
-                    //length > 65535 && length <= 16777215
-                    return "MEDIUMTEXT";
+                    return $"VARCHAR({length})";
                 case DbType.StringFixedLength:
                 case DbType.AnsiStringFixedLength:
-                    if (length == null || length <= 255)
+                    if (length == null)
                     {
-                        return $"CHAR({length ?? 255})";
+                        return $"CHAR";
                     }
-                    if (length > 255 && length <= 65535)
-                    {
-                        return "TEXT";
-                    }
-                    //length > 65535 && length <= 16777215
-                    return "MEDIUMTEXT";
+                    return $"CHAR({length})";
                 case DbType.Guid:
-                    return "VARCHAR(40)";
+                    return "UUID";
                 case DbType.Binary:
-                    if (length == null || length <= 127)
-                    {
-                        return "LONGBLOB";
-                    }
-                    if (length > 127 && length <= 65535)
-                    {
-                        return "BLOB";
-                    }
-                    //length > 65535 && length <= 16777215
-                    return "MEDIUMBLOB";
+                    return "BYTEA";
                 case DbType.Decimal:
-                    if (precision == null && scale == null)
-                    {
-                        return "DECIMAL(19, 5)";
-                    }
-                    if (precision == null)
-                    {
-                        return $"DECIMAL(19, {scale})";
-                    }
-                    if (scale == null)
-                    {
-                        return $"DECIMAL({precision}, 5)";
-                    }
-                    return $"DECIMAL({precision}, {scale})";
+                    return $"DECIMAL({precision ?? 19}, {scale ?? 6})";
                 case DbType.Double:
-                    return "DOUBLE";
+                    return "REAL";
                 case DbType.Single:
-                    return "FLOAT";
+                    return "FLOAT4";
                 case DbType.Boolean:
-                    return "TINYINT(1)";
-                case DbType.Byte:
-                    return "TINY INT";
+                    return "BIT(1)";
                 case DbType.Currency:
                     return "MONEY";
                 case DbType.Int16:
+                case DbType.UInt16:
+                case DbType.Byte:
+                case DbType.SByte:
                     return "SMALLINT";
                 case DbType.Int32:
+                case DbType.UInt32:
                     return "INT";
                 case DbType.Int64:
-                    return "BIGINT";
-                case DbType.SByte:
-                    return "TINYINT";
-                case DbType.UInt16:
-                    return "SMALLINT";
-                case DbType.UInt32:
-                    return "MEDIUMINT";
                 case DbType.UInt64:
-                    return "BIT";
+                    return "BIGINT";
                 case DbType.Date:
                     return "DATE";
                 case DbType.DateTime:
-                    return "DATETIME";
+                    return "TIMESTAMP";
                 case DbType.Time:
                     return "TIME";
+                case DbType.DateTimeOffset:
+                    return "TIMESTAMPTZ";
             }
 
             throw new SyntaxParseErrorException($"{nameof(Column)} 无法构造 {dbType} 类型");

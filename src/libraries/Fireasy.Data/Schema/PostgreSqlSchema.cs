@@ -36,7 +36,7 @@ namespace Fireasy.Data.Schema
             AddDataType("bigint", DbType.Int64, typeof(long));
             AddDataType("bigserial", DbType.Int64, typeof(long));
             AddDataType("bit", DbType.Boolean, typeof(bool));
-            AddDataType("bit varying", DbType.Byte, typeof(byte));
+            AddDataType("bit varying", DbType.Binary, typeof(byte[]));
             AddDataType("bool", DbType.Boolean, typeof(bool));
             AddDataType("boolean", DbType.Boolean, typeof(bool));
             AddDataType("box", DbType.String, typeof(object)); //NpgsqlTypes.NpgsqlBox
@@ -58,20 +58,20 @@ namespace Fireasy.Data.Schema
             AddDataType("int4", DbType.Int32, typeof(int));
             AddDataType("int8", DbType.Int64, typeof(long));
             AddDataType("integer", DbType.Int32, typeof(int));
-            AddDataType("interval", DbType.DateTimeOffset, typeof(TimeSpan));
-            AddDataType("interval year", DbType.DateTimeOffset, typeof(TimeSpan));
-            AddDataType("interval year to month", DbType.DateTimeOffset, typeof(TimeSpan));
-            AddDataType("interval month", DbType.DateTimeOffset, typeof(TimeSpan));
-            AddDataType("interval day", DbType.DateTimeOffset, typeof(TimeSpan));
-            AddDataType("interval day to hour", DbType.DateTimeOffset, typeof(TimeSpan));
-            AddDataType("interval day to minute", DbType.DateTimeOffset, typeof(TimeSpan));
-            AddDataType("interval day to second", DbType.DateTimeOffset, typeof(TimeSpan));
-            AddDataType("interval hour", DbType.DateTimeOffset, typeof(TimeSpan));
-            AddDataType("interval hour to minute", DbType.DateTimeOffset, typeof(TimeSpan));
-            AddDataType("interval hour to second", DbType.DateTimeOffset, typeof(TimeSpan));
-            AddDataType("interval minute", DbType.DateTimeOffset, typeof(TimeSpan));
-            AddDataType("interval minute to second", DbType.DateTimeOffset, typeof(TimeSpan));
-            AddDataType("interval second", DbType.DateTimeOffset, typeof(TimeSpan));
+            AddDataType("interval", DbType.Time, typeof(TimeSpan));
+            AddDataType("interval year", DbType.Time, typeof(TimeSpan));
+            AddDataType("interval year to month", DbType.Time, typeof(TimeSpan));
+            AddDataType("interval month", DbType.Time, typeof(TimeSpan));
+            AddDataType("interval day", DbType.Time, typeof(TimeSpan));
+            AddDataType("interval day to hour", DbType.Time, typeof(TimeSpan));
+            AddDataType("interval day to minute", DbType.Time, typeof(TimeSpan));
+            AddDataType("interval day to second", DbType.Time, typeof(TimeSpan));
+            AddDataType("interval hour", DbType.Time, typeof(TimeSpan));
+            AddDataType("interval hour to minute", DbType.Time, typeof(TimeSpan));
+            AddDataType("interval hour to second", DbType.Time, typeof(TimeSpan));
+            AddDataType("interval minute", DbType.Time, typeof(TimeSpan));
+            AddDataType("interval minute to second", DbType.Time, typeof(TimeSpan));
+            AddDataType("interval second", DbType.Time, typeof(TimeSpan));
             AddDataType("json", DbType.String, typeof(string));
             AddDataType("jsonb", DbType.String, typeof(string));
             AddDataType("line", DbType.String, typeof(object)); //NpgsqlTypes.NpgsqlLine
@@ -94,9 +94,9 @@ namespace Fireasy.Data.Schema
             AddDataType("serial8", DbType.Int64, typeof(long));
             AddDataType("text", DbType.String, typeof(string));
             AddDataType("time", DbType.Time, typeof(TimeSpan));
-            AddDataType("timetz", DbType.Time, typeof(DateTimeOffset));
+            AddDataType("timetz", DbType.DateTimeOffset, typeof(DateTimeOffset));
             AddDataType("timestamp", DbType.DateTime, typeof(DateTime));
-            AddDataType("timestamptz", DbType.DateTime, typeof(DateTimeOffset));
+            AddDataType("timestamptz", DbType.DateTimeOffset, typeof(DateTimeOffset));
             AddDataType("tsquery", DbType.String, typeof(object)); //NpgsqlTypes.NpgsqlTsQuery
             AddDataType("tsvector", DbType.String, typeof(object)); //NpgsqlTypes.NpgsqlTsVector
             AddDataType("txid_snapshot", DbType.String, typeof(string));
