@@ -195,48 +195,6 @@ namespace Fireasy.Data.Syntax
                     return $"VARCHAR2({length})";
                 case DbType.AnsiStringFixedLength:
                     return length == null ? "NCHAR(255)" : $"NCHAR({length})";
-                case DbType.Binary:
-                    return "BLOB";
-                case DbType.Boolean:
-                    return "NUMBER(1, 0)";
-                case DbType.Byte:
-                    return "NUMBER(3, 0)";
-                case DbType.Currency:
-                    return "NUMBER(20, 0)";
-                case DbType.Date:
-                case DbType.DateTime:
-                case DbType.DateTime2:
-                    return "DATE";
-                case DbType.DateTimeOffset:
-                    return "TIMESTAMP(4)";
-                case DbType.Decimal:
-                    if (precision == null && scale == null)
-                    {
-                        return "NUMBER";
-                    }
-                    else if (precision == null)
-                    {
-                        return $"NUMBER(19, {scale})";
-                    }
-                    else if (scale == null)
-                    {
-                        return $"NUMBER({precision})";
-                    }
-                    return $"NUMBER({precision}, {scale})";
-                case DbType.Double:
-                    return "DOUBLE PRECISION";
-                case DbType.Guid:
-                    return "CHAR(38)";
-                case DbType.Int16:
-                    return "NUMBER(5, 0)";
-                case DbType.Int32:
-                    return "NUMBER(10, 0)";
-                case DbType.Int64:
-                    return "NUMBER(20, 0)";
-                case DbType.SByte:
-                    return "NUMBER(5, 0)";
-                case DbType.Single:
-                    return "FLOAT(24)";
                 case DbType.String:
                     if (length == null)
                     {
@@ -253,18 +211,44 @@ namespace Fireasy.Data.Syntax
                         return "NCHAR(255)";
                     }
                     return $"NCHAR({length})";
-                case DbType.Time:
+                case DbType.Binary:
+                    return "BLOB";
+                case DbType.Boolean:
+                    return "NUMBER(1, 0)";
+                case DbType.Currency:
+                    return "NUMBER(20, 0)";
+                case DbType.Date:
+                case DbType.DateTime:
+                case DbType.DateTime2:
+                    return "DATE";
+                case DbType.DateTimeOffset:
                     return "TIMESTAMP(4)";
+                case DbType.Decimal:
+                    return $"NUMBER({precision ?? 12}, {scale ?? 6})";
+                case DbType.Double:
+                    return "DOUBLE PRECISION";
+                case DbType.Guid:
+                    return "CHAR(38)";
+                case DbType.Int16:
                 case DbType.UInt16:
                     return "NUMBER(5, 0)";
+                case DbType.Int32:
                 case DbType.UInt32:
                     return "NUMBER(10, 0)";
+                case DbType.Int64:
                 case DbType.UInt64:
                     return "NUMBER(20, 0)";
+                case DbType.Byte:
+                case DbType.SByte:
+                    return "NUMBER(5, 0)";
+                case DbType.Single:
+                    return "FLOAT(24)";
+                case DbType.Time:
+                    return "TIMESTAMP(4)";
                 case DbType.VarNumeric:
-                    break;
+                    return "NUMBER";
                 case DbType.Xml:
-                    break;
+                    return "CLOB";
             }
 
             throw new SyntaxParseErrorException($"{nameof(Column)} 无法构造 {dbType} 类型");

@@ -36,29 +36,28 @@ namespace Fireasy.Data.Schema
         /// </summary>
         protected override void InitializeDataTypes()
         {
-            AddDataType("long", DbType.Int64, typeof(long));
-            AddDataType("interval year to month", DbType.Int64, typeof(long));
-            AddDataType("float", DbType.Single, typeof(float));
-            AddDataType("binary_float", DbType.Single, typeof(float));
-            AddDataType("binary_double", DbType.Double, typeof(double));
-            AddDataType("number", DbType.Decimal, typeof(decimal));
             AddDataType("bfile", DbType.Binary, typeof(byte[]));
             AddDataType("blob", DbType.Binary, typeof(byte[]));
-            AddDataType("raw", DbType.Binary, typeof(byte[]));
-            AddDataType("long raw", DbType.Binary, typeof(byte[]));
+            AddDataType("binary_float", DbType.Single, typeof(float));
+            AddDataType("binary_double", DbType.Double, typeof(double));
             AddDataType("char", DbType.String, typeof(string));
-            AddDataType("nchar", DbType.String, typeof(string));
-            AddDataType("varchar2", DbType.String, typeof(string));
-            AddDataType("nvarchar2", DbType.String, typeof(string));
             AddDataType("clob", DbType.String, typeof(string));
-            AddDataType("nclob", DbType.String, typeof(string));
-            AddDataType("xmltype", DbType.String, typeof(string));
-            AddDataType("rowid", DbType.String, typeof(string));
             AddDataType("date", DbType.Date, typeof(DateTime));
-            AddDataType("timestamp with time zone", DbType.DateTime, typeof(DateTime));
-            AddDataType("timestamp with local time zone", DbType.DateTime, typeof(DateTime));
-            AddDataType("timestamp", DbType.DateTime, typeof(DateTime));
-            AddDataType("interval day to second", DbType.Int64, typeof(TimeSpan));
+            AddDataType("float", DbType.Decimal, typeof(decimal));
+            AddDataType(@"interval day\([\d+]\) to second\([\d+]\)", DbType.Time, typeof(TimeSpan));
+            AddDataType(@"interval year\([\d+]\) to month", DbType.Int64, typeof(long));
+            AddDataType("long", DbType.String, typeof(string));
+            AddDataType("long raw", DbType.Binary, typeof(byte[]));
+            AddDataType("nchar", DbType.String, typeof(string));
+            AddDataType("nclob", DbType.String, typeof(string));
+            AddDataType("number", DbType.Decimal, typeof(decimal));
+            AddDataType("nvarchar2", DbType.String, typeof(string));
+            AddDataType("raw", DbType.Binary, typeof(byte[]));
+            AddDataType("rowid", DbType.String, typeof(string));
+            AddDataType(@"timestamp\([\d+]\)", DbType.DateTime, typeof(DateTime));
+            AddDataType(@"timestamp\([\d+]\) with local time zone", DbType.DateTime, typeof(DateTime));
+            AddDataType(@"timestamp\([\d+]\) with time zone", DbType.DateTime, typeof(DateTime));
+            AddDataType("varchar2", DbType.String, typeof(string));
         }
 
         /// <summary>
@@ -230,7 +229,7 @@ SELECT T.OWNER,
                 .Parameterize(parameters, "TABLENAME", nameof(Column.TableName))
                 .Parameterize(parameters, "COLUMNNAME", nameof(Column.Name));
 
-            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetColumnType(new Column
+            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetDataType(SetColumnType(new Column
             {
                 Schema = wrapper!.GetString(reader, 0),
                 TableName = wrapper.GetString(reader, 1),
@@ -243,7 +242,7 @@ SELECT T.OWNER,
                 IsPrimaryKey = wrapper.GetString(reader, 8) == "Y",
                 Default = wrapper.GetString(reader, 9),
                 Description = wrapper.GetString(reader, 10),
-            }));
+            })));
         }
 
         /// <summary>
@@ -385,7 +384,7 @@ SELECT T.OWNER,
                 .Parameterize(parameters, "VIEWNAME", nameof(ViewColumn.ViewName))
                 .Parameterize(parameters, "COLUMNNAME", nameof(ViewColumn.Name));
 
-            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new ViewColumn
+            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetDataType(new ViewColumn
             {
                 Schema = wrapper!.GetString(reader, 0),
                 ViewName = wrapper.GetString(reader, 1),
@@ -396,7 +395,7 @@ SELECT T.OWNER,
                 NumericScale = reader.IsDBNull(6) ? (int?)null : wrapper.GetInt32(reader, 6),
                 IsNullable = wrapper.GetString(reader, 7) == "Y",
                 Description = wrapper.GetString(reader, 8),
-            });
+            }));
         }
 
         /// <summary>

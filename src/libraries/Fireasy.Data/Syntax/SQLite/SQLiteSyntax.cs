@@ -159,7 +159,7 @@ LIMIT {(segment.Length != 0 ? segment.Length : 1000)}{(segment.Start != null ? $
         /// <param name="precision">数值的精度。</param>
         /// <param name="scale">数值的小数位。</param>
         /// <returns></returns>
-        public string Column(DbType dbType, int? length, int? precision, int? scale = new int?())
+        public virtual string Column(DbType dbType, int? length = null, int? precision = null, int? scale = null)
         {
             switch (dbType)
             {
@@ -193,6 +193,8 @@ LIMIT {(segment.Length != 0 ? segment.Length : 1000)}{(segment.Start != null ? $
                     return "TIME";
                 case DbType.Guid:
                     return "UNIQUEIDENTIFIER";
+                case DbType.Xml:
+                    return "TEXT";
             }
 
             throw new SyntaxParseErrorException($"{nameof(Column)} 无法构造 {dbType} 类型");

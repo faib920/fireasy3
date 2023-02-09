@@ -184,102 +184,56 @@ LIMIT {(segment.Length != 0 ? segment.Length : 1000)}{(segment.Start != null ? $
         /// <param name="precision">数值的精度。</param>
         /// <param name="scale">数值的小数位。</param>
         /// <returns></returns>
-        public string Column(DbType dbType, int? length, int? precision, int? scale = new int?())
+        public virtual string Column(DbType dbType, int? length = null, int? precision = null, int? scale = null)
         {
             switch (dbType)
             {
+                case DbType.String:
                 case DbType.AnsiString:
                     if (length == null)
                     {
                         return "VARCHAR(255)";
                     }
-                    if (length > 8000)
-                    {
-                        return "NTEXT";
-                    }
-                    return $"VARCHAR({length})";
+                    return $"LONGVARCHAR({length})";
+                case DbType.StringFixedLength:
                 case DbType.AnsiStringFixedLength:
-                    return length == null ? "CHAR(255)" : $"CHAR({length})";
+                    return $"CHAR({length ?? 255})";
                 case DbType.Binary:
-                    if (length == null)
-                    {
-                        return "VARBINARY(8000)";
-                    }
-                    if (length > 8000)
-                    {
-                        return "IMAGE";
-                    }
-                    return $"VARBINARY({length})";
+                    return "BINARY";
                 case DbType.Boolean:
                     return "BIT";
-                case DbType.Byte:
-                    return "TINYINT";
-                case DbType.Currency:
-                    return "MONEY";
                 case DbType.Date:
-                    return "DATETIME";
                 case DbType.DateTime:
-                    return "DATETIME";
                 case DbType.DateTime2:
-                    return "DATETIME2";
+                    return "DATETIME";
                 case DbType.DateTimeOffset:
-                    return "DATETIMEOFFSET";
+                    return "TIMESTAMP";
                 case DbType.Decimal:
-                    if (precision == null && scale == null)
-                    {
-                        return "DECIMAL(19, 5)";
-                    }
-                    if (precision == null)
-                    {
-                        return $"DECIMAL(19, {scale})";
-                    }
-                    if (scale == null)
-                    {
-                        return $"DECIMAL({precision}, 5)";
-                    }
-                    return $"DECIMAL({precision}, {scale})";
+                case DbType.Currency:
+                case DbType.VarNumeric:
+                    return $"DECIMAL({precision ?? 19}, {scale ?? 6})";
                 case DbType.Double:
                     return "DOUBLE PRECISION";
                 case DbType.Guid:
-                    return "UNIQUEIDENTIFIER";
+                    return "CHAR(36)";
                 case DbType.Int16:
+                case DbType.UInt16:
                     return "SMALLINT";
                 case DbType.Int32:
+                case DbType.UInt32:
                     return "INT";
                 case DbType.Int64:
+                case DbType.UInt64:
                     return "BIGINT";
+                case DbType.Byte:
                 case DbType.SByte:
                     return "TINYINT";
                 case DbType.Single:
                     return "REAL";
-                case DbType.String:
-                    if (length == null)
-                    {
-                        return "VARCHAR(255)";
-                    }
-                    if (length > 8000)
-                    {
-                        return "NTEXT";
-                    }
-                    return $"VARCHAR({length})";
-                case DbType.StringFixedLength:
-                    if (length == null)
-                    {
-                        return "NCHAR(255)";
-                    }
-                    return $"NCHAR({length})";
                 case DbType.Time:
                     return "DATETIME";
-                case DbType.UInt16:
-                    break;
-                case DbType.UInt32:
-                    break;
-                case DbType.UInt64:
-                    break;
-                case DbType.VarNumeric:
-                    break;
                 case DbType.Xml:
-                    return "XML";
+                    return "CLOB";
             }
 
             throw new SyntaxParseErrorException($"{nameof(Column)} 无法构造 {dbType} 类型");

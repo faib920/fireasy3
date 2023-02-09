@@ -386,7 +386,8 @@ namespace Fireasy.Data.Tests.SyntaxTest
             sb.AppendLine($"c13 {syntax.Column(DbType.Currency)},");
             sb.AppendLine($"c14 {syntax.Column(DbType.Guid)},");
             sb.AppendLine($"c15 {syntax.Column(DbType.StringFixedLength, 200)},");
-            sb.AppendLine($"c16 {syntax.Column(DbType.Binary)}");
+            sb.AppendLine($"c16 {syntax.Column(DbType.Binary)},");
+            sb.AppendLine($"c17 {syntax.Column(DbType.Xml)}");
             sb.AppendLine(")");
 
             var ret = await database.ExecuteNonQueryAsync(sb.ToString());

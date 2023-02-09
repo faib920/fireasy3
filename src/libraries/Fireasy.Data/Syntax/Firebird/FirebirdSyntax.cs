@@ -160,7 +160,7 @@ namespace Fireasy.Data.Syntax
         /// <param name="precision">数值的精度。</param>
         /// <param name="scale">数值的小数位。</param>
         /// <returns></returns>
-        public virtual string Column(System.Data.DbType dbType, int? length = null, int? precision = null, int? scale = null)
+        public virtual string Column(DbType dbType, int? length = null, int? precision = null, int? scale = null)
         {
             switch (dbType)
             {
@@ -170,34 +170,23 @@ namespace Fireasy.Data.Syntax
                     {
                         return $"VARCHAR({length ?? 255})";
                     }
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException("VARCHAR 最大长度不能超过255。");
                 case DbType.StringFixedLength:
                 case DbType.AnsiStringFixedLength:
                     if (length == null || length <= 255)
                     {
                         return $"CHAR({length ?? 255})";
                     }
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException("CHAR 最大长度不能超过255。");
                 case DbType.Guid:
                     return "CHAR(36)";
                 case DbType.Binary:
                     return "BLOB";
                 case DbType.Decimal:
-                    if (precision == null && scale == null)
-                    {
-                        return "DECIMAL(19, 5)";
-                    }
-                    if (precision == null)
-                    {
-                        return $"DECIMAL(19, {scale})";
-                    }
-                    if (scale == null)
-                    {
-                        return $"DECIMAL({precision}, 5)";
-                    }
-                    return $"DECIMAL({precision}, {scale})";
+                case DbType.Currency:
+                    return $"DECIMAL({precision ?? 18}, {scale ?? 6})";
                 case DbType.Double:
-                    return "DOUBLE";
+                    return "DOUBLE PRECISION";
                 case DbType.Single:
                     return "FLOAT";
                 case DbType.Boolean:
@@ -217,9 +206,12 @@ namespace Fireasy.Data.Syntax
                 case DbType.Date:
                     return "DATE";
                 case DbType.DateTime:
+                case DbType.DateTimeOffset:
                     return "TIMESTAMP";
                 case DbType.Time:
                     return "TIME";
+                case DbType.Xml:
+                    return "VARCHAR(8000)";
             }
 
             throw new SyntaxParseErrorException($"{nameof(Column)} 无法构造 {dbType} 类型");

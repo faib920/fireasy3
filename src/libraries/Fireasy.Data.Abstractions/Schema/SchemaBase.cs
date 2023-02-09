@@ -12,6 +12,7 @@ using Fireasy.Data.Schema.Linq;
 using System.Data.Common;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace Fireasy.Data.Schema
 {
@@ -376,7 +377,11 @@ namespace Fireasy.Data.Schema
         /// <returns></returns>
         protected virtual Column SetColumnType(Column column)
         {
-            if (column.NumericPrecision > 0 && column.NumericScale != null && column.DataType.IndexOf("int", StringComparison.CurrentCultureIgnoreCase) == -1)
+            if (Regex.IsMatch(column.DataType, @"\([\d+]\)"))
+            {
+                column.ColumnType = column.DataType;
+            }
+            else if (column.NumericPrecision > 0 && column.NumericScale != null && column.DataType.IndexOf("int", StringComparison.CurrentCultureIgnoreCase) == -1)
             {
                 column.ColumnType = $"{column.DataType}({column.NumericPrecision},{column.NumericScale})";
             }
@@ -403,7 +408,7 @@ namespace Fireasy.Data.Schema
         /// <returns></returns>
         protected T SetDataType<T>(T column) where T : IDbTypeColumn
         {
-            var map = _dataTypes.FirstOrDefault(s => s.Name.Equals(column.DataType, StringComparison.OrdinalIgnoreCase));
+            var map = _dataTypes.FirstOrDefault(s => Regex.IsMatch(column.DataType, s.Name, RegexOptions.IgnoreCase));
             if (map != null)
             {
                 column.DbType = map.DbType;

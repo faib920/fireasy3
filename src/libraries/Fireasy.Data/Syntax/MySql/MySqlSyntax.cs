@@ -164,7 +164,7 @@ LIMIT {(segment.Length != 0 ? segment.Length : 1000)}{(segment.Start != null ? $
         /// <param name="precision">数值的精度。</param>
         /// <param name="scale">数值的小数位。</param>
         /// <returns></returns>
-        public string Column(DbType dbType, int? length, int? precision, int? scale = new int?())
+        public virtual string Column(DbType dbType, int? length = null, int? precision = null, int? scale = null)
         {
             switch (dbType)
             {
@@ -178,8 +178,11 @@ LIMIT {(segment.Length != 0 ? segment.Length : 1000)}{(segment.Start != null ? $
                     {
                         return "TEXT";
                     }
-                    //length > 65535 && length <= 16777215
-                    return "MEDIUMTEXT";
+                    if (length > 65535 && length <= 16777215)
+                    {
+                        return "MEDIUMTEXT";
+                    }
+                    return "LONGTEXT";
                 case DbType.StringFixedLength:
                 case DbType.AnsiStringFixedLength:
                     if (length == null || length <= 255)
@@ -190,21 +193,27 @@ LIMIT {(segment.Length != 0 ? segment.Length : 1000)}{(segment.Start != null ? $
                     {
                         return "TEXT";
                     }
-                    //length > 65535 && length <= 16777215
-                    return "MEDIUMTEXT";
+                    if (length > 65535 && length <= 16777215)
+                    {
+                        return "MEDIUMTEXT";
+                    }
+                    return "LONGTEXT";
                 case DbType.Guid:
                     return "VARCHAR(40)";
                 case DbType.Binary:
-                    if (length == null || length <= 127)
+                    if (length == null || length <= 255)
                     {
-                        return "LONGBLOB";
+                        return "TINYBLOB";
                     }
-                    if (length > 127 && length <= 65535)
+                    if (length > 255 && length <= 65535)
                     {
                         return "BLOB";
                     }
-                    //length > 65535 && length <= 16777215
-                    return "MEDIUMBLOB";
+                    if (length > 65535 && length <= 16777215)
+                    {
+                        return "MEDIUMBLOB";
+                    }
+                    return "LONGBLOB";
                 case DbType.Currency:
                 case DbType.Decimal:
                     return $"DECIMAL({precision ?? 19}, {scale ?? 6})";
@@ -237,6 +246,8 @@ LIMIT {(segment.Length != 0 ? segment.Length : 1000)}{(segment.Start != null ? $
                     return "TIME";
                 case DbType.DateTimeOffset:
                     return "TIMESTAMP";
+                case DbType.Xml:
+                    return "TEXT";
             }
 
             throw new SyntaxParseErrorException($"{nameof(Column)} 无法构造 {dbType} 类型");
