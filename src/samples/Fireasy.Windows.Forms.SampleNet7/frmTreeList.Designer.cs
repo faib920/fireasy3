@@ -28,30 +28,22 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.listView1 = new Fireasy.Windows.Forms.TreeList();
             this.SuspendLayout();
-            // 
-            // listView1
-            // 
-            this.listView1.Location = new System.Drawing.Point(12, 12);
-            this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(776, 426);
-            this.listView1.TabIndex = 0;
             // 
             // frmTreeList
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 21F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.listView1);
+            this.Margin = new System.Windows.Forms.Padding(5);
             this.Name = "frmTreeList";
-            this.Text = "Form1";
+            this.Text = "TreeList Sample";
             this.ResumeLayout(false);
 
         }
 
         #endregion
 
-        private Fireasy.Windows.Forms.TreeList listView1;
+        private TreeList treeList1;
     }
 }
