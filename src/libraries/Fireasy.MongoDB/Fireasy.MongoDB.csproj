@@ -1,0 +1,9 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0;netstandard2.1;net7.0</TargetFrameworks>
+	</PropertyGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Fireasy.Common\Fireasy.Common.csproj" />
+		<ProjectReference Include="..\Fireasy.Data.Entity.Abstractions\Fireasy.Data.Entity.Abstractions.csproj" />
+	</ItemGroup>
+</Project>

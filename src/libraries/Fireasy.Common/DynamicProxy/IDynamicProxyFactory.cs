@@ -22,10 +22,18 @@ namespace Fireasy.Common.DynamicProxy
         object? BuildProxy(Type objectType, params object[] args);
 
         /// <summary>
+        /// 创建一个代理，将定义的拦截器注入到属性或方法内。
+        /// </summary>
+        /// <typeparam name="T">用于创建代理类型的基类型。</typeparam>
+        /// <param name="args">创建对象的一组参数。</param>
+        /// <returns></returns>
+        T? BuildProxy<T>(params object[] args) where T : class;
+
+        /// <summary>
         /// 获取新的代理类。
         /// </summary>
         /// <param name="objectType"></param>
         /// <returns></returns>
-        Type GetProxyType(Type objectType);
+        Type? GetProxyType(Type objectType);
     }
 }

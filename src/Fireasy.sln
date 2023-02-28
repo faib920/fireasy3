@@ -75,9 +75,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fireasy.Windows.Forms.Edito
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{EC468ED2-8317-4FA5-BFF8-24CBA11071B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fireasy.Windows.Forms.SampleNet7", "samples\Fireasy.Windows.Forms.SampleNet7\Fireasy.Windows.Forms.SampleNet7.csproj", "{314724CE-4BA0-404F-A298-402392544ABC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fireasy.Windows.Forms.SampleNet7", "samples\Fireasy.Windows.Forms.SampleNet7\Fireasy.Windows.Forms.SampleNet7.csproj", "{314724CE-4BA0-404F-A298-402392544ABC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fireasy.Windows.Forms.SampleNet472", "samples\Fireasy.Windows.Forms.SampleNet472\Fireasy.Windows.Forms.SampleNet472.csproj", "{2B05A9D2-D54C-4E8B-B16A-579DCB97D87C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fireasy.MongoDB", "libraries\Fireasy.MongoDB\Fireasy.MongoDB.csproj", "{F6A19D98-303A-4359-BE4B-A57FB91EDC5B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fireasy.Common.Analyzers", "libraries\Fireasy.Common.Analyzers\Fireasy.Common.Analyzers.csproj", "{3D744C0E-771B-4B78-91A2-BF7990305446}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -190,6 +194,14 @@ Global
 		{2B05A9D2-D54C-4E8B-B16A-579DCB97D87C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2B05A9D2-D54C-4E8B-B16A-579DCB97D87C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2B05A9D2-D54C-4E8B-B16A-579DCB97D87C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6A19D98-303A-4359-BE4B-A57FB91EDC5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6A19D98-303A-4359-BE4B-A57FB91EDC5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6A19D98-303A-4359-BE4B-A57FB91EDC5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6A19D98-303A-4359-BE4B-A57FB91EDC5B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D744C0E-771B-4B78-91A2-BF7990305446}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D744C0E-771B-4B78-91A2-BF7990305446}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D744C0E-771B-4B78-91A2-BF7990305446}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D744C0E-771B-4B78-91A2-BF7990305446}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -230,6 +242,8 @@ Global
 		{339588A4-5E88-4104-993C-106154969CF7} = {E875CA59-0222-4A41-9E74-E78D71F43E4A}
 		{314724CE-4BA0-404F-A298-402392544ABC} = {EC468ED2-8317-4FA5-BFF8-24CBA11071B4}
 		{2B05A9D2-D54C-4E8B-B16A-579DCB97D87C} = {EC468ED2-8317-4FA5-BFF8-24CBA11071B4}
+		{F6A19D98-303A-4359-BE4B-A57FB91EDC5B} = {65C5FBD5-3AE9-443E-ABCB-02FAAD788B52}
+		{3D744C0E-771B-4B78-91A2-BF7990305446} = {805224AD-95E2-45AA-8F33-FF0BD9788196}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {66A18F4B-7001-4004-A6E3-2A16BCD54E2F}

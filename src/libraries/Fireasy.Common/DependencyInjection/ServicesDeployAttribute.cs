@@ -11,7 +11,7 @@ namespace Fireasy.Common.DependencyInjection
     /// <summary>
     /// 指定程序集中部署服务的 <see cref="IServicesDeployer"/> 实现。
     /// </summary>
-    [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
     public sealed class ServicesDeployAttribute : Attribute
     {
         /// <summary>

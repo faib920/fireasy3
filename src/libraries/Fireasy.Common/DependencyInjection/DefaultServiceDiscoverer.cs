@@ -139,12 +139,15 @@ namespace Fireasy.Common.DependencyInjection
 
         private void ConfigureServices(IServiceCollection services, Assembly assembly)
         {
-            var attr = assembly.GetCustomAttribute<ServicesDeployAttribute>();
-            if (attr != null)
+            var attrs = assembly.GetCustomAttributes<ServicesDeployAttribute>();
+            if (attrs.Any())
             {
-                if (Activator.CreateInstance(attr.Type) is IServicesDeployer deployer)
+                foreach (var attr in attrs)
                 {
-                    deployer.Configure(services);
+                    if (Activator.CreateInstance(attr.Type) is IServicesDeployer deployer)
+                    {
+                        deployer.Configure(services);
+                    }
                 }
             }
             else

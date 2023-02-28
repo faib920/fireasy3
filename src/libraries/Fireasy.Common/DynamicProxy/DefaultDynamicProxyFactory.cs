@@ -6,6 +6,8 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using Fireasy.Common.ObjectActivator;
+
 namespace Fireasy.Common.DynamicProxy
 {
     /// <summary>
@@ -13,6 +15,17 @@ namespace Fireasy.Common.DynamicProxy
     /// </summary>
     public class DefaultDynamicProxyFactory : IDynamicProxyFactory
     {
+        private readonly IObjectActivator _objectActivator;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="objectActivator"></param>
+        public DefaultDynamicProxyFactory(IObjectActivator objectActivator)
+        {
+            _objectActivator = objectActivator;
+        }
+
         /// <summary>
         /// 创建一个代理，将定义的拦截器注入到属性或方法内。
         /// </summary>
@@ -33,7 +46,12 @@ namespace Fireasy.Common.DynamicProxy
         public object? BuildProxy(Type objectType, params object[] args)
         {
             var proxyType = GetProxyType(objectType);
-            return System.Activator.CreateInstance(proxyType, args);
+            if (proxyType == null)
+            {
+                return null;
+            }
+
+            return _objectActivator.CreateInstance(proxyType, args);
         }
 
         /// <summary>
@@ -41,21 +59,16 @@ namespace Fireasy.Common.DynamicProxy
         /// </summary>
         /// <param name="objectType"></param>
         /// <returns></returns>
-        public Type GetProxyType(Type objectType)
+        public Type? GetProxyType(Type objectType)
         {
             Guard.ArgumentNull(objectType, nameof(objectType));
 
-            if (objectType.IsSealed)
+            if (Container.TryGet(objectType, out var proxyType))
             {
-                throw new DynamicProxyException($"类型 {objectType.FullName} 不能是密封的。");
+                return proxyType;
             }
 
-            var option = new InterceptBuildOption
-            {
-                AssemblyBuilder = AssemblyScope.Current?.AssemblyBuilder
-            };
-
-            return InterceptBuilder.BuildType(objectType, option);
+            return null;
         }
     }
 }
