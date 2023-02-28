@@ -221,6 +221,15 @@ namespace Fireasy.Common.Tests
             }
 
             /// <summary>
+            /// 返回泛型方法
+            /// </summary>
+            /// <returns></returns>
+            public virtual List<Tuple<T, TValue>> TestGenericTow<T, T1, TValue>(T value, List<KeyValuePair<T, T1>> values)
+            {
+                return new List<Tuple<T, TValue>>();
+            }
+
+            /// <summary>
             /// 异步方法
             /// </summary>
             /// <returns></returns>
