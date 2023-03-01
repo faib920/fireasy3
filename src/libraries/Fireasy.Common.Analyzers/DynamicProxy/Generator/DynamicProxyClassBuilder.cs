@@ -5,20 +5,30 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using Fireasy.Common.Analyzers.Metadata;
-using System.Reflection;
+using Fireasy.Common.Analyzers.DynamicProxy.Metadata;
 
 namespace Fireasy.Common.Analyzers.DynamicProxy.Generator
 {
+    /// <summary>
+    /// 动态代理类生成器。
+    /// </summary>
     public class DynamicProxyClassBuilder
     {
         private readonly ClassMetadata _metadata;
 
+        /// <summary>
+        /// 初始化 <see cref="DynamicProxyClassBuilder"/> 类的新实例。
+        /// </summary>
+        /// <param name="metadata"></param>
         public DynamicProxyClassBuilder(ClassMetadata metadata)
         {
             _metadata = metadata;
         }
 
+        /// <summary>
+        /// 生成源代码。
+        /// </summary>
+        /// <returns></returns>
         public SourceText BuildSource()
         {
             var sb = new StringBuilder();
@@ -51,6 +61,10 @@ namespace {_metadata.Namespace}
             return SourceText.From(sb.ToString(), Encoding.UTF8);
         }
 
+        /// <summary>
+        /// 生成所有构造函数。
+        /// </summary>
+        /// <returns></returns>
         private string BuildConstructors()
         {
             var sb = new StringBuilder();
@@ -66,6 +80,10 @@ namespace {_metadata.Namespace}
             return sb.ToString();
         }
 
+        /// <summary>
+        /// 生成初始化方法。
+        /// </summary>
+        /// <returns></returns>
         private string BuildInitializeMethod()
         {
             var sb = new StringBuilder();
@@ -99,6 +117,10 @@ namespace {_metadata.Namespace}
             return sb.ToString();
         }
 
+        /// <summary>
+        /// 生成拦截调用方法。
+        /// </summary>
+        /// <returns></returns>
         private string BuildInterceptMethod()
         {
             var sb = new StringBuilder();
@@ -136,6 +158,10 @@ namespace {_metadata.Namespace}
             return sb.ToString();
         }
 
+        /// <summary>
+        /// 生成所有方法。
+        /// </summary>
+        /// <returns></returns>
         private string BuildMethods()
         {
             var sb = new StringBuilder();
@@ -154,6 +180,13 @@ namespace {_metadata.Namespace}
             return sb.ToString();
         }
 
+        /// <summary>
+        /// 生成指定的方法。
+        /// </summary>
+        /// <param name="sb"></param>
+        /// <param name="method"></param>
+        /// <param name="interceptors"></param>
+        /// <param name="throwExp"></param>
         private void BuildMethod(StringBuilder sb, IMethodSymbol method, List<ITypeSymbol> interceptors, bool throwExp)
         {
             var returnType = GetMethodReturnType(method);
@@ -196,6 +229,10 @@ namespace {_metadata.Namespace}
             }}");
         }
 
+        /// <summary>
+        /// 生成所有属性。
+        /// </summary>
+        /// <returns></returns>
         private string BuildProperties()
         {
             var sb = new StringBuilder();
@@ -214,6 +251,13 @@ namespace {_metadata.Namespace}
             return sb.ToString();
         }
 
+        /// <summary>
+        /// 生成指定的属性。
+        /// </summary>
+        /// <param name="sb"></param>
+        /// <param name="property"></param>
+        /// <param name="interceptors"></param>
+        /// <param name="throwExp"></param>
         private void BuildProperty(StringBuilder sb, IPropertySymbol property, List<ITypeSymbol> interceptors, bool throwExp)
         {
             var propertyType = GetPropertyType(property);
@@ -236,13 +280,13 @@ namespace {_metadata.Namespace}
                     try
                     {{
                         _Initialize(interceptors, info);
-                        _Intercept(interceptors, info, InterceptType.BeforeMethodCall);
+                        _Intercept(interceptors, info, InterceptType.BeforeGetValue);
                         if (info.Cancel)
                         {{
                             return info.ReturnValue == null ? default : ({propertyType})info.ReturnValue;
                         }}
                         info.ReturnValue = base.{property.Name};
-                        _Intercept(interceptors, info, InterceptType.AfterMethodCall);
+                        _Intercept(interceptors, info, InterceptType.AfterGetValue);
                     }}
                     catch (System.Exception exp)
                     {{
@@ -271,13 +315,13 @@ namespace {_metadata.Namespace}
                     try
                     {{
                         _Initialize(interceptors, info);
-                        _Intercept(interceptors, info, InterceptType.BeforeMethodCall);
+                        _Intercept(interceptors, info, InterceptType.BeforeSetValue);
                         if (info.Cancel)
                         {{
                             return;
                         }}
                         base.{property.Name} = ({propertyType})info.Arguments[0];
-                        _Intercept(interceptors, info, InterceptType.AfterMethodCall);
+                        _Intercept(interceptors, info, InterceptType.AfterSetValue);
                     }}
                     catch (System.Exception exp)
                     {{
@@ -295,6 +339,11 @@ namespace {_metadata.Namespace}
             }");
         }
 
+        /// <summary>
+        /// 生成参数列表。
+        /// </summary>
+        /// <param name="method"></param>
+        /// <returns></returns>
         private string BuildParameters(IMethodSymbol method)
         {
             var sb = new StringBuilder();
@@ -311,6 +360,12 @@ namespace {_metadata.Namespace}
             return sb.ToString();
         }
 
+        /// <summary>
+        /// 生成参数的调用列表。
+        /// </summary>
+        /// <param name="method"></param>
+        /// <param name="hasRefKind"></param>
+        /// <returns></returns>
         private string BuildInvokeParameters(IMethodSymbol method, bool hasRefKind = true)
         {
             var sb = new StringBuilder();
@@ -327,6 +382,11 @@ namespace {_metadata.Namespace}
             return sb.ToString();
         }
 
+        /// <summary>
+        /// 生成 out 参数赋值列表。
+        /// </summary>
+        /// <param name="method"></param>
+        /// <returns></returns>
         private string BuildOutParameters(IMethodSymbol method)
         {
             var sb = new StringBuilder();
@@ -342,6 +402,11 @@ namespace {_metadata.Namespace}
             return sb.ToString();
         }
 
+        /// <summary>
+        /// 获取参数的引用类型。
+        /// </summary>
+        /// <param name="refKind"></param>
+        /// <returns></returns>
         private string GetParameterRefKind(RefKind refKind)
         {
             switch (refKind)
@@ -352,6 +417,11 @@ namespace {_metadata.Namespace}
             }
         }
 
+        /// <summary>
+        /// 生成初始化拦截器实例列表。
+        /// </summary>
+        /// <param name="interceptors"></param>
+        /// <returns></returns>
         private string BuildInterceptors(List<ITypeSymbol> interceptors)
         {
             var sb = new StringBuilder();
@@ -368,6 +438,11 @@ namespace {_metadata.Namespace}
             return sb.ToString();
         }
 
+        /// <summary>
+        /// 获取泛型类型列表。
+        /// </summary>
+        /// <param name="method"></param>
+        /// <returns></returns>
         private string GetGenericTypes(IMethodSymbol method)
         {
             if (method.IsGenericMethod)
@@ -391,6 +466,12 @@ namespace {_metadata.Namespace}
             return string.Empty;
         }
 
+        /// <summary>
+        /// 获取方法的拦截器类型列表。
+        /// </summary>
+        /// <param name="method"></param>
+        /// <param name="metadatas"></param>
+        /// <returns></returns>
         private List<ITypeSymbol> GetInterceptorTypes(IMethodSymbol method, InterceptorMetadata metadatas)
         {
             var interceptors = new List<ITypeSymbol>();
@@ -408,6 +489,12 @@ namespace {_metadata.Namespace}
             return interceptors;
         }
 
+        /// <summary>
+        /// 获取属性的拦截器类型列表。
+        /// </summary>
+        /// <param name="property"></param>
+        /// <param name="metadatas"></param>
+        /// <returns></returns>
         private List<ITypeSymbol> GetInterceptorTypes(IPropertySymbol property, InterceptorMetadata metadatas)
         {
             var interceptors = new List<ITypeSymbol>();
@@ -423,6 +510,11 @@ namespace {_metadata.Namespace}
             return interceptors;
         }
 
+        /// <summary>
+        /// 获取方法的返回类型。
+        /// </summary>
+        /// <param name="symbol"></param>
+        /// <returns></returns>
         private string GetMethodReturnType(IMethodSymbol symbol)
         {
             if (symbol.ReturnsVoid)
@@ -433,11 +525,21 @@ namespace {_metadata.Namespace}
             return symbol.ReturnType.ToDisplayString();
         }
 
+        /// <summary>
+        /// 获取属性类型。
+        /// </summary>
+        /// <param name="symbol"></param>
+        /// <returns></returns>
         private string GetPropertyType(IPropertySymbol symbol)
         {
             return symbol.Type.ToDisplayString();
         }
 
+        /// <summary>
+        /// 获取异步方法的返回类型，带 Task 或 ValueTask。
+        /// </summary>
+        /// <param name="symbol"></param>
+        /// <returns></returns>
         private string GetMethodReturnTypeOfAsync(IMethodSymbol symbol)
         {
             if (symbol.ReturnsVoid)
@@ -453,10 +555,15 @@ namespace {_metadata.Namespace}
             return symbol.ReturnType.ToDisplayString();
         }
 
+        /// <summary>
+        /// 是否异步方法。
+        /// </summary>
+        /// <param name="symbol"></param>
+        /// <returns></returns>
         private bool IsAsyncMethod(IMethodSymbol symbol)
         {
-            if (symbol.ReturnType.Name.StartsWith("Task") ||
-                symbol.ReturnType.Name.StartsWith("ValueTask"))
+            if (symbol.ReturnType.Name == "Task" ||
+                symbol.ReturnType.Name == "ValueTask")
             {
                 return true;
             }

@@ -6,7 +6,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Fireasy.Common.Analyzers.Metadata
+namespace Fireasy.Common.Analyzers.DynamicProxy.Metadata
 {
     /// <summary>
     /// 类的元数据。

@@ -5,11 +5,13 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using Fireasy.Common.Analyzers.Metadata;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Fireasy.Common.Analyzers.DynamicProxy.Metadata;
 
-namespace Fireasy.Common.DynamicProxy.Generator
+namespace Fireasy.Common.Analyzers.DynamicProxy.Generator
 {
+    /// <summary>
+    /// 动态代理语法接收器。
+    /// </summary>
     public class DynamicProxySyntaxReceiver : ISyntaxContextReceiver
     {
         private const string InterceptorAttributeName = "Fireasy.Common.DynamicProxy.InterceptAttribute";
@@ -36,6 +38,11 @@ namespace Fireasy.Common.DynamicProxy.Generator
             }
         }
 
+        /// <summary>
+        /// 分析类型语法。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="syntax"></param>
         private void AnalyseClassSyntax(SemanticModel model, ClassDeclarationSyntax syntax)
         {
             var typeSymbol = (ITypeSymbol)model.GetDeclaredSymbol(syntax)!;
@@ -96,6 +103,11 @@ namespace Fireasy.Common.DynamicProxy.Generator
             }
         }
 
+        /// <summary>
+        /// 获取拦截器的元数据。
+        /// </summary>
+        /// <param name="symbol"></param>
+        /// <returns></returns>
         private InterceptorMetadata? FindInterceptorMetadata(ISymbol symbol)
         {
             var types = new List<ITypeSymbol>();
@@ -118,6 +130,11 @@ namespace Fireasy.Common.DynamicProxy.Generator
             return new InterceptorMetadata(types, !hasIgnoreThrowExpAttr);
         }
 
+        /// <summary>
+        /// 获取是否有忽略抛出异常的特性。
+        /// </summary>
+        /// <param name="symbol"></param>
+        /// <returns></returns>
         private bool HasIgnoreThrowExceptionAttribute(ISymbol symbol)
         {
             var ignoreThrowExpAttr = symbol.GetAttributes().FirstOrDefault(s => s.AttributeClass!.ToDisplayString() == IgnoreThrowExceptionAttributeName);
@@ -125,6 +142,12 @@ namespace Fireasy.Common.DynamicProxy.Generator
             return ignoreThrowExpAttr != null;
         }
 
+        /// <summary>
+        /// 查找引用的命名空间。
+        /// </summary>
+        /// <param name="syntax"></param>
+        /// <param name="metadata"></param>
+        /// <returns></returns>
         private ClassMetadata FindUsings(SyntaxNode syntax, ClassMetadata metadata)
         {
             var parent = syntax.Parent;
@@ -141,11 +164,20 @@ namespace Fireasy.Common.DynamicProxy.Generator
             return metadata;
         }
 
+        /// <summary>
+        /// 获取类元数据列表。
+        /// </summary>
+        /// <returns></returns>
         public List<ClassMetadata> GetMetadatas()
         {
             return _metadata;
         }
 
+        /// <summary>
+        /// 获取拦截器类型。
+        /// </summary>
+        /// <param name="symbol"></param>
+        /// <returns></returns>
         private ITypeSymbol? GetInterceptorType(object? symbol)
         {
             if (symbol is not ITypeSymbol type)
