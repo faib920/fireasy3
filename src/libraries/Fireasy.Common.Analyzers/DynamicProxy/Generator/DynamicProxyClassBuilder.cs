@@ -47,13 +47,9 @@ namespace {_metadata.Namespace}
         private List<System.Reflection.MemberInfo> _initMarks = new ();
         
         {BuildConstructors()}
-
         {BuildInitializeMethod()}
-
         {BuildInterceptMethod()}
-
         {BuildMethods()}
-
         {BuildProperties()}
     }}
 }}");
@@ -71,10 +67,10 @@ namespace {_metadata.Namespace}
             foreach (var constructor in _metadata.Constructors)
             {
                 sb.AppendLine($@"
-            public {_metadata.ProxyTypeName}({BuildParameters(constructor)})
-                : base ({BuildInvokeParameters(constructor)})
-            {{
-            }}");
+        public {_metadata.ProxyTypeName}({BuildParameters(constructor)})
+            : base ({BuildInvokeParameters(constructor)})
+        {{
+        }}");
             }
 
             return sb.ToString();
@@ -88,31 +84,31 @@ namespace {_metadata.Namespace}
         {
             var sb = new StringBuilder();
             sb.AppendLine(@"
-            private void _Initialize(List<IInterceptor> interceptors, InterceptCallInfo callInfo)
+        private void _Initialize(List<IInterceptor> interceptors, InterceptCallInfo callInfo)
+        {
+            if (!this._initMarks.Contains(callInfo.Member))
             {
-                if (!this._initMarks.Contains(callInfo.Member))
+                for (int i = 0; i < interceptors.Count; i++)
                 {
-                    for (int i = 0; i < interceptors.Count; i++)
-                    {
-                        InterceptContext context = new InterceptContext(callInfo.Member, this);
-                        interceptors[i].Initialize(context);
-                    }
-                    this._initMarks.Add(callInfo.Member);
+                    InterceptContext context = new InterceptContext(callInfo.Member, this);
+                    interceptors[i].Initialize(context);
                 }
+                this._initMarks.Add(callInfo.Member);
             }
+        }
 
-            private async Task _InitializeAsync(List<IAsyncInterceptor> interceptors, InterceptCallInfo callInfo)
+        private async Task _InitializeAsync(List<IAsyncInterceptor> interceptors, InterceptCallInfo callInfo)
+        {
+            if (!this._initMarks.Contains(callInfo.Member))
             {
-                if (!this._initMarks.Contains(callInfo.Member))
+                for (int i = 0; i < interceptors.Count; i++)
                 {
-                    for (int i = 0; i < interceptors.Count; i++)
-                    {
-                        InterceptContext context = new InterceptContext(callInfo.Member, this);
-                        await interceptors[i].InitializeAsync(context);
-                    }
-                    this._initMarks.Add(callInfo.Member);
+                    InterceptContext context = new InterceptContext(callInfo.Member, this);
+                    await interceptors[i].InitializeAsync(context);
                 }
-            }");
+                this._initMarks.Add(callInfo.Member);
+            }
+        }");
 
             return sb.ToString();
         }
@@ -125,35 +121,35 @@ namespace {_metadata.Namespace}
         {
             var sb = new StringBuilder();
             sb.AppendLine(@"
-            private void _Intercept(List<IInterceptor> interceptors, InterceptCallInfo callInfo, InterceptType interceptType)
+        private void _Intercept(List<IInterceptor> interceptors, InterceptCallInfo callInfo, InterceptType interceptType)
+        {
+            callInfo.InterceptType = interceptType;
+            callInfo.Break = false;
+            for (int i = 0; i < interceptors.Count; i++)
             {
-                callInfo.InterceptType = interceptType;
-                callInfo.Break = false;
-                for (int i = 0; i < interceptors.Count; i++)
+                if (callInfo.Break)
                 {
-                    if (callInfo.Break)
-                    {
-                        break;
-                    }
-
-                    interceptors[i].Intercept(callInfo);
+                    break;
                 }
+
+                interceptors[i].Intercept(callInfo);
             }
+        }
 
-            private async Task _InterceptAsync(List<IAsyncInterceptor> interceptors, InterceptCallInfo callInfo, InterceptType interceptType)
+        private async Task _InterceptAsync(List<IAsyncInterceptor> interceptors, InterceptCallInfo callInfo, InterceptType interceptType)
+        {
+            callInfo.InterceptType = interceptType;
+            callInfo.Break = false;
+            for (int i = 0; i < interceptors.Count; i++)
             {
-                callInfo.InterceptType = interceptType;
-                callInfo.Break = false;
-                for (int i = 0; i < interceptors.Count; i++)
+                if (callInfo.Break)
                 {
-                    if (callInfo.Break)
-                    {
-                        break;
-                    }
-
-                    await interceptors[i].InterceptAsync(callInfo);
+                    break;
                 }
-            }");
+
+                await interceptors[i].InterceptAsync(callInfo);
+            }
+        }");
 
             return sb.ToString();
         }
@@ -195,38 +191,38 @@ namespace {_metadata.Namespace}
             var realReturnType = isAsync ? GetMethodReturnTypeOfAsync(method) : returnType;
 
             sb.AppendLine($@"
-            public override {(isAsync ? "async" : string.Empty)} {returnType} {method.Name}{GetGenericTypes(method)}({BuildParameters(method)})
-            {{
-                var interceptors = new List<{(isAsync ? "IAsyncInterceptor" : "IInterceptor")}> {{ {BuildInterceptors(interceptors)} }};
-                var info = new InterceptCallInfo();
-                info.Target = this;
-                info.Arguments = new object[] {{ {BuildInvokeParameters(method, false)} }};
-                info.Member = ((MethodInfo)MethodBase.GetCurrentMethod()).GetBaseDefinition();
+        public override {(isAsync ? "async" : string.Empty)} {returnType} {method.Name}{GetGenericTypes(method)}({BuildParameters(method)})
+        {{
+            var interceptors = new List<{(isAsync ? "IAsyncInterceptor" : "IInterceptor")}> {{ {BuildInterceptors(interceptors)} }};
+            var info = new InterceptCallInfo();
+            info.Target = this;
+            info.Arguments = new object[] {{ {BuildInvokeParameters(method, false)} }};
+            info.Member = ((MethodInfo)MethodBase.GetCurrentMethod()).GetBaseDefinition();
                 
-                try
+            try
+            {{
+                {(isAsync ? "await _InitializeAsync" : "_Initialize")}(interceptors, info);
+                {(isAsync ? "await _InterceptAsync" : "_Intercept")}(interceptors, info, InterceptType.BeforeMethodCall);
+                {BuildOutParameters(method)}
+                if (info.Cancel)
                 {{
-                    {(isAsync ? "await _InitializeAsync" : "_Initialize")}(interceptors, info);
-                    {(isAsync ? "await _InterceptAsync" : "_Intercept")}(interceptors, info, InterceptType.BeforeMethodCall);
-                    {BuildOutParameters(method)}
-                    if (info.Cancel)
-                    {{
-                        {(returnType != "void" ? "return info.ReturnValue == null ? default : (" + realReturnType + ")info.ReturnValue;" : string.Empty)}
-                    }}
-                    {(returnType != "void" ? "info.ReturnValue = " : string.Empty)} {(isAsync ? "await " : string.Empty)}base.{method.Name}{GetGenericTypes(method)}({BuildInvokeParameters(method)});
-                    {(isAsync ? "await _InterceptAsync" : "_Intercept")}(interceptors, info, InterceptType.AfterMethodCall);
+                    {(returnType != "void" ? "return info.ReturnValue == null ? default : (" + realReturnType + ")info.ReturnValue;" : string.Empty)}
                 }}
-                catch (System.Exception exp)
-                {{
-                    info.Exception = exp;
-                    {(isAsync ? "await _InterceptAsync" : "_Intercept")}(interceptors, info, InterceptType.Catching);
-                    {(throwExp ? "throw exp;" : string.Empty)}
-                }}
-                finally
-                {{
-                    {(isAsync ? "await _InterceptAsync" : "_Intercept")}(interceptors, info, InterceptType.Finally);
-                }}
-                {(returnType != "void" ? "return info.ReturnValue == null ? default : (" + realReturnType + ")info.ReturnValue;": string.Empty)}
-            }}");
+                {(returnType != "void" ? "info.ReturnValue = " : string.Empty)} {(isAsync ? "await " : string.Empty)}base.{method.Name}{GetGenericTypes(method)}({BuildInvokeParameters(method)});
+                {(isAsync ? "await _InterceptAsync" : "_Intercept")}(interceptors, info, InterceptType.AfterMethodCall);
+            }}
+            catch (System.Exception exp)
+            {{
+                info.Exception = exp;
+                {(isAsync ? "await _InterceptAsync" : "_Intercept")}(interceptors, info, InterceptType.Catching);
+                {(throwExp ? "throw exp;" : string.Empty)}
+            }}
+            finally
+            {{
+                {(isAsync ? "await _InterceptAsync" : "_Intercept")}(interceptors, info, InterceptType.Finally);
+            }}
+            {(returnType != "void" ? "return info.ReturnValue == null ? default : (" + realReturnType + ")info.ReturnValue;": string.Empty)}
+        }}");
         }
 
         /// <summary>
@@ -263,77 +259,77 @@ namespace {_metadata.Namespace}
             var propertyType = GetPropertyType(property);
 
             sb.AppendLine($@"
-            public override {propertyType} {property.Name}
-            {{");
+        public override {propertyType} {property.Name}
+        {{");
 
-            if (property.GetMethod != null)
-            {
-                sb.AppendLine($@"
-                get
-                {{
-                    var interceptors = new List<IInterceptor> {{ {BuildInterceptors(interceptors)} }};
-                    var info = new InterceptCallInfo();
-                    info.Target = this;
-                    info.Arguments = new object[] {{ }};
-                    info.Member = this.GetType().GetTypeInfo().GetProperty(""{property.Name}"");
+        if (property.GetMethod != null)
+        {
+            sb.AppendLine($@"
+            get
+            {{
+                var interceptors = new List<IInterceptor> {{ {BuildInterceptors(interceptors)} }};
+                var info = new InterceptCallInfo();
+                info.Target = this;
+                info.Arguments = new object[] {{ }};
+                info.Member = this.GetType().GetTypeInfo().GetProperty(""{property.Name}"");
                 
-                    try
+                try
+                {{
+                    _Initialize(interceptors, info);
+                    _Intercept(interceptors, info, InterceptType.BeforeGetValue);
+                    if (info.Cancel)
                     {{
-                        _Initialize(interceptors, info);
-                        _Intercept(interceptors, info, InterceptType.BeforeGetValue);
-                        if (info.Cancel)
-                        {{
-                            return info.ReturnValue == null ? default : ({propertyType})info.ReturnValue;
-                        }}
-                        info.ReturnValue = base.{property.Name};
-                        _Intercept(interceptors, info, InterceptType.AfterGetValue);
+                        return info.ReturnValue == null ? default : ({propertyType})info.ReturnValue;
                     }}
-                    catch (System.Exception exp)
-                    {{
-                        info.Exception = exp;
-                        _Intercept(interceptors, info, InterceptType.Catching);
-                        {(throwExp ? "throw exp;" : string.Empty)}
-                    }}
-                    finally
-                    {{
-                        _Intercept(interceptors, info, InterceptType.Finally);
-                    }}
-                    return info.ReturnValue == null ? default : ({propertyType})info.ReturnValue;
-                }}");
+                    info.ReturnValue = base.{property.Name};
+                    _Intercept(interceptors, info, InterceptType.AfterGetValue);
+                }}
+                catch (System.Exception exp)
+                {{
+                    info.Exception = exp;
+                    _Intercept(interceptors, info, InterceptType.Catching);
+                    {(throwExp ? "throw exp;" : string.Empty)}
+                }}
+                finally
+                {{
+                    _Intercept(interceptors, info, InterceptType.Finally);
+                }}
+                return info.ReturnValue == null ? default : ({propertyType})info.ReturnValue;
+            }}");
             }
             if (property.SetMethod != null)
             {
                 sb.AppendLine($@"
-                set
-                {{
-                    var interceptors = new List<IInterceptor> {{ {BuildInterceptors(interceptors)} }};
-                    var info = new InterceptCallInfo();
-                    info.Target = this;
-                    info.Arguments = new object[] {{ value }};
-                    info.Member = this.GetType().GetTypeInfo().GetProperty(""{property.Name}"");
+            set
+            {{
+                var interceptors = new List<IInterceptor> {{ {BuildInterceptors(interceptors)} }};
+                var info = new InterceptCallInfo();
+                info.Target = this;
+                info.Arguments = new object[] {{ value }};
+                info.Member = this.GetType().GetTypeInfo().GetProperty(""{property.Name}"");
                 
-                    try
+                try
+                {{
+                    _Initialize(interceptors, info);
+                    _Intercept(interceptors, info, InterceptType.BeforeSetValue);
+                    if (info.Cancel)
                     {{
-                        _Initialize(interceptors, info);
-                        _Intercept(interceptors, info, InterceptType.BeforeSetValue);
-                        if (info.Cancel)
-                        {{
-                            return;
-                        }}
-                        base.{property.Name} = ({propertyType})info.Arguments[0];
-                        _Intercept(interceptors, info, InterceptType.AfterSetValue);
+                        return;
                     }}
-                    catch (System.Exception exp)
-                    {{
-                        info.Exception = exp;
-                        _Intercept(interceptors, info, InterceptType.Catching);
-                        {(throwExp ? "throw exp;" : string.Empty)}
-                    }}
-                    finally
-                    {{
-                        _Intercept(interceptors, info, InterceptType.Finally);
-                    }}
-                }}");
+                    base.{property.Name} = ({propertyType})info.Arguments[0];
+                    _Intercept(interceptors, info, InterceptType.AfterSetValue);
+                }}
+                catch (System.Exception exp)
+                {{
+                    info.Exception = exp;
+                    _Intercept(interceptors, info, InterceptType.Catching);
+                    {(throwExp ? "throw exp;" : string.Empty)}
+                }}
+                finally
+                {{
+                    _Intercept(interceptors, info, InterceptType.Finally);
+                }}
+            }}");
             }
             sb.AppendLine(@"
             }");
@@ -395,7 +391,7 @@ namespace {_metadata.Namespace}
             {
                 if (method.Parameters[i].RefKind == RefKind.Out)
                 {
-                    sb.AppendLine($"                    {method.Parameters[i].Name} = default;");
+                    sb.AppendLine($"                {method.Parameters[i].Name} = default;");
                 }
             }
 
