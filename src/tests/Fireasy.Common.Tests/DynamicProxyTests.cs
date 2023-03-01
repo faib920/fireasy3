@@ -253,6 +253,12 @@ namespace Fireasy.Common.Tests
             /// 属性
             /// </summary>
             public virtual string Address { get; set; }
+
+            public virtual string this[int index]
+            {
+                get { return string.Empty; }
+                set { }
+            }
         }
 
         public class ClassAllInterceptor : IInterceptor

@@ -83,7 +83,7 @@ namespace Fireasy.Common.Analyzers.Metadata
             {
                 Methods.Add(method, metadata);
             }
-            else if (symbol is IPropertySymbol property)
+            else if (symbol is IPropertySymbol property && property.Parameters.Count() == 0) //忽略索引器
             {
                 Properties.Add(property, metadata);
             }

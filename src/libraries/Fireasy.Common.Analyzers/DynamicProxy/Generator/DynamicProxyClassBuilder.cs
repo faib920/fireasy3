@@ -27,6 +27,8 @@ namespace Fireasy.Common.Analyzers.DynamicProxy.Generator
                 sb.AppendLine(u.ToString());
             }
 
+            sb.AppendLine("using System.Reflection;");
+
             sb.AppendLine($@"
 namespace {_metadata.Namespace}
 {{
@@ -41,6 +43,8 @@ namespace {_metadata.Namespace}
         {BuildInterceptMethod()}
 
         {BuildMethods()}
+
+        {BuildProperties()}
     }}
 }}");
 
@@ -164,7 +168,7 @@ namespace {_metadata.Namespace}
                 var info = new InterceptCallInfo();
                 info.Target = this;
                 info.Arguments = new object[] {{ {BuildInvokeParameters(method, false)} }};
-                info.Member = System.Reflection.MethodInfo.GetCurrentMethod();
+                info.Member = ((MethodInfo)MethodBase.GetCurrentMethod()).GetBaseDefinition();
                 
                 try
                 {{
@@ -190,6 +194,105 @@ namespace {_metadata.Namespace}
                 }}
                 {(returnType != "void" ? "return info.ReturnValue == null ? default : (" + realReturnType + ")info.ReturnValue;": string.Empty)}
             }}");
+        }
+
+        private string BuildProperties()
+        {
+            var sb = new StringBuilder();
+            foreach (var kvp in _metadata.Properties)
+            {
+                var interceptors = GetInterceptorTypes(kvp.Key, kvp.Value);
+
+                if (interceptors.Count == 0)
+                {
+                    continue;
+                }
+
+                BuildProperty(sb, kvp.Key, interceptors, kvp.Value.ThrowExpcetion);
+            }
+
+            return sb.ToString();
+        }
+
+        private void BuildProperty(StringBuilder sb, IPropertySymbol property, List<ITypeSymbol> interceptors, bool throwExp)
+        {
+            var propertyType = GetPropertyType(property);
+
+            sb.AppendLine($@"
+            public override {propertyType} {property.Name}
+            {{");
+
+            if (property.GetMethod != null)
+            {
+                sb.AppendLine($@"
+                get
+                {{
+                    var interceptors = new List<IInterceptor> {{ {BuildInterceptors(interceptors)} }};
+                    var info = new InterceptCallInfo();
+                    info.Target = this;
+                    info.Arguments = new object[] {{ }};
+                    info.Member = this.GetType().GetTypeInfo().GetProperty(""{property.Name}"");
+                
+                    try
+                    {{
+                        _Initialize(interceptors, info);
+                        _Intercept(interceptors, info, InterceptType.BeforeMethodCall);
+                        if (info.Cancel)
+                        {{
+                            return info.ReturnValue == null ? default : ({propertyType})info.ReturnValue;
+                        }}
+                        info.ReturnValue = base.{property.Name};
+                        _Intercept(interceptors, info, InterceptType.AfterMethodCall);
+                    }}
+                    catch (System.Exception exp)
+                    {{
+                        info.Exception = exp;
+                        _Intercept(interceptors, info, InterceptType.Catching);
+                        {(throwExp ? "throw exp;" : string.Empty)}
+                    }}
+                    finally
+                    {{
+                        _Intercept(interceptors, info, InterceptType.Finally);
+                    }}
+                    return info.ReturnValue == null ? default : ({propertyType})info.ReturnValue;
+                }}");
+            }
+            if (property.SetMethod != null)
+            {
+                sb.AppendLine($@"
+                set
+                {{
+                    var interceptors = new List<IInterceptor> {{ {BuildInterceptors(interceptors)} }};
+                    var info = new InterceptCallInfo();
+                    info.Target = this;
+                    info.Arguments = new object[] {{ value }};
+                    info.Member = this.GetType().GetTypeInfo().GetProperty(""{property.Name}"");
+                
+                    try
+                    {{
+                        _Initialize(interceptors, info);
+                        _Intercept(interceptors, info, InterceptType.BeforeMethodCall);
+                        if (info.Cancel)
+                        {{
+                            return;
+                        }}
+                        base.{property.Name} = ({propertyType})info.Arguments[0];
+                        _Intercept(interceptors, info, InterceptType.AfterMethodCall);
+                    }}
+                    catch (System.Exception exp)
+                    {{
+                        info.Exception = exp;
+                        _Intercept(interceptors, info, InterceptType.Catching);
+                        {(throwExp ? "throw exp;" : string.Empty)}
+                    }}
+                    finally
+                    {{
+                        _Intercept(interceptors, info, InterceptType.Finally);
+                    }}
+                }}");
+            }
+            sb.AppendLine(@"
+            }");
         }
 
         private string BuildParameters(IMethodSymbol method)
@@ -305,6 +408,21 @@ namespace {_metadata.Namespace}
             return interceptors;
         }
 
+        private List<ITypeSymbol> GetInterceptorTypes(IPropertySymbol property, InterceptorMetadata metadatas)
+        {
+            var interceptors = new List<ITypeSymbol>();
+
+            foreach (var type in metadatas.InterceptorTypes)
+            {
+                if (type.Interfaces.Any(t => t.Name == "IInterceptor"))
+                {
+                    interceptors.Add(type);
+                }
+            }
+
+            return interceptors;
+        }
+
         private string GetMethodReturnType(IMethodSymbol symbol)
         {
             if (symbol.ReturnsVoid)
@@ -313,6 +431,11 @@ namespace {_metadata.Namespace}
             }
 
             return symbol.ReturnType.ToDisplayString();
+        }
+
+        private string GetPropertyType(IPropertySymbol symbol)
+        {
+            return symbol.Type.ToDisplayString();
         }
 
         private string GetMethodReturnTypeOfAsync(IMethodSymbol symbol)
