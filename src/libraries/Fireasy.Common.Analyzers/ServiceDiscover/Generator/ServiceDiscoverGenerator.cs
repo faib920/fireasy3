@@ -44,9 +44,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace __ServiceDiscoverNs
 {
-    public class __ServiceDiscoverServicesDeployer: IServicesDeployer
+    internal class __ServiceDiscoverServicesDeployer: IServicesDeployer
     {
-        public void Configure(IServiceCollection services)
+        void IServicesDeployer.Configure(IServiceCollection services)
         {");
 
             foreach (var metadata in metadatas)

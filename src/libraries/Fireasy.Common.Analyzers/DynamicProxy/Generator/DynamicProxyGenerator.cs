@@ -53,9 +53,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace __DynamicProxyNs
 {
-    public class __DynamicProxyServicesDeployer: IServicesDeployer
+    internal class __DynamicProxyServicesDeployer: IServicesDeployer
     {
-        public void Configure(IServiceCollection services)
+        void IServicesDeployer.Configure(IServiceCollection services)
         {");
 
             foreach (var kvp in mappers)
