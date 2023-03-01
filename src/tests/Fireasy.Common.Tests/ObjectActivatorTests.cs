@@ -87,7 +87,7 @@ namespace Fireasy.Common.Tests
         /// <summary>
         /// 使用动态代理的服务类，使用AOP拦截器
         /// </summary>
-        public class TestServiceProxy2 : IDynamicProxySupport
+        public class TestServiceProxy2
         {
             private readonly ITestService _service;
             private readonly ILogger<TestServiceProxy2> _logger;

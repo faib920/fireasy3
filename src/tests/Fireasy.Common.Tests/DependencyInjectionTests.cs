@@ -1,5 +1,6 @@
 using Fireasy.Common.DependencyInjection;
 using Fireasy.Common.DependencyInjection.Filters;
+using Fireasy.Common.DynamicProxy;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
@@ -273,25 +274,6 @@ namespace Fireasy.Common.Tests
         }
 
         /// <summary>
-        /// 测试通过 <see cref="RegisterOneselfAttribute"/> 注册自身的服务
-        /// </summary>
-        [TestMethod]
-        public void TestWithRegisterOneselfService()
-        {
-            var services = new ServiceCollection();
-
-            var builder = services.AddFireasy();
-
-            var serviceProvider = services.BuildServiceProvider();
-
-            var service1 = serviceProvider.GetService<TestWithRegisterOneselfAttrImpl>();
-            var service2 = serviceProvider.GetService<ITestWithRegisterOneselfAttr>();
-
-            Assert.IsNotNull(service1);
-            Assert.IsNotNull(service2);
-        }
-
-        /// <summary>
         /// 测试使用 <see cref="DisableServerDiscoverAttribute"/> 忽略发现
         /// </summary>
         [TestMethod]
@@ -377,6 +359,44 @@ namespace Fireasy.Common.Tests
             services.AddSingleton<ITestSingletonService>(sp => new TestSingletonServiceImplWithArgs(sp));
 
             Assert.ThrowsException<ArgumentNullException>(() => services.GetSingletonInstance<ITestSingletonService>());
+        }
+
+        /// <summary>
+        /// 测试动态代理类
+        /// </summary>
+        [TestMethod]
+        public void TestDynamicProxy()
+        {
+            var services = new ServiceCollection();
+
+            var builder = services.AddFireasy();
+
+            var serviceProvider = builder.Services.BuildServiceProvider();
+            var obj = serviceProvider.GetService<TestDynamicProxyClass>();
+
+            Assert.AreNotEqual(typeof(TestDynamicProxyClass), obj.GetType());
+
+            var value = obj.GetString();
+
+            Assert.AreEqual("hello world", value);
+        }
+
+        /// <summary>
+        /// 测试泛型类
+        /// </summary>
+        [TestMethod]
+        public void TestGenericType()
+        {
+            var services = new ServiceCollection();
+
+            var builder = services.AddFireasy();
+
+            var serviceProvider = builder.Services.BuildServiceProvider();
+            var obj = serviceProvider.GetService<IGenericService<string, int>>();
+
+            var value = obj.GetValue();
+
+            Assert.AreEqual(null, value);
         }
 
         #region 测试接口和类
@@ -483,20 +503,6 @@ namespace Fireasy.Common.Tests
             void Test();
         }
 
-        [RegisterOneself]
-        [ServiceRegister(ServiceLifetime.Singleton)]
-        public class TestWithRegisterOneselfAttrImpl : ITestWithRegisterOneselfAttr
-        {
-            public TestWithRegisterOneselfAttrImpl()
-            {
-                Id = Guid.NewGuid();
-            }
-
-            public Guid Id { get; }
-
-            public void Test() => Console.WriteLine("Hello TestWithRegisterAttribute!");
-        }
-
         public interface ITestDisableDiscover
         {
             void Test();
@@ -507,6 +513,43 @@ namespace Fireasy.Common.Tests
         {
             public void Test() => Console.WriteLine("Hello TestWithRegisterAttribute!");
         }
+
+        public interface IGenericService<T1, T2>
+        {
+            T1 GetValue();
+        }
+
+        public class GenericService<T1, T2> : IGenericService<T1, T2>, ITransientService
+        {
+            public T1 GetValue()
+            {
+                return default;
+            }
+        }
+
+        public class TestDynamicProxyClass : ITransientService
+        {
+            [Intercept(typeof(AnyInterceptor))]
+            public virtual string GetString()
+            {
+                return string.Empty;
+            }
+        }
+
+        public class AnyInterceptor : IInterceptor
+        {
+            public void Initialize(InterceptContext context)
+            {
+            }
+
+            public void Intercept(InterceptCallInfo info)
+            {
+                info.ReturnValue = "hello world";
+
+                Console.WriteLine(info.InterceptType);
+            }
+        }
+
         #endregion
     }
 }

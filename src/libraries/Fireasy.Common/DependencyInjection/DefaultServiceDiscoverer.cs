@@ -80,7 +80,8 @@ namespace Fireasy.Common.DependencyInjection
                 _assemblies.Add(assembly);
 
                 ConfigureServices(services, assembly);
-                DiscoverServices(services, assembly);
+                //使用 SourceGenerator 生成注册
+                //DiscoverServices(services, assembly);
             }
         }
 
@@ -124,11 +125,6 @@ namespace Fireasy.Common.DependencyInjection
                 if (interfaceTypes.Length > 0)
                 {
                     interfaceTypes.ForEach(s => AddService(services, s, type, (ServiceLifetime)lifetime));
-
-                    if (type.IsDefined<RegisterOneselfAttribute>())
-                    {
-                        AddService(services, type, type, (ServiceLifetime)lifetime);
-                    }
                 }
                 else
                 {
@@ -142,7 +138,7 @@ namespace Fireasy.Common.DependencyInjection
             var attrs = assembly.GetCustomAttributes<ServicesDeployAttribute>();
             if (attrs.Any())
             {
-                foreach (var attr in attrs)
+                foreach (var attr in attrs.OrderBy(s => s.Priority))
                 {
                     if (Activator.CreateInstance(attr.Type) is IServicesDeployer deployer)
                     {

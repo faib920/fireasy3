@@ -27,5 +27,10 @@ namespace Fireasy.Common.DependencyInjection
         /// <see cref="IServicesDeployer"/> 的实现类。
         /// </summary>
         public Type Type { get; }
+
+        /// <summary>
+        /// 获取或设置优先级，0 为最高优先级。
+        /// </summary>
+        public int Priority { get; set; }
     }
 }

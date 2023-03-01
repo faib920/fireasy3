@@ -42,7 +42,7 @@ namespace Fireasy.Common.Analyzers.DynamicProxy.Generator
             sb.AppendLine($@"
 namespace {_metadata.Namespace}
 {{
-    public class {_metadata.ProxyTypeName} : {_metadata.TypeFullName}
+    public class {_metadata.ProxyTypeName} : {_metadata.TypeFullName}, IDynamicProxyImplemented
     {{
         private List<System.Reflection.MemberInfo> _initMarks = new ();
         
