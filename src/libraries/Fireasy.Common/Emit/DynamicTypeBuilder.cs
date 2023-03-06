@@ -23,36 +23,43 @@ namespace Fireasy.Common.Emit
         private Type _innerType;
         private readonly List<ITypeCreator> _nestedTypeBuilders = new List<ITypeCreator>();
 
-        private Type _baseType;
+        private Type? _baseType;
 
         /// <summary>
         /// 初始化 <see cref="DynamicTypeBuilder"/> 类的新实例。
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="context">上下文对象。</param>
         /// <param name="typeName">动态类型的名称。</param>
-        /// <param name="visual">指定类的可见性。</param>
-        /// <param name="calling">指定类的调用属性。</param>
-        /// <param name="baseType">动态类型继承的基类。</param>
-        internal DynamicTypeBuilder(BuildContext context, string typeName, VisualDecoration visual = VisualDecoration.Public, CallingDecoration calling = CallingDecoration.Standard, Type baseType = null)
-            : base(visual, calling)
+        /// <param name="accessibility">类的访问修饰符。</param>
+        /// <param name="modifier">类的修饰符。</param>
+        /// <param name="baseType">继承的基类。</param>
+        internal DynamicTypeBuilder(BuildContext context, string typeName, Accessibility accessibility = Accessibility.Public, Modifier modifier = Modifier.Standard, Type? baseType = null)
+            : base(accessibility, modifier)
         {
             Context = new BuildContext(context);
             TypeName = typeName;
             _baseType = baseType;
-            _attributes = GetTypeAttributes(visual, calling);
+            _attributes = GetTypeAttributes(accessibility, modifier);
             InitBuilder();
 
             Context.TypeBuilder = this;
         }
 
-        internal DynamicTypeBuilder(BuildContext context, string typeName, VisualDecoration visual, Type baseType)
-            : base(visual, CallingDecoration.Standard)
+        /// <summary>
+        /// 初始化 <see cref="DynamicTypeBuilder"/> 类的新实例。
+        /// </summary>
+        /// <param name="context">上下文对象。</param>
+        /// <param name="typeName">动态类型的名称。</param>
+        /// <param name="accessibility">类的访问修饰符。</param>
+        /// <param name="baseType"></param>
+        internal DynamicTypeBuilder(BuildContext context, string typeName, Accessibility accessibility, Type baseType)
+            : base(accessibility, Modifier.Standard)
         {
             Context = new BuildContext(context);
             _isNesetType = true;
             TypeName = typeName;
             _baseType = baseType;
-            _attributes = GetTypeAttributes(visual, CallingDecoration.Standard);
+            _attributes = GetTypeAttributes(accessibility, Modifier.Standard);
             InitBuilder();
 
             Context.TypeBuilder = this;
@@ -78,7 +85,7 @@ namespace Fireasy.Common.Emit
         /// <summary>
         /// 获取动态类型的名称。
         /// </summary>
-        public string TypeName { get; private set; }
+        public string TypeName { get; }
 
         /// <summary>
         /// 获取动态类型所要实现的接口集合。
@@ -176,12 +183,12 @@ namespace Fireasy.Common.Emit
         /// </summary>
         /// <param name="propertyName">属性的名称。</param>
         /// <param name="propertyType">属性的类型。</param>
-        /// <param name="visual">指定属性的可见性。</param>
-        /// <param name="calling">指定属性的调用属性。</param>
+        /// <param name="accessibility">指定属性的可见性。</param>
+        /// <param name="modifier">指定属性的调用属性。</param>
         /// <returns>新的 <see cref="DynamicPropertyBuilder"/>。</returns>
-        public virtual DynamicPropertyBuilder DefineProperty(string propertyName, Type propertyType, VisualDecoration visual = VisualDecoration.Public, CallingDecoration calling = CallingDecoration.Standard)
+        public virtual DynamicPropertyBuilder DefineProperty(string propertyName, Type propertyType, Accessibility accessibility = Accessibility.Public, Modifier modifier = Modifier.Standard)
         {
-            return new DynamicPropertyBuilder(Context, propertyName, propertyType, visual, calling);
+            return new DynamicPropertyBuilder(Context, propertyName, propertyType, accessibility, modifier);
         }
 
         /// <summary>
@@ -190,26 +197,26 @@ namespace Fireasy.Common.Emit
         /// <param name="methodName">方法的名称。</param>
         /// <param name="returnType">返回值的类型，如果为 void 则该参数为 null。</param>
         /// <param name="parameterTypes">一个数组，表示方法的传入参数类型。</param>
-        /// <param name="visual">指定方法的可见性。</param>
-        /// <param name="calling">指定方法的调用属性。</param>
+        /// <param name="accessibility">指定方法的可见性。</param>
+        /// <param name="modifier">指定方法的调用属性。</param>
         /// <param name="ilCoding">方法体的 IL 过程。</param>
         /// <returns>新的 <see cref="DynamicMethodBuilder"/>。</returns>
-        public virtual DynamicMethodBuilder DefineMethod(string methodName, Type returnType = null, Type[] parameterTypes = null, VisualDecoration visual = VisualDecoration.Public, CallingDecoration calling = CallingDecoration.Standard, Action<BuildContext> ilCoding = null)
+        public virtual DynamicMethodBuilder DefineMethod(string methodName, Type? returnType = null, Type[]? parameterTypes = null, Accessibility accessibility = Accessibility.Public, Modifier modifier = Modifier.Standard, Action<BuildContext> ilCoding = null)
         {
-            return new DynamicMethodBuilder(Context, methodName, returnType, parameterTypes, visual, calling, ilCoding);
+            return new DynamicMethodBuilder(Context, methodName, returnType, parameterTypes, accessibility, modifier, ilCoding);
         }
 
         /// <summary>
         /// 定义一个构造函数。
         /// </summary>
         /// <param name="parameterTypes"></param>
-        /// <param name="visual"></param>
-        /// <param name="calling"></param>
+        /// <param name="accessibility"></param>
+        /// <param name="modifier"></param>
         /// <param name="ilCoding"></param>
         /// <returns></returns>
-        public virtual DynamicConstructorBuilder DefineConstructor(Type[] parameterTypes, VisualDecoration visual = VisualDecoration.Public, CallingDecoration calling = CallingDecoration.Standard, Action<BuildContext> ilCoding = null)
+        public virtual DynamicConstructorBuilder DefineConstructor(Type[] parameterTypes, Accessibility accessibility = Accessibility.Public, Modifier modifier = Modifier.Standard, Action<BuildContext> ilCoding = null)
         {
-            return new DynamicConstructorBuilder(Context, parameterTypes, visual, calling, ilCoding);
+            return new DynamicConstructorBuilder(Context, parameterTypes, accessibility, modifier, ilCoding);
         }
 
         /// <summary>
@@ -218,24 +225,24 @@ namespace Fireasy.Common.Emit
         /// <param name="fieldName">字段的名称。</param>
         /// <param name="fieldType">字段的类型。</param>
         /// <param name="defaultValue">默认值。</param>
-        /// <param name="visual"></param>
-        /// <param name="calling"></param>
+        /// <param name="accessibility"></param>
+        /// <param name="modifier"></param>
         /// <returns></returns>
-        public virtual DynamicFieldBuilder DefineField(string fieldName, Type fieldType, object defaultValue = null, VisualDecoration visual = VisualDecoration.Private, CallingDecoration calling = CallingDecoration.Standard)
+        public virtual DynamicFieldBuilder DefineField(string fieldName, Type fieldType, object? defaultValue = null, Accessibility accessibility = Accessibility.Private, Modifier modifier = Modifier.Standard)
         {
-            return new DynamicFieldBuilder(Context, fieldName, fieldType, defaultValue, visual, calling);
+            return new DynamicFieldBuilder(Context, fieldName, fieldType, defaultValue, accessibility, modifier);
         }
 
         /// <summary>
         /// 定义一个嵌套的类型。
         /// </summary>
         /// <param name="typeName"></param>
-        /// <param name="visual"></param>
+        /// <param name="accessibility"></param>
         /// <param name="baseType"></param>
         /// <returns></returns>
-        public virtual DynamicTypeBuilder DefineNestedType(string typeName, VisualDecoration visual = VisualDecoration.Private, Type baseType = null)
+        public virtual DynamicTypeBuilder DefineNestedType(string typeName, Accessibility accessibility = Accessibility.Private, Type? baseType = null)
         {
-            var nestedType = new DynamicTypeBuilder(Context, typeName, visual, baseType);
+            var nestedType = new DynamicTypeBuilder(Context, typeName, accessibility, baseType);
             _nestedTypeBuilders.Add(nestedType);
             return nestedType;
         }
@@ -244,11 +251,11 @@ namespace Fireasy.Common.Emit
         /// 使用当前的构造器定义一个动态接口。
         /// </summary>
         /// <param name="typeName">类型的名称。</param>
-        /// <param name="visual">指定类的可见性。</param>
+        /// <param name="accessibility">指定类的可见性。</param>
         /// <returns></returns>
-        public DynamicInterfaceBuilder DefineNestedInterface(string typeName, VisualDecoration visual = VisualDecoration.Public)
+        public DynamicInterfaceBuilder DefineNestedInterface(string typeName, Accessibility accessibility = Accessibility.Public)
         {
-            var typeBuilder = new DynamicInterfaceBuilder(Context, typeName, visual);
+            var typeBuilder = new DynamicInterfaceBuilder(Context, typeName, accessibility);
             _nestedTypeBuilders.Add(typeBuilder);
             return typeBuilder;
         }
@@ -258,11 +265,11 @@ namespace Fireasy.Common.Emit
         /// </summary>
         /// <param name="enumName">枚举的名称。</param>
         /// <param name="underlyingType">枚举的类型。</param>
-        /// <param name="visual">指定枚举的可见性。</param>
+        /// <param name="accessibility">指定枚举的可见性。</param>
         /// <returns></returns>
-        public DynamicEnumBuilder DefineNestedEnum(string enumName, Type underlyingType = null, VisualDecoration visual = VisualDecoration.Public)
+        public DynamicEnumBuilder DefineNestedEnum(string enumName, Type? underlyingType = null, Accessibility accessibility = Accessibility.Public)
         {
-            var enumBuilder = new DynamicEnumBuilder(Context, enumName, underlyingType ?? typeof(int), visual);
+            var enumBuilder = new DynamicEnumBuilder(Context, enumName, underlyingType ?? typeof(int), accessibility);
             _nestedTypeBuilders.Add(enumBuilder);
             return enumBuilder;
         }
@@ -285,36 +292,36 @@ namespace Fireasy.Common.Emit
             _typeBuilder.SetCustomAttribute(customBuilder);
         }
 
-        private TypeAttributes GetTypeAttributes(VisualDecoration visual, CallingDecoration calling)
+        private TypeAttributes GetTypeAttributes(Accessibility accessibility, Modifier modifier)
         {
             var attrs = GetTypeAttributes();
-            switch (calling)
+            switch (modifier)
             {
-                case CallingDecoration.Abstract:
+                case Modifier.Abstract:
                     attrs |= TypeAttributes.Abstract;
                     break;
-                case CallingDecoration.Sealed:
+                case Modifier.Sealed:
                     attrs |= TypeAttributes.Sealed;
                     break;
             }
 
-            switch (visual)
+            switch (accessibility)
             {
-                case VisualDecoration.Internal:
+                case Accessibility.Internal:
                     if (_isNesetType)
                     {
                         attrs |= TypeAttributes.NestedAssembly;
                     }
 
                     break;
-                case VisualDecoration.Private:
+                case Accessibility.Private:
                     if (_isNesetType)
                     {
                         attrs |= TypeAttributes.NestedPrivate;
                     }
 
                     break;
-                case VisualDecoration.Public:
+                case Accessibility.Public:
                     attrs |= _isNesetType ? TypeAttributes.NestedPublic : TypeAttributes.Public;
                     break;
             }

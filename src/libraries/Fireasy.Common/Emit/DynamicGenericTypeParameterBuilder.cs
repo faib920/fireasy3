@@ -9,21 +9,29 @@ using System.Reflection.Emit;
 
 namespace Fireasy.Common.Emit
 {
+    /// <summary>
+    /// 动态泛型参数构造器。
+    /// </summary>
     public class DynamicGenericTypeParameterBuilder
     {
-        public DynamicGenericTypeParameterBuilder(GenericTypeParameter par, GenericTypeParameterBuilder builder)
+        /// <summary>
+        /// 初始化 <see cref="DynamicGenericTypeParameterBuilder"/> 类的新实例。
+        /// </summary>
+        /// <param name="parameter"></param>
+        /// <param name="builder"></param>
+        public DynamicGenericTypeParameterBuilder(GenericTypeParameter parameter, GenericTypeParameterBuilder builder)
         {
-            if (par.BaseType != null && par.BaseType != typeof(object))
+            if (parameter.BaseType != null && parameter.BaseType != typeof(object))
             {
-                builder.SetBaseTypeConstraint(par.BaseType);
+                builder.SetBaseTypeConstraint(parameter.BaseType);
             }
 
-            if (par.ConstraintTypes != null)
+            if (parameter.ConstraintTypes != null)
             {
-                builder.SetInterfaceConstraints(par.ConstraintTypes);
+                builder.SetInterfaceConstraints(parameter.ConstraintTypes);
             }
 
-            builder.SetGenericParameterAttributes(par.Attribute);
+            builder.SetGenericParameterAttributes(parameter.Attribute);
 
             GenerateTypeParameterBuilder = builder;
         }

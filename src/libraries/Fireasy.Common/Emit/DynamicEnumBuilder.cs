@@ -19,25 +19,32 @@ namespace Fireasy.Common.Emit
         private EnumBuilder _enumBuilder;
         private Type _innerType;
 
-        internal DynamicEnumBuilder(BuildContext context, string enumName, Type underlyingType, VisualDecoration visual = VisualDecoration.Public)
-             : base(visual, CallingDecoration.Standard)
+        /// <summary>
+        /// 初始化 <see cref="DynamicEnumBuilder"/> 类的新实例。
+        /// </summary>
+        /// <param name="context">上下文对象。</param>
+        /// <param name="enumName">枚举名称。</param>
+        /// <param name="underlyingType">枚举的基类型。</param>
+        /// <param name="accessibility">枚举的访问修饰符。</param>
+        internal DynamicEnumBuilder(BuildContext context, string enumName, Type underlyingType, Accessibility accessibility = Accessibility.Public)
+             : base(accessibility, Modifier.Standard)
         {
             Context = new BuildContext(context) { EnumBuilder = this };
             EnumName = enumName;
             UnderlyingType = underlyingType;
-            _attributes = GetTypeAttributes(visual);
+            _attributes = GetTypeAttributes(accessibility);
             InitBuilder();
         }
 
         /// <summary>
         /// 获取枚举的名称。
         /// </summary>
-        public string EnumName { get; private set; }
+        public string EnumName { get; }
 
         /// <summary>
         /// 获取枚举的类型。
         /// </summary>
-        public Type UnderlyingType { get; private set; }
+        public Type UnderlyingType { get; }
 
         /// <summary>
         /// 获取 <see cref="EnumBuilder"/> 对象。
@@ -86,14 +93,14 @@ namespace Fireasy.Common.Emit
             _enumBuilder.SetCustomAttribute(customBuilder);
         }
 
-        private TypeAttributes GetTypeAttributes(VisualDecoration visual)
+        private TypeAttributes GetTypeAttributes(Accessibility accessibility)
         {
             var attrs = TypeAttributes.Class;
-            switch (visual)
+            switch (accessibility)
             {
-                case VisualDecoration.Internal:
+                case Accessibility.Internal:
                     break;
-                case VisualDecoration.Public:
+                case Accessibility.Public:
                     attrs |= TypeAttributes.Public;
                     break;
             }

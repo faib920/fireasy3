@@ -14,10 +14,17 @@ namespace Fireasy.Common.Emit
     /// </summary>
     public sealed class BuildContext
     {
+        /// <summary>
+        /// 初始化 <see cref="BuildContext"/> 类的新实例。
+        /// </summary>
         internal BuildContext()
         {
         }
 
+        /// <summary>
+        /// 初始化 <see cref="BuildContext"/> 类的新实例。
+        /// </summary>
+        /// <param name="context"></param>
         internal BuildContext(BuildContext context)
         {
             AssemblyBuilder = context.AssemblyBuilder;

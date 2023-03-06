@@ -16,15 +16,24 @@ namespace Fireasy.Common.Emit
     public class DynamicFieldBuilder : DynamicBuilder
     {
         private FieldBuilder _fieldBuilder;
-        private readonly object _defaultValue;
+        private readonly object? _defaultValue;
         private readonly FieldAttributes _attributes;
 
-        internal DynamicFieldBuilder(BuildContext context, string fieldName, Type fieldType, object defaultValue = null, VisualDecoration visual = VisualDecoration.Private, CallingDecoration calling = CallingDecoration.Standard)
-            : base(visual, calling)
+        /// <summary>
+        /// 初始化 <see cref="DynamicFieldBuilder"/> 类的新实例。
+        /// </summary>
+        /// <param name="context">上下文对象。</param>
+        /// <param name="fieldName">字段名称。</param>
+        /// <param name="fieldType">字段的类型。</param>
+        /// <param name="defaultValue">默认值。</param>
+        /// <param name="accessibility">字段的访问修饰符。</param>
+        /// <param name="modifier">字段的修饰符。</param>
+        internal DynamicFieldBuilder(BuildContext context, string fieldName, Type fieldType, object? defaultValue = null, Accessibility accessibility = Accessibility.Private, Modifier modifier = Modifier.Standard)
+            : base(accessibility, modifier)
         {
             FieldName = fieldName;
             FieldType = fieldType;
-            _attributes = GetAttributes(visual, calling);
+            _attributes = GetAttributes(accessibility, modifier);
             _defaultValue = defaultValue;
             Context = context;
             InitBuilder();
@@ -33,12 +42,12 @@ namespace Fireasy.Common.Emit
         /// <summary>
         /// 获取字段的名称。
         /// </summary>
-        public string FieldName { get; private set; }
+        public string FieldName { get; }
 
         /// <summary>
         /// 获取字段的类型。
         /// </summary>
-        public Type FieldType { get; private set; }
+        public Type FieldType { get; }
 
         /// <summary>
         /// 设置一个 <see cref="CustomAttributeBuilder"/> 对象到当前实例关联的 <see cref="FieldBuilder"/> 对象。
@@ -58,25 +67,25 @@ namespace Fireasy.Common.Emit
             get { return _fieldBuilder; }
         }
 
-        private FieldAttributes GetAttributes(VisualDecoration visual, CallingDecoration calling)
+        private FieldAttributes GetAttributes(Accessibility accessibility, Modifier modifier)
         {
             var attrs = FieldAttributes.HasDefault;
-            switch (calling)
+            switch (modifier)
             {
-                case CallingDecoration.Static:
+                case Modifier.Static:
                     attrs |= FieldAttributes.Static;
                     break;
             }
 
-            switch (visual)
+            switch (accessibility)
             {
-                case VisualDecoration.Internal:
+                case Accessibility.Internal:
                     attrs |= FieldAttributes.Assembly;
                     break;
-                case VisualDecoration.Private:
+                case Accessibility.Private:
                     attrs |= FieldAttributes.Private;
                     break;
-                case VisualDecoration.Public:
+                case Accessibility.Public:
                     attrs |= FieldAttributes.Public;
                     break;
             }

@@ -9,9 +9,9 @@
 namespace Fireasy.Common.Emit
 {
     /// <summary>
-    /// 访问性修饰符。
+    /// 类或成员的修饰符。
     /// </summary>
-    public enum CallingDecoration
+    public enum Modifier
     {
         /// <summary>
         /// 基本的。

@@ -9,12 +9,12 @@
 namespace Fireasy.Common.Emit
 {
     /// <summary>
-    /// 可见性修饰符。
+    /// 访问性修饰符。
     /// </summary>
-    public enum VisualDecoration
+    public enum Accessibility
     {
         /// <summary>
-        /// 公共的。
+        /// 公开的。
         /// </summary>
         Public,
 
@@ -31,6 +31,11 @@ namespace Fireasy.Common.Emit
         /// <summary>
         /// 保护的。
         /// </summary>
-        Protected
+        Protected,
+
+        /// <summary>
+        /// 保护内部的。
+        /// </summary>
+        ProtectedInternal
     }
 }

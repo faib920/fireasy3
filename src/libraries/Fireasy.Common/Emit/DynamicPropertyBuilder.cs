@@ -18,8 +18,16 @@ namespace Fireasy.Common.Emit
         private PropertyBuilder _propertyBuilder;
         private DynamicFieldBuilder _fieldBuilder;
 
-        internal DynamicPropertyBuilder(BuildContext context, string propertyName, Type propertyType, VisualDecoration visual = VisualDecoration.Public, CallingDecoration calling = CallingDecoration.Standard)
-            : base(visual, calling)
+        /// <summary>
+        /// 初始化 <see cref="DynamicPropertyBuilder"/> 类的新实例。
+        /// </summary>
+        /// <param name="context">上下文对象。</param>
+        /// <param name="propertyName">属性名称。</param>
+        /// <param name="propertyType">属性类型。</param>
+        /// <param name="accessibility">属性的访问修饰符。</param>
+        /// <param name="modifier">属性的修饰符。</param>
+        internal DynamicPropertyBuilder(BuildContext context, string propertyName, Type propertyType, Accessibility accessibility = Accessibility.Public, Modifier modifier = Modifier.Standard)
+            : base(accessibility, modifier)
         {
             Context = new BuildContext(context) { PropertyBuilder = this };
             Name = propertyName;
@@ -30,12 +38,12 @@ namespace Fireasy.Common.Emit
         /// <summary>
         /// 获取属性的名称。
         /// </summary>
-        public string Name { get; private set; }
+        public string Name { get; }
 
         /// <summary>
         /// 获取属性的类型。
         /// </summary>
-        public Type PropertyType { get; private set; }
+        public Type PropertyType { get; }
 
         /// <summary>
         /// 获取当前的 <see cref="DynamicFieldBuilder"/>。
@@ -63,24 +71,24 @@ namespace Fireasy.Common.Emit
         /// </summary>
         /// <param name="field">指定一个属性相关的 <see cref="DynamicFieldBuilder"/>。</param>
         /// <returns>当前的 <see cref="DynamicTypeBuilder"/>。</returns>
-        public DynamicPropertyBuilder DefineGetSetMethods(DynamicFieldBuilder field = null)
+        public DynamicPropertyBuilder DefineGetSetMethods(DynamicFieldBuilder? field = null)
         {
-            DefineGetMethodByField(Visual, Calling, fieldBuilder: field);
-            DefineSetMethodByField(Visual, Calling, fieldBuilder: field);
+            DefineGetMethodByField(Accessibility, Modifier, fieldBuilder: field);
+            DefineSetMethodByField(Accessibility, Modifier, fieldBuilder: field);
             return this;
         }
 
         /// <summary>
         /// 定义属性的 Get 访问方法。
         /// </summary>
-        /// <param name="visual">指定方法的可见性。</param>
-        /// <param name="calling">指定方法的调用属性。</param>
+        /// <param name="accessibility">指定方法的可见性。</param>
+        /// <param name="modifier">指定方法的调用属性。</param>
         /// <param name="ilCoding">方法体的 IL 过程。</param>
         /// <returns>新的 <see cref="DynamicMethodBuilder"/>。</returns>
-        public DynamicMethodBuilder DefineGetMethod(VisualDecoration visual = VisualDecoration.Public, CallingDecoration calling = CallingDecoration.Standard, Action<BuildContext> ilCoding = null)
+        public DynamicMethodBuilder DefineGetMethod(Accessibility accessibility = Accessibility.Public, Modifier modifier = Modifier.Standard, Action<BuildContext> ilCoding = null)
         {
             var isInterface = Context.TypeBuilder is DynamicInterfaceBuilder;
-            var method = new DynamicMethodBuilder(Context, string.Concat("get_", GetMethodName()), PropertyType, Type.EmptyTypes, visual, calling, ctx =>
+            var method = new DynamicMethodBuilder(Context, string.Concat("get_", GetMethodName()), PropertyType, Type.EmptyTypes, accessibility, modifier, ctx =>
                 {
                     if (isInterface)
                     {
@@ -103,24 +111,21 @@ namespace Fireasy.Common.Emit
         /// <summary>
         /// 定义属性的 Get 访问方法。
         /// </summary>
-        /// <param name="visual">指定方法的可见性。</param>
-        /// <param name="calling">指定方法的调用属性。</param>
+        /// <param name="accessibility">指定方法的可见性。</param>
+        /// <param name="modifier">指定方法的调用属性。</param>
         /// <param name="fieldBuilder">指定一个属性相关的 <see cref="DynamicFieldBuilder"/>。</param>
         /// <returns>新的 <see cref="DynamicMethodBuilder"/>。</returns>
-        public DynamicMethodBuilder DefineGetMethodByField(VisualDecoration visual = VisualDecoration.Public, CallingDecoration calling = CallingDecoration.Standard, DynamicFieldBuilder fieldBuilder = null)
+        public DynamicMethodBuilder DefineGetMethodByField(Accessibility accessibility = Accessibility.Public, Modifier modifier = Modifier.Standard, DynamicFieldBuilder? fieldBuilder = null)
         {
             var isInterface = Context.TypeBuilder is DynamicInterfaceBuilder;
-            var method = new DynamicMethodBuilder(Context, string.Concat("get_", GetMethodName()), PropertyType, Type.EmptyTypes, visual, calling, ctx =>
+            var method = new DynamicMethodBuilder(Context, string.Concat("get_", GetMethodName()), PropertyType, Type.EmptyTypes, accessibility, modifier, ctx =>
                 {
                     if (isInterface)
                     {
                         return;
                     }
 
-                    if (fieldBuilder == null)
-                    {
-                        fieldBuilder = FieldBuilder;
-                    }
+                    fieldBuilder ??= FieldBuilder;
 
                     ctx.Emitter.ldarg_0.ldfld(fieldBuilder.FieldBuilder).ret();
                 });
@@ -132,14 +137,14 @@ namespace Fireasy.Common.Emit
         /// <summary>
         /// 定义属性的 Set 访问方法。
         /// </summary>
-        /// <param name="visual">指定方法的可见性。</param>
-        /// <param name="calling">指定方法的调用属性。</param>
+        /// <param name="accessibility">指定方法的可见性。</param>
+        /// <param name="modifier">指定方法的调用属性。</param>
         /// <param name="ilCoding">方法体的 IL 过程。</param>
         /// <returns>新的 <see cref="DynamicMethodBuilder"/>。</returns>
-        public DynamicMethodBuilder DefineSetMethod(VisualDecoration visual = VisualDecoration.Public, CallingDecoration calling = CallingDecoration.Standard, Action<BuildContext> ilCoding = null)
+        public DynamicMethodBuilder DefineSetMethod(Accessibility accessibility = Accessibility.Public, Modifier modifier = Modifier.Standard, Action<BuildContext> ilCoding = null)
         {
             var isInterface = Context.TypeBuilder is DynamicInterfaceBuilder;
-            var method = new DynamicMethodBuilder(Context, string.Concat("set_", GetMethodName()), null, new[] { PropertyType }, visual, calling, ctx =>
+            var method = new DynamicMethodBuilder(Context, string.Concat("set_", GetMethodName()), null, new[] { PropertyType }, accessibility, modifier, ctx =>
                 {
                     if (isInterface)
                     {
@@ -162,24 +167,21 @@ namespace Fireasy.Common.Emit
         /// <summary>
         /// 定义属性的 Set 访问方法。
         /// </summary>
-        /// <param name="visual">指定方法的可见性。</param>
-        /// <param name="calling">指定方法的调用属性。</param>
+        /// <param name="accessibility">指定方法的可见性。</param>
+        /// <param name="modifier">指定方法的调用属性。</param>
         /// <param name="fieldBuilder">指定一个属性相关的 <see cref="DynamicFieldBuilder"/>。</param>
         /// <returns>新的 <see cref="DynamicMethodBuilder"/>。</returns>
-        public DynamicMethodBuilder DefineSetMethodByField(VisualDecoration visual = VisualDecoration.Public, CallingDecoration calling = CallingDecoration.Standard, DynamicFieldBuilder fieldBuilder = null)
+        public DynamicMethodBuilder DefineSetMethodByField(Accessibility accessibility = Accessibility.Public, Modifier modifier = Modifier.Standard, DynamicFieldBuilder? fieldBuilder = null)
         {
             var isInterface = Context.TypeBuilder is DynamicInterfaceBuilder;
-            var method = new DynamicMethodBuilder(Context, string.Concat("set_", GetMethodName()), null, new[] { PropertyType }, visual, calling, ctx =>
+            var method = new DynamicMethodBuilder(Context, string.Concat("set_", GetMethodName()), null, new[] { PropertyType }, accessibility, modifier, ctx =>
                 {
                     if (isInterface)
                     {
                         return;
                     }
 
-                    if (fieldBuilder == null)
-                    {
-                        fieldBuilder = FieldBuilder;
-                    }
+                    fieldBuilder ??= FieldBuilder;
 
                     ctx.Emitter.ldarg_0.ldarg_1.stfld(fieldBuilder.FieldBuilder).ret();
                 });

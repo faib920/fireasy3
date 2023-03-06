@@ -14,15 +14,21 @@ namespace Fireasy.Common.Emit
     /// </summary>
     public class DynamicInterfaceBuilder : DynamicTypeBuilder
     {
-        internal DynamicInterfaceBuilder(BuildContext context, string typeName, VisualDecoration visual) :
-            base(context, typeName, visual, CallingDecoration.Standard, null)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="context">上下文对象。</param>
+        /// <param name="typeName">接口名称。</param>
+        /// <param name="accessibility">接口的访问修饰符。</param>
+        internal DynamicInterfaceBuilder(BuildContext context, string typeName, Accessibility accessibility) :
+            base(context, typeName, accessibility, Modifier.Standard, null)
         {
         }
 
         /// <summary>
         /// 获取或设置动态类型所继承的类型。
         /// </summary>
-        public override Type BaseType
+        public override Type? BaseType
         {
             get
             {
@@ -30,7 +36,7 @@ namespace Fireasy.Common.Emit
             }
             set
             {
-                throw new ArgumentException("接口类型不允许设置父类类型。");
+                throw new DynamicBuildException("接口不允许设置父类类型。");
             }
         }
 
@@ -54,15 +60,15 @@ namespace Fireasy.Common.Emit
         }
 
         /// <summary>
-        /// 定义一个字段。
+        /// 定义字段返回为 null。
         /// </summary>
         /// <param name="fieldName">字段的名称。</param>
         /// <param name="fieldType">字段的类型。</param>
-        /// <param name="defaultValue"></param>
-        /// <param name="visual"></param>
-        /// <param name="calling"></param>
+        /// <param name="defaultValue">缺省值。</param>
+        /// <param name="accessibility">访问修饰符。</param>
+        /// <param name="modifier">修饰符。</param>
         /// <returns></returns>
-        public override DynamicFieldBuilder DefineField(string fieldName, Type fieldType, object defaultValue = null, VisualDecoration visual = VisualDecoration.Private, CallingDecoration calling = CallingDecoration.Standard)
+        public override DynamicFieldBuilder DefineField(string fieldName, Type fieldType, object defaultValue = null, Accessibility accessibility = Accessibility.Private, Modifier modifier = Modifier.Standard)
         {
             return null;
         }

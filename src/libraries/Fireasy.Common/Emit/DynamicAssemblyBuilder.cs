@@ -146,13 +146,13 @@ namespace Fireasy.Common.Emit
         /// 使用当前的构造器定义一个动态类型。
         /// </summary>
         /// <param name="typeName">类型的名称。</param>
-        /// <param name="visual">指定类的可见性。</param>
-        /// <param name="calling">指定类的调用属性。</param>
+        /// <param name="accessibility">指定类的可见性。</param>
+        /// <param name="modifier">指定类的调用属性。</param>
         /// <param name="baseType">类型的父类。</param>
         /// <returns></returns>
-        public DynamicTypeBuilder DefineType(string typeName, VisualDecoration visual = VisualDecoration.Public, CallingDecoration calling = CallingDecoration.Standard, Type baseType = null)
+        public DynamicTypeBuilder DefineType(string typeName, Accessibility accessibility = Accessibility.Public, Modifier modifier = Modifier.Standard, Type baseType = null)
         {
-            var typeBuilder = new DynamicTypeBuilder(Context, typeName, visual, calling, baseType);
+            var typeBuilder = new DynamicTypeBuilder(Context, typeName, accessibility, modifier, baseType);
             _typeBuilders.Add(typeBuilder);
             return typeBuilder;
         }
@@ -161,11 +161,11 @@ namespace Fireasy.Common.Emit
         /// 使用当前的构造器定义一个动态接口。
         /// </summary>
         /// <param name="typeName">类型的名称。</param>
-        /// <param name="visual">指定类的可见性。</param>
+        /// <param name="accessibility">指定类的可见性。</param>
         /// <returns></returns>
-        public DynamicInterfaceBuilder DefineInterface(string typeName, VisualDecoration visual = VisualDecoration.Public)
+        public DynamicInterfaceBuilder DefineInterface(string typeName, Accessibility accessibility = Accessibility.Public)
         {
-            var typeBuilder = new DynamicInterfaceBuilder(Context, typeName, visual);
+            var typeBuilder = new DynamicInterfaceBuilder(Context, typeName, accessibility);
             _typeBuilders.Add(typeBuilder);
             return typeBuilder;
         }
@@ -175,11 +175,11 @@ namespace Fireasy.Common.Emit
         /// </summary>
         /// <param name="enumName">枚举的名称。</param>
         /// <param name="underlyingType">枚举的类型。</param>
-        /// <param name="visual">指定枚举的可见性。</param>
+        /// <param name="accessibility">指定枚举的可见性。</param>
         /// <returns></returns>
-        public DynamicEnumBuilder DefineEnum(string enumName, Type underlyingType = null, VisualDecoration visual = VisualDecoration.Public)
+        public DynamicEnumBuilder DefineEnum(string enumName, Type? underlyingType = null, Accessibility accessibility = Accessibility.Public)
         {
-            var enumBuilder = new DynamicEnumBuilder(Context, enumName, underlyingType ?? typeof(int), visual);
+            var enumBuilder = new DynamicEnumBuilder(Context, enumName, underlyingType ?? typeof(int), accessibility);
             _typeBuilders.Add(enumBuilder);
             return enumBuilder;
         }

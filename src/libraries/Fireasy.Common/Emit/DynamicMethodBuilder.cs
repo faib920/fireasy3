@@ -18,22 +18,32 @@ namespace Fireasy.Common.Emit
     {
         private MethodBuilder _methodBuilder;
         private readonly MethodAttributes _attributes;
-        private readonly Action<BuildContext> _buildAction;
+        private readonly Action<BuildContext>? _buildAction;
         private readonly List<string> _parameters = new List<string>();
         private GenericTypeParameter[] _genericTypeParameters;
         private ReadOnlyCollection<DynamicGenericTypeParameterBuilder> _gtpBuilders;
-        private Type _returnType;
-        private Type[] _parameterTypes;
+        private Type? _returnType;
+        private Type[]? _parameterTypes;
 
-        internal DynamicMethodBuilder(BuildContext context, string methodName, Type returnType = null, Type[] parameterTypes = null, VisualDecoration visual = VisualDecoration.Public, CallingDecoration calling = CallingDecoration.Standard, Action<BuildContext> ilCoding = null)
-             : base(visual, calling)
+        /// <summary>
+        /// 初始化 <see cref="DynamicMethodBuilder"/> 类的新实例。
+        /// </summary>
+        /// <param name="context">上下文对象。</param>
+        /// <param name="methodName">方法名称。</param>
+        /// <param name="returnType">返回类型。</param>
+        /// <param name="parameterTypes">参数类型数组。</param>
+        /// <param name="accessibility">方法的访问修饰符。</param>
+        /// <param name="midifier">方法的修饰符。</param>
+        /// <param name="ilCoding">提供一个函数，用于 IL 代码编织。</param>
+        internal DynamicMethodBuilder(BuildContext context, string methodName, Type? returnType = null, Type[]? parameterTypes = null, Accessibility accessibility = Accessibility.Public, Modifier midifier = Modifier.Standard, Action<BuildContext>? ilCoding = null)
+             : base(accessibility, midifier)
         {
             Context = new BuildContext(context) { MethodBuilder = this };
             Name = methodName;
             ReturnType = returnType;
             ParameterTypes = parameterTypes;
             _buildAction = ilCoding;
-            _attributes = GetMethodAttributes(methodName, parameterTypes, visual, calling);
+            _attributes = GetMethodAttributes(methodName, parameterTypes, accessibility, midifier);
             InitBuilder();
         }
 
@@ -45,7 +55,7 @@ namespace Fireasy.Common.Emit
         /// <param name="hasDefaultValue">是否指定缺省值。</param>
         /// <param name="defaultValue">缺省的参数值。</param>
         /// <returns></returns>
-        public DynamicMethodBuilder DefineParameter(string name, bool isOut = false, bool hasDefaultValue = false, object defaultValue = null)
+        public DynamicMethodBuilder DefineParameter(string name, bool isOut = false, bool hasDefaultValue = false, object? defaultValue = null)
         {
             var attr = hasDefaultValue ? ParameterAttributes.HasDefault : ParameterAttributes.None;
             if (isOut)
@@ -91,7 +101,7 @@ namespace Fireasy.Common.Emit
         /// <summary>
         /// 获取或设置方法的返回类型。
         /// </summary>
-        public Type ReturnType
+        public Type? ReturnType
         {
             get
             {
@@ -111,7 +121,7 @@ namespace Fireasy.Common.Emit
         /// <summary>
         /// 获取或设置方法的参数类型数组。
         /// </summary>
-        public Type[] ParameterTypes
+        public Type[]? ParameterTypes
         {
             get
             {
@@ -187,9 +197,9 @@ namespace Fireasy.Common.Emit
             MethodBuilder.SetCustomAttribute(customBuilder);
         }
 
-        private MethodInfo FindMethod(string methodName, IEnumerable<Type> parameterTypes)
+        private MethodInfo? FindMethod(string methodName, IEnumerable<Type> parameterTypes)
         {
-            MethodInfo method = null;
+            MethodInfo? method = null;
             if (Context.TypeBuilder.BaseType != null)
             {
                 if (parameterTypes == null || parameterTypes.Count() == 0)
@@ -203,7 +213,7 @@ namespace Fireasy.Common.Emit
 
                 if (method != null && !method.IsVirtual)
                 {
-                    throw new InvalidOperationException("所定义的方法在父类中未标记virtual、abstract或override。");
+                    throw new DynamicBuildException("所定义的方法在父类中未标记 virtual、abstract 或 override。");
                 }
             }
 
@@ -227,41 +237,41 @@ namespace Fireasy.Common.Emit
             return method;
         }
 
-        private MethodAttributes GetMethodAttributes(VisualDecoration visual = VisualDecoration.Public, CallingDecoration calling = CallingDecoration.Standard)
+        private MethodAttributes GetMethodAttributes(Accessibility accessibility = Accessibility.Public, Modifier modifier = Modifier.Standard)
         {
             var attributes = Context.TypeBuilder.GetMethodAttributes();
 
-            switch (calling)
+            switch (modifier)
             {
-                case CallingDecoration.Abstract:
+                case Modifier.Abstract:
                     attributes |= MethodAttributes.Abstract | MethodAttributes.Virtual | MethodAttributes.NewSlot;
                     break;
-                case CallingDecoration.Virtual:
+                case Modifier.Virtual:
                     attributes |= MethodAttributes.Virtual | MethodAttributes.NewSlot;
                     break;
-                case CallingDecoration.Sealed:
+                case Modifier.Sealed:
                     attributes |= MethodAttributes.Final;
                     break;
-                case CallingDecoration.Static:
+                case Modifier.Static:
                     attributes |= MethodAttributes.Static;
                     break;
-                case CallingDecoration.ExplicitImpl:
+                case Modifier.ExplicitImpl:
                     attributes |= MethodAttributes.Private | MethodAttributes.Final;
                     break;
             }
 
-            switch (visual)
+            switch (accessibility)
             {
-                case VisualDecoration.Internal:
+                case Accessibility.Internal:
                     attributes |= MethodAttributes.Assembly;
                     break;
-                case VisualDecoration.Public:
-                    if (calling != CallingDecoration.ExplicitImpl)
+                case Accessibility.Public:
+                    if (modifier != Modifier.ExplicitImpl)
                     {
                         attributes |= MethodAttributes.Public;
                     }
                     break;
-                case VisualDecoration.Protected:
+                case Accessibility.Protected:
                     attributes |= MethodAttributes.Family;
                     break;
             }
@@ -269,19 +279,19 @@ namespace Fireasy.Common.Emit
             return attributes;
         }
 
-        private MethodAttributes GetMethodAttributes(string methodName, IEnumerable<Type> parameterTypes, VisualDecoration visual, CallingDecoration calling)
+        private MethodAttributes GetMethodAttributes(string methodName, IEnumerable<Type> parameterTypes, Accessibility accessibility, Modifier modifier)
         {
             var method = FindMethod(methodName, parameterTypes);
             var isOverride = method != null && method.IsVirtual;
-            var isInterface1 = isOverride && method.DeclaringType.IsInterface;
-            var isBaseType = isOverride && method.DeclaringType == Context.TypeBuilder.BaseType;
+            var isInterface1 = isOverride && method!.DeclaringType!.IsInterface;
+            var isBaseType = isOverride && method!.DeclaringType == Context.TypeBuilder.BaseType;
             if (method != null)
             {
                 CheckGenericMethod(method);
                 Context.BaseMethod = method;
             }
 
-            var attrs = GetMethodAttributes(visual, calling);
+            var attrs = GetMethodAttributes(accessibility, modifier);
             if (isOverride)
             {
                 attrs |= MethodAttributes.Virtual;
@@ -293,8 +303,8 @@ namespace Fireasy.Common.Emit
                 }
                 else if (isInterface1)
                 {
-                    //如果没有传入 calling，则加 Final 去除上面定义的 Virtual
-                    if (calling == CallingDecoration.Standard)
+                    //如果没有传入 midifier，则加 Final 去除上面定义的 Virtual
+                    if (modifier == Modifier.Standard)
                     {
                         attrs |= MethodAttributes.Final;
                     }
@@ -319,7 +329,7 @@ namespace Fireasy.Common.Emit
 
         private void InitBuilder()
         {
-            var isOverride = Calling == CallingDecoration.ExplicitImpl && Context.BaseMethod != null;
+            var isOverride = Modifier == Modifier.ExplicitImpl && Context.BaseMethod != null;
 
             if (isOverride)
             {

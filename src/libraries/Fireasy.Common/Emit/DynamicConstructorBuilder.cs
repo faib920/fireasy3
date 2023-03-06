@@ -16,15 +16,24 @@ namespace Fireasy.Common.Emit
     public class DynamicConstructorBuilder : DynamicBuilder
     {
         private ConstructorBuilder _constrBuilder;
-        private readonly Action<BuildContext> _buildAction;
+        private readonly Action<BuildContext>? _buildAction;
         private readonly MethodAttributes _attributes;
         private readonly Dictionary<string, object> _parameters = new Dictionary<string, object>();
 
-        internal DynamicConstructorBuilder(BuildContext context, Type[] parameterTypes, VisualDecoration visual = VisualDecoration.Public, CallingDecoration calling = CallingDecoration.Standard, Action<BuildContext> ilCoding = null)
-            : base(visual, calling)
+        /// <summary>
+        /// 初始化 <see cref="DynamicConstructorBuilder"/> 类的新实例。
+        /// </summary>
+        /// <param name="context">上下文对象。</param>
+        /// <param name="parameterTypes">参数类型数组。</param>
+        /// <param name="accessibility">构造函数的访问修饰符。</param>
+        /// <param name="modifier">构造函数的修饰符。</param>
+        /// <param name="ilCoding">提供一个函数，用于 IL 代码编织。</param>
+        internal DynamicConstructorBuilder(BuildContext context, Type[] parameterTypes, Accessibility accessibility = Accessibility.Public, Modifier modifier = Modifier.Standard, Action<BuildContext> ilCoding = null)
+            : base(accessibility, modifier)
         {
             Context = new BuildContext(context) { ConstructorBuilder = this };
             ParameterTypes = parameterTypes;
+
             if (ilCoding == null)
             {
                 if (context.TypeBuilder.BaseType != null)
@@ -47,7 +56,7 @@ namespace Fireasy.Common.Emit
             }
 
             _buildAction = ilCoding;
-            _attributes = GetMethodAttributes(visual, calling);
+            _attributes = GetMethodAttributes(accessibility, modifier);
             InitBuilder();
         }
 
@@ -171,35 +180,35 @@ namespace Fireasy.Common.Emit
             _buildAction?.Invoke(Context);
         }
 
-        private MethodAttributes GetMethodAttributes(VisualDecoration visual = VisualDecoration.Public, CallingDecoration calling = CallingDecoration.Standard)
+        private MethodAttributes GetMethodAttributes(Accessibility accessibility = Accessibility.Public, Modifier modifier = Modifier.Standard)
         {
             var attrs = Context.TypeBuilder.GetMethodAttributes();
 
-            switch (calling)
+            switch (modifier)
             {
-                case CallingDecoration.Abstract:
+                case Modifier.Abstract:
                     attrs |= MethodAttributes.Abstract | MethodAttributes.Virtual | MethodAttributes.NewSlot;
                     break;
-                case CallingDecoration.Virtual:
+                case Modifier.Virtual:
                     attrs |= MethodAttributes.Virtual | MethodAttributes.NewSlot;
                     break;
-                case CallingDecoration.Sealed:
+                case Modifier.Sealed:
                     attrs |= MethodAttributes.Final;
                     break;
-                case CallingDecoration.Static:
+                case Modifier.Static:
                     attrs |= MethodAttributes.Static;
                     break;
             }
 
-            switch (visual)
+            switch (accessibility)
             {
-                case VisualDecoration.Internal:
+                case Accessibility.Internal:
                     attrs |= MethodAttributes.Assembly;
                     break;
-                case VisualDecoration.Public:
+                case Accessibility.Public:
                     attrs |= MethodAttributes.Public;
                     break;
-                case VisualDecoration.Protected:
+                case Accessibility.Protected:
                     attrs |= MethodAttributes.Family;
                     break;
             }

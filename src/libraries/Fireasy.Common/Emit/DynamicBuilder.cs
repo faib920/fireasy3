@@ -16,19 +16,33 @@ namespace Fireasy.Common.Emit
     /// </summary>
     public abstract class DynamicBuilder
     {
+        /// <summary>
+        /// 初始化 <see cref="DynamicBuilder"/> 类的新实例。
+        /// </summary>
         protected DynamicBuilder()
         {
         }
 
-        protected DynamicBuilder(VisualDecoration visual, CallingDecoration calling)
+        /// <summary>
+        /// 初始化 <see cref="DynamicBuilder"/> 类的新实例。
+        /// </summary>
+        /// <param name="accessibility">访问修饰符。</param>
+        /// <param name="modifier">类或成员修饰符。</param>
+        protected DynamicBuilder(Accessibility accessibility, Modifier modifier)
         {
-            Visual = visual;
-            Calling = calling;
+            Accessibility = accessibility;
+            Modifier = modifier;
         }
 
-        public VisualDecoration Visual { get; private set; }
+        /// <summary>
+        /// 获取访问修饰符。
+        /// </summary>
+        public Accessibility Accessibility { get; }
 
-        public CallingDecoration Calling { get; private set; }
+        /// <summary>
+        /// 获取类或成员修饰符。
+        /// </summary>
+        public Modifier Modifier { get; }
 
         /// <summary>
         /// 获取或设置构造器的上下文对象。
@@ -43,10 +57,19 @@ namespace Fireasy.Common.Emit
         public void SetCustomAttribute<T>(params object[] constructorArgs) where T : Attribute
         {
             var types = constructorArgs == null ? new Type[0] : (from s in constructorArgs select s.GetType()).ToArray();
-            var con = typeof(T).GetConstructor(types);
-            SetCustomAttribute(new CustomAttributeBuilder(con, constructorArgs));
+            var constructor = typeof(T).GetConstructor(types);
+            if (constructor == null)
+            {
+                throw new DynamicBuildException($"未找到类型 {typeof(T)} 缺省的构造函数。");
+            }
+
+            SetCustomAttribute(new CustomAttributeBuilder(constructor, constructorArgs));
         }
 
+        /// <summary>
+        /// 使用自定义特性生成器设置此程序集的自定义特性。
+        /// </summary>
+        /// <param name="expression"></param>
         public void SetCustomAttribute(Expression<Func<Attribute>> expression)
         {
             SetCustomAttribute(CustomAttributeConstructorVisitor.Build(expression));
@@ -69,10 +92,10 @@ namespace Fireasy.Common.Emit
 
         private class CustomAttributeConstructorVisitor : ExpressionVisitor
         {
-            private ConstructorInfo _constructor;
-            private readonly List<object> _constructorArgs = new List<object>();
-            private readonly List<PropertyInfo> _properties = new List<PropertyInfo>();
-            private readonly List<object> _values = new List<object>();
+            private ConstructorInfo? _constructor;
+            private readonly List<object?> _constructorArgs = new();
+            private readonly List<PropertyInfo> _properties = new();
+            private readonly List<object?> _values = new();
             private VisitType _flags = VisitType.None;
 
             private enum VisitType
@@ -84,18 +107,23 @@ namespace Fireasy.Common.Emit
 
             public static CustomAttributeBuilder Build(Expression expression)
             {
-                var s = new CustomAttributeConstructorVisitor();
-                s.Visit(expression);
-                if (s._properties.Count != s._values.Count)
+                var visitor = new CustomAttributeConstructorVisitor();
+                visitor.Visit(expression);
+
+                if (visitor._constructor == null)
                 {
-                    throw new Exception("names 和 values 数组的长度不匹配。");
+                    throw new DynamicBuildException("未找到任何构造函数。");
+                }
+                if (visitor._properties.Count != visitor._values.Count)
+                {
+                    throw new DynamicBuildException("names 和 values 数组的长度不匹配。");
                 }
 
                 return new CustomAttributeBuilder(
-                    s._constructor,
-                    s._constructorArgs.ToArray(),
-                    s._properties.ToArray(),
-                    s._values.ToArray());
+                    visitor._constructor,
+                    visitor._constructorArgs.ToArray(),
+                    visitor._properties.ToArray(),
+                    visitor._values.ToArray());
             }
 
             protected override Expression VisitMember(MemberExpression memberExp)
@@ -187,7 +215,7 @@ namespace Fireasy.Common.Emit
                     return true;
                 }
 
-                throw new ArgumentException($"表达式 {expression} 不能用来构造 NewExpression。");
+                throw new DynamicBuildException($"表达式 {expression} 不能用来构造 NewExpression。");
             }
         }
     }
