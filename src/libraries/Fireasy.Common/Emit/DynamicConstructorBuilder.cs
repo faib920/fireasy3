@@ -36,7 +36,7 @@ namespace Fireasy.Common.Emit
 
             if (ilCoding == null)
             {
-                if (context.TypeBuilder.BaseType != null)
+                if (context.TypeBuilder.BaseType != typeof(object))
                 {
                     var baseCon = parameterTypes == null ?
                         context.TypeBuilder.BaseType.GetConstructors().FirstOrDefault(s => !s.IsStatic) :
@@ -49,11 +49,9 @@ namespace Fireasy.Common.Emit
                             .call(baseCon).ret();
                     }
                 }
-                else
-                {
-                    ilCoding = c => c.Emitter.ret();
-                }
             }
+
+            ilCoding ??= c => c.Emitter.ret();
 
             _buildAction = ilCoding;
             _attributes = GetMethodAttributes(accessibility, modifier);
@@ -169,6 +167,18 @@ namespace Fireasy.Common.Emit
         private void InitBuilder()
         {
             var isDefault = (ParameterTypes == null || ParameterTypes.Length == 0) && _buildAction == null;
+
+            if (ParameterTypes != null)
+            {
+                for (var i = 0; i < ParameterTypes.Length; i++)
+                {
+                    if (ParameterTypes[i] is GtpType gt && Context.TypeBuilder.TryGetGenericParameterType(gt.Name, out var gt1))
+                    {
+                        ParameterTypes[i] = gt1.GenericTypeParameterBuilder;
+                    }
+                }
+            }
+
             _constrBuilder = isDefault ?
                 Context.TypeBuilder.TypeBuilder.DefineDefaultConstructor(_attributes) :
                 Context.TypeBuilder.TypeBuilder.DefineConstructor(_attributes, CallingConventions.Standard, ParameterTypes);

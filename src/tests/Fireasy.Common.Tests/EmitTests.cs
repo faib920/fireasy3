@@ -59,6 +59,8 @@ namespace Fireasy.Common.Tests
             var typeBuilder = assemblyBuilder.DefineType("MyClass");
             typeBuilder.DefineGenericParameters(gt);
 
+            typeBuilder.DefineConstructor(new Type[] { gt });
+
             var methodBuilder = typeBuilder.DefineMethod("Hello", gt, new Type[] { gt, new GtpType("TV") }, ilCoding: c =>
             {
                 c.Emitter
@@ -67,7 +69,7 @@ namespace Fireasy.Common.Tests
             });
 
             var type = typeBuilder.CreateType().MakeGenericType(typeof(MyBaseClass));
-            var obj = Activator.CreateInstance(type);
+            var obj = Activator.CreateInstance(type, new MyBaseClass());
 
             var method = type.GetMethod("Hello").MakeGenericMethod(typeof(string));
             var value = method.Invoke(obj, new object[] { new MyBaseClass(), "world" });
