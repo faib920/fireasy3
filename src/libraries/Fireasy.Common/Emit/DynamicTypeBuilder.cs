@@ -22,6 +22,7 @@ namespace Fireasy.Common.Emit
         private readonly bool _isNesetType;
         private Type _innerType;
         private readonly List<ITypeCreator> _nestedTypeBuilders = new List<ITypeCreator>();
+        private Dictionary<string, GtpType> _genericParameterTypes;
 
         private Type? _baseType;
 
@@ -121,19 +122,39 @@ namespace Fireasy.Common.Emit
         /// <summary>
         /// 定义泛型参数。
         /// </summary>
-        /// <param name="parameters">参数。</param>
+        /// <param name="parameterTypes"></param>
         /// <returns></returns>
-        public List<DynamicGenericTypeParameterBuilder> DefineGenericParameters(params GenericTypeParameter[] parameters)
+        public void DefineGenericParameters(params GtpType[] parameterTypes)
         {
-            var builders = _typeBuilder.DefineGenericParameters(parameters.Select(s => s.Name).ToArray());
-            var result = new List<DynamicGenericTypeParameterBuilder>();
-
-            for (var i = 0; i < parameters.Length; i++)
+            if (_genericParameterTypes != null)
             {
-                result.Add(new DynamicGenericTypeParameterBuilder(parameters[i], builders[i]));
+                throw new InvalidOperationException("已经定义过泛型参数。");
             }
 
-            return result;
+            _genericParameterTypes = parameterTypes.ToDictionary(s => s.Name);
+            var builders = _typeBuilder.DefineGenericParameters(parameterTypes.Select(s => s.Name).ToArray());
+
+            for (var i = 0; i < parameterTypes.Length; i++)
+            {
+                parameterTypes[i].Initialize(builders[i]);
+            }
+        }
+
+        /// <summary>
+        /// 获取指定名称对应的 <see cref="GtpType"/> 实例。
+        /// </summary>
+        /// <param name="name">参数名称。</param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public bool TryGetGenericParameterType(string name, out GtpType? type)
+        {
+            if (_genericParameterTypes == null)
+            {
+                type = null;
+                return false;
+            }
+
+            return _genericParameterTypes.TryGetValue(name, out type);
         }
 
         /// <summary>

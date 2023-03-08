@@ -20,8 +20,6 @@ namespace Fireasy.Common.Emit
         private readonly MethodAttributes _attributes;
         private readonly Action<BuildContext>? _buildAction;
         private readonly List<string> _parameters = new List<string>();
-        private GenericTypeParameter[] _genericTypeParameters;
-        private ReadOnlyCollection<DynamicGenericTypeParameterBuilder> _gtpBuilders;
         private Type? _returnType;
         private Type[]? _parameterTypes;
 
@@ -45,6 +43,7 @@ namespace Fireasy.Common.Emit
             _buildAction = ilCoding;
             _attributes = GetMethodAttributes(methodName, parameterTypes, accessibility, midifier);
             InitBuilder();
+            ProcessGenericMethod();
         }
 
         /// <summary>
@@ -71,26 +70,6 @@ namespace Fireasy.Common.Emit
 
             _parameters.Add(name);
             return this;
-        }
-
-        /// <summary>
-        /// 定义泛型参数。
-        /// </summary>
-        /// <param name="parameters">参数。</param>
-        /// <returns></returns>
-        public List<DynamicGenericTypeParameterBuilder> DefineGenericParameters(params GenericTypeParameter[] parameters)
-        {
-            var builders = MethodBuilder.DefineGenericParameters(parameters.Select(s => s.Name).ToArray());
-            var result = new List<DynamicGenericTypeParameterBuilder>();
-
-            for (var i = 0; i < parameters.Length; i++)
-            {
-                result.Add(new DynamicGenericTypeParameterBuilder(parameters[i], builders[i]));
-            }
-
-            _gtpBuilders = new ReadOnlyCollection<DynamicGenericTypeParameterBuilder>(result);
-
-            return result;
         }
 
         /// <summary>
@@ -148,17 +127,6 @@ namespace Fireasy.Common.Emit
         }
 
         /// <summary>
-        /// 获取泛型类型参数构造器集合。
-        /// </summary>
-        public ReadOnlyCollection<DynamicGenericTypeParameterBuilder> GenericTypeParameterBuilders
-        {
-            get
-            {
-                return _gtpBuilders;
-            }
-        }
-
-        /// <summary>
         /// 追加新的 MSIL 代码到构造器中。
         /// </summary>
         /// <param name="ilCoding"></param>
@@ -206,9 +174,14 @@ namespace Fireasy.Common.Emit
                 {
                     method = Context.TypeBuilder.BaseType.GetMethods().FirstOrDefault(s => s.Name == methodName && s.GetParameters().Length == 0 && (s.ReturnType == ReturnType || (ReturnType == null && s.ReturnType == typeof(void))));
                 }
-                else if (parameterTypes.Count(s => s == null) == 0)
+                else if (parameterTypes.Any(s => s is GtpType))
                 {
-                    method = Context.TypeBuilder.BaseType.GetMethods().FirstOrDefault(s => s.Name == methodName && IsEquals(s.GetParameters().Select(t => t.ParameterType).ToArray(), parameterTypes.ToArray()) && (s.ReturnType == ReturnType || (ReturnType == null && s.ReturnType == typeof(void))));
+                    var gtypes = parameterTypes.Where(s => s is GtpType).Cast<GtpType>().ToArray();
+                    method = Context.TypeBuilder.BaseType.GetMethods().FirstOrDefault(s => s.Name == methodName && IsEquals(s.GetParameters(), gtypes));
+                }
+                else
+                {
+                    method = Context.TypeBuilder.BaseType.GetMethods().FirstOrDefault(s => s.Name == methodName && IsEquals(s.GetParameters(), parameterTypes.ToArray()));
                 }
 
                 if (method != null && !method.IsVirtual)
@@ -287,7 +260,6 @@ namespace Fireasy.Common.Emit
             var isBaseType = isOverride && method!.DeclaringType == Context.TypeBuilder.BaseType;
             if (method != null)
             {
-                CheckGenericMethod(method);
                 Context.BaseMethod = method;
             }
 
@@ -319,11 +291,46 @@ namespace Fireasy.Common.Emit
             return attrs;
         }
 
-        private void CheckGenericMethod(MethodInfo method)
+        private void ProcessGenericMethod()
         {
-            if (method.IsGenericMethod)
+            if (ParameterTypes?.Any(s => s is GtpType) == true)
             {
-                _genericTypeParameters = method.GetGenericArguments().Select(s => GenericTypeParameter.From(s)).ToArray();
+                var names = ParameterTypes.Where(s => s is GtpType).Where(s => !Context.TypeBuilder.TryGetGenericParameterType(s.Name, out _)).Cast<GtpType>().Select(s => s.Name).ToArray();
+                Dictionary<string, GenericTypeParameterBuilder>? builders = null;
+                
+                if (names.Length > 0)
+                {
+                     builders = _methodBuilder.DefineGenericParameters(names).ToDictionary(s => s.Name);
+                }
+
+                for (var i = 0; i < ParameterTypes.Length; i++)
+                {
+                    if (ParameterTypes[i] is GtpType gt)
+                    {
+                        if (builders?.TryGetValue(gt.Name, out var parb) == true)
+                        {
+                            ParameterTypes[i] = gt.Initialize(parb);
+                        }
+                        else if (Context.TypeBuilder.TryGetGenericParameterType(gt.Name, out var gt1))
+                        {
+                            ParameterTypes[i] = gt1.GenericTypeParameterBuilder;
+                        }
+                    }
+                }
+
+                MethodBuilder.SetParameters(ParameterTypes);
+
+                if (ReturnType is GtpType rgt)
+                {
+                    if (builders?.TryGetValue(rgt.Name, out var retb) == true)
+                    {
+                        ReturnType = rgt.Initialize(retb);
+                    }
+                    else if (Context.TypeBuilder.TryGetGenericParameterType(rgt.Name, out var gt1))
+                    {
+                        ReturnType = gt1.GenericTypeParameterBuilder;
+                    }
+                }
             }
         }
 
@@ -360,27 +367,42 @@ namespace Fireasy.Common.Emit
                 Context.Emitter.ret();
             }
 
-            if (_genericTypeParameters != null)
-            {
-                DefineGenericParameters(_genericTypeParameters);
-            }
-
             if (isOverride)
             {
                 Context.TypeBuilder.TypeBuilder.DefineMethodOverride(_methodBuilder, Context.BaseMethod);
             }
         }
 
-        private static bool IsEquals(Type[] types1, Type[] types2)
+        private static bool IsEquals(ParameterInfo[] parameters, Type[] types2)
         {
-            if (types1.Length != types2.Length)
+            if (parameters.Length != types2.Length)
             {
                 return false;
             }
 
-            for (var i = 0; i < types1.Length; i++)
+            for (var i = 0; i < parameters.Length; i++)
             {
-                if (types1[i] != types2[i])
+                if (parameters[i].ParameterType != types2[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool IsEquals(ParameterInfo[] parameters, GtpType[] gtypes)
+        {
+            var types = parameters.Where(s => s.ParameterType.IsGenericParameter).Select(s => s.ParameterType).ToArray();
+
+            if (types.Length != gtypes.Length)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < types.Length; i++)
+            {
+                if (types[i].Name != gtypes[i].Name)
                 {
                     return false;
                 }

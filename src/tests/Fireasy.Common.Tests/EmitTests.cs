@@ -50,6 +50,31 @@ namespace Fireasy.Common.Tests
             Assert.IsTrue(typeof(IMyInterface).IsAssignableFrom(type));
         }
 
+        [TestMethod]
+        public void TestDefineGenericType()
+        {
+            var gt = new GtpType("T").SetBaseTypeConstraint(typeof(MyBaseClass));
+
+            var assemblyBuilder = new DynamicAssemblyBuilder("MyAssembly");
+            var typeBuilder = assemblyBuilder.DefineType("MyClass");
+            typeBuilder.DefineGenericParameters(gt);
+
+            var methodBuilder = typeBuilder.DefineMethod("Hello", gt, new Type[] { gt, new GtpType("TV") }, ilCoding: c =>
+            {
+                c.Emitter
+                .ldarg_2.call(typeof(Console).GetMethod("WriteLine", new[] { typeof(string) }))
+                .ldarg_1.ret();
+            });
+
+            var type = typeBuilder.CreateType().MakeGenericType(typeof(MyBaseClass));
+            var obj = Activator.CreateInstance(type);
+
+            var method = type.GetMethod("Hello").MakeGenericMethod(typeof(string));
+            var value = method.Invoke(obj, new object[] { new MyBaseClass(), "world" });
+
+            Assert.IsInstanceOfType(value, typeof(MyBaseClass));
+        }
+
         [TestMethod()]
         public void TestDefineInterface()
         {
@@ -186,9 +211,8 @@ namespace Fireasy.Common.Tests
         {
             var typeBuilder = CreateBuilder();
 
-            // Helo<T1, T2>(string name, T1 any1, T2 any2)
-            var methodBuilder = typeBuilder.DefineMethod("Hello", parameterTypes: new Type[] { typeof(string), null, null });
-            // methodBuilder.GenericArguments = new string[] { "", "T1", "T2" };
+            // void Helo<T1, T2>(string name, T1 any1, T2 any2)
+            var methodBuilder = typeBuilder.DefineMethod("Hello", parameterTypes: new Type[] { typeof(string), new GtpType("T1"), new GtpType("T2") });
             methodBuilder.DefineParameter("name");
             methodBuilder.DefineParameter("any1");
             methodBuilder.DefineParameter("any2");
@@ -220,6 +244,92 @@ namespace Fireasy.Common.Tests
             method = method.MakeGenericMethod(typeof(int), typeof(decimal));
 
             method.Invoke(obj, new object[] { "fireasy", 22, 45m });
+        }
+
+        /// <summary>
+        /// 使用泛型参数测试DefineMethod方法，有返回值。
+        /// </summary>
+        [TestMethod()]
+        public void TestDefineGenericMethodWithReturnValue()
+        {
+            var typeBuilder = CreateBuilder();
+
+            // T2 Helo<T1, T2>(string name, T1 any1, T2 any2)
+            var methodBuilder = typeBuilder.DefineMethod("Hello", new GtpType("T2"), new Type[] { typeof(string), new GtpType("T1"), new GtpType("T2") });
+            methodBuilder.DefineParameter("name");
+            methodBuilder.DefineParameter("any1");
+            methodBuilder.DefineParameter("any2");
+
+            var paraCount = methodBuilder.ParameterTypes.Length;
+
+            methodBuilder.OverwriteCode(e =>
+            {
+                e.ldc_i4(paraCount)
+                .newarr(typeof(object))
+                .dup.ldc_i4_0.ldarg_1.stelem_ref
+                .For(1, paraCount, (e1, i) =>
+                {
+                    e1.dup.ldc_i4(i).ldarg(i + 1).box(methodBuilder.ParameterTypes[i]).stelem_ref.end();
+                })
+                .call(typeof(string).GetMethod("Concat", new[] { typeof(object[]) }))
+                .call(typeof(Console).GetMethod("WriteLine", new[] { typeof(string) }))
+                .ldarg_3
+                .ret();
+            });
+
+            var type = typeBuilder.CreateType();
+
+            var method = type.GetMethod("Hello");
+            Assert.IsNotNull(method);
+            Assert.IsTrue(method.IsGenericMethod);
+
+            var obj = Activator.CreateInstance(type);
+
+            method = method.MakeGenericMethod(typeof(int), typeof(decimal));
+
+            var ret = method.Invoke(obj, new object[] { "fireasy", 22, 45m });
+            Assert.AreEqual(45m, ret);
+        }
+
+        /// <summary>
+        /// 使用泛型参数测试DefineMethod方法，有返回值。
+        /// </summary>
+        [TestMethod()]
+        public void TestDefineGenericMethodWithBaseType()
+        {
+            var assemblyBuilder = new DynamicAssemblyBuilder("assemblyTests");
+            var typeBuilder = assemblyBuilder.DefineType("testClass", baseType: typeof(GenericMethodClass));
+
+            // T2 Helo<T1, T2>(string name, T1 any1, T2 any2)
+            var methodBuilder = typeBuilder.DefineMethod("Hello", new GtpType("T2"), new Type[] { typeof(string), new GtpType("T1").SetBaseTypeConstraint(typeof(GenericMethodClass)), new GtpType("T2") }, ilCoding: (context) =>
+            {
+                context.Emitter
+                    .ldarg_0
+                    .ldarg_1
+                    .ldarg_2
+                    .ldarg_3
+                    .call(typeBuilder.BaseType.GetMethod("Hello"))
+                    .ret();
+            });
+
+            methodBuilder.DefineParameter("name");
+            methodBuilder.DefineParameter("any1");
+            methodBuilder.DefineParameter("any2");
+
+            var paraCount = methodBuilder.ParameterTypes.Length;
+
+            var type = typeBuilder.CreateType();
+
+            var method = type.GetMethod("Hello");
+            Assert.IsNotNull(method);
+            Assert.IsTrue(method.IsGenericMethod);
+
+            var obj = Activator.CreateInstance(type);
+
+            method = method.MakeGenericMethod(typeof(GenericMethodClass), typeof(decimal));
+
+            var ret = method.Invoke(obj, new object[] { "fireasy", new GenericMethodClass(), 45m });
+            Assert.AreEqual(45m, ret);
         }
 
         /// <summary>
@@ -347,7 +457,7 @@ namespace Fireasy.Common.Tests
             var typeBuilder = CreateBuilder();
             var methodBuilder = typeBuilder.DefineMethod("Hello", parameterTypes: new Type[] { typeof(string) });
 
-            methodBuilder.DefineParameter("name", defaultValue: "fireasy");
+            methodBuilder.DefineParameter("name", hasDefaultValue: true, defaultValue: "fireasy");
             typeBuilder.CreateType();
 
             Assert.AreEqual("fireasy", methodBuilder.MethodBuilder.GetParameters()[0].DefaultValue);
@@ -475,6 +585,14 @@ namespace Fireasy.Common.Tests
         public virtual void Hello(string name)
         {
             Console.WriteLine("Hello " + name);
+        }
+    }
+
+    public class GenericMethodClass
+    {
+        public virtual T2 Hello<T1, T2>(string name, T1 any1, T2 any2) where T1 : GenericMethodClass
+        {
+            return any2;
         }
     }
 }
