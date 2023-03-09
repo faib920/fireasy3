@@ -1,5 +1,16 @@
-﻿namespace Fireasy.Common.Compiler
+﻿// -----------------------------------------------------------------------
+// <copyright company="Fireasy"
+//      email="faib920@126.com"
+//      qq="55570729">
+//   (c) Copyright Fireasy. All rights reserved.
+// </copyright>
+// -----------------------------------------------------------------------
+
+namespace Fireasy.Common.Compiler
 {
+    /// <summary>
+    /// 配置参数。
+    /// </summary>
     public class ConfigureOptions
     {
         /// <summary>
