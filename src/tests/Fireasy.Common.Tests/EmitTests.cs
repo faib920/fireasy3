@@ -33,6 +33,19 @@ namespace Fireasy.Common.Tests
         [TestMethod]
         public void TestTypeBuilder()
         {
+            /*
+            public class MyClass : MyBaseClass, IMyInterface
+            {
+                public string Title { get; set; }
+                public void HelloWorld()
+                {
+                }
+                public void WriteName(string a1, string a2)
+                {
+                }
+            }
+            */
+
             var assemblyBuilder = new DynamicAssemblyBuilder("MyAssembly");
             var typeBuilder = assemblyBuilder.DefineType("MyClass");
 
@@ -53,23 +66,37 @@ namespace Fireasy.Common.Tests
         [TestMethod]
         public void TestDefineGenericType()
         {
+            /*
+            public class MyClass<T, TS> where T : MyBaseClass
+            {
+                public MyClass(TS ts)
+                {
+                }
+                public T Hello<TV>(T t, TV tv)
+                {
+                    Console.WriteLine(tv);
+                    return t;
+                }
+            }
+            */
+
             var gt = new GtpType("T").SetBaseTypeConstraint(typeof(MyBaseClass));
 
             var assemblyBuilder = new DynamicAssemblyBuilder("MyAssembly");
             var typeBuilder = assemblyBuilder.DefineType("MyClass");
-            typeBuilder.DefineGenericParameters(gt);
+            typeBuilder.DefineGenericParameters(gt, new GtpType("TS"));
 
-            typeBuilder.DefineConstructor(new Type[] { gt });
+            typeBuilder.DefineConstructor(new Type[] { new GtpType("TS") });
 
             var methodBuilder = typeBuilder.DefineMethod("Hello", gt, new Type[] { gt, new GtpType("TV") }, ilCoding: c =>
             {
                 c.Emitter
-                .ldarg_2.call(typeof(Console).GetMethod("WriteLine", new[] { typeof(string) }))
+                .ldarg_2.call(typeof(Console).GetMethod("WriteLine", new[] { typeof(object) }))
                 .ldarg_1.ret();
             });
 
-            var type = typeBuilder.CreateType().MakeGenericType(typeof(MyBaseClass));
-            var obj = Activator.CreateInstance(type, new MyBaseClass());
+            var type = typeBuilder.CreateType().MakeGenericType(typeof(MyBaseClass), typeof(int));
+            var obj = Activator.CreateInstance(type, 100);
 
             var method = type.GetMethod("Hello").MakeGenericMethod(typeof(string));
             var value = method.Invoke(obj, new object[] { new MyBaseClass(), "world" });
@@ -159,6 +186,15 @@ namespace Fireasy.Common.Tests
         [TestMethod()]
         public void ImplementInterfaceWithExplicitMember()
         {
+            /*
+            public class testClass : IDynamicMethodInterface
+            {
+                void IDynamicMethodInterface.Test(int s)
+                {
+                    Console.WriteLine(s);
+                }
+            }
+            */
             var typeBuilder = CreateBuilder();
 
             typeBuilder.ImplementInterface(typeof(IDynamicMethodInterface));
@@ -213,7 +249,15 @@ namespace Fireasy.Common.Tests
         {
             var typeBuilder = CreateBuilder();
 
-            // void Helo<T1, T2>(string name, T1 any1, T2 any2)
+            /*
+            public class testClass
+            {
+                public void Hello<T1, T2>(string name, T1 any1, T2 any2)
+                {
+                    Console.Write(name + any1 + any2);
+                }
+            }
+            */
             var methodBuilder = typeBuilder.DefineMethod("Hello", parameterTypes: new Type[] { typeof(string), new GtpType("T1"), new GtpType("T2") });
             methodBuilder.DefineParameter("name");
             methodBuilder.DefineParameter("any1");
@@ -256,7 +300,15 @@ namespace Fireasy.Common.Tests
         {
             var typeBuilder = CreateBuilder();
 
-            // T2 Helo<T1, T2>(string name, T1 any1, T2 any2)
+            /*
+            public class testClass
+            {
+                public T2 Hello<T1, T2>(string name, T1 any1, T2 any2)
+                {
+                    return any2;
+                }
+            }
+            */
             var methodBuilder = typeBuilder.DefineMethod("Hello", new GtpType("T2"), new Type[] { typeof(string), new GtpType("T1"), new GtpType("T2") });
             methodBuilder.DefineParameter("name");
             methodBuilder.DefineParameter("any1");
@@ -299,10 +351,18 @@ namespace Fireasy.Common.Tests
         [TestMethod()]
         public void TestDefineGenericMethodWithBaseType()
         {
-            var assemblyBuilder = new DynamicAssemblyBuilder("assemblyTests");
-            var typeBuilder = assemblyBuilder.DefineType("testClass", baseType: typeof(GenericMethodClass));
+            var typeBuilder = CreateBuilder();
+            typeBuilder.BaseType = typeof(GenericMethodClass);
 
-            // T2 Helo<T1, T2>(string name, T1 any1, T2 any2)
+            /*
+            public class testClass : GenericMethodClass
+            {
+                public override T2 Hello<T1, T2>(string name, T1 any1, T2 any2)
+                {
+                    return base.Hello(name, any1, any2);
+                }
+            }
+            */
             var methodBuilder = typeBuilder.DefineMethod("Hello", new GtpType("T2"), new Type[] { typeof(string), new GtpType("T1").SetBaseTypeConstraint(typeof(GenericMethodClass)), new GtpType("T2") }, ilCoding: (context) =>
             {
                 context.Emitter
@@ -343,6 +403,16 @@ namespace Fireasy.Common.Tests
             var typeBuilder = CreateBuilder();
             typeBuilder.BaseType = typeof(DynamicBuilderBase);
 
+            /*
+            public class DynamicBuilderBase : DynamicBuilderBase
+            {
+                public override void Hello(string name)
+                {
+                    base.Hello(name);
+                }
+            }
+            */
+
             typeBuilder.DefineMethod("Hello", parameterTypes: new Type[] { typeof(string) }, ilCoding: (context) =>
             {
                 context.Emitter
@@ -367,6 +437,16 @@ namespace Fireasy.Common.Tests
         {
             var typeBuilder = CreateBuilder();
 
+            /*
+            public class DynamicBuilderBase : DynamicBuilderBase
+            {
+                public DynamicBuilderBase(string name, string tt = "bbb")
+                {
+                    Console.Write(name + tt);
+                }
+            }
+            */
+
             var c = typeBuilder.DefineConstructor(new Type[] { typeof(string), typeof(string) });
 
             c.DefineParameter("name").DefineParameter("tt", "bbb");
@@ -380,8 +460,7 @@ namespace Fireasy.Common.Tests
 
             var type = typeBuilder.CreateType();
 
-
-            type.GetConstructors().FirstOrDefault().Invoke(new[] { "fireasy", null });
+            type.GetConstructors().FirstOrDefault().Invoke(new object[] { "fireasy", null });
         }
 
         /// <summary>

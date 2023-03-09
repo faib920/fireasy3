@@ -6,6 +6,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 using Fireasy.Common;
+using Fireasy.Common.Compiler;
 using Fireasy.Common.DependencyInjection;
 using Fireasy.Common.Dynamic;
 using Fireasy.Common.DynamicProxy;
@@ -39,6 +40,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<IBinarySerializer, BinaryCompressSerializer>();
 #endif
             services.AddSingleton<DynamicDescriptionSupporter>(sp => new DynamicDescriptionSupporter(sp));
+            services.AddSingleton<ICodeCompilerManager>(new DefaultCodeCompilerManager());
 
             var options = new SetupOptions();
             configure?.Invoke(options);
