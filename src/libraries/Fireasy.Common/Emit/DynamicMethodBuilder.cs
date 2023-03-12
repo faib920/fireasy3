@@ -5,7 +5,6 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -165,24 +164,12 @@ namespace Fireasy.Common.Emit
             MethodBuilder.SetCustomAttribute(customBuilder);
         }
 
-        private MethodInfo? FindMethod(string methodName, IEnumerable<Type> parameterTypes)
+        private MethodInfo? FindMethod(string methodName, Type[] parameterTypes)
         {
             MethodInfo? method = null;
             if (Context.TypeBuilder.BaseType != null)
             {
-                if (parameterTypes == null || parameterTypes.Count() == 0)
-                {
-                    method = Context.TypeBuilder.BaseType.GetMethods().FirstOrDefault(s => s.Name == methodName && s.GetParameters().Length == 0 && (s.ReturnType == ReturnType || (ReturnType == null && s.ReturnType == typeof(void))));
-                }
-                else if (parameterTypes.Any(s => s is GtpType))
-                {
-                    var gtypes = parameterTypes.Where(s => s is GtpType).Cast<GtpType>().ToArray();
-                    method = Context.TypeBuilder.BaseType.GetMethods().FirstOrDefault(s => s.Name == methodName && IsEquals(s.GetParameters(), gtypes));
-                }
-                else
-                {
-                    method = Context.TypeBuilder.BaseType.GetMethods().FirstOrDefault(s => s.Name == methodName && IsEquals(s.GetParameters(), parameterTypes.ToArray()));
-                }
+                method = Helper.MatchMethod(Context.TypeBuilder.BaseType, methodName, parameterTypes);
 
                 if (method != null && !method.IsVirtual)
                 {
@@ -195,6 +182,7 @@ namespace Fireasy.Common.Emit
                 .Union(Context.TypeBuilder.InterfaceTypes.SelectMany(s => s.GetInterfaces()))
                 .Distinct().ToList();
 
+            //在实现接口中去查找方法
             if (method == null && interfaceTypes.Count != 0)
             {
                 foreach (var type in interfaceTypes)
@@ -252,11 +240,11 @@ namespace Fireasy.Common.Emit
             return attributes;
         }
 
-        private MethodAttributes GetMethodAttributes(string methodName, IEnumerable<Type> parameterTypes, Accessibility accessibility, Modifier modifier)
+        private MethodAttributes GetMethodAttributes(string methodName, Type[] parameterTypes, Accessibility accessibility, Modifier modifier)
         {
             var method = FindMethod(methodName, parameterTypes);
             var isOverride = method != null && method.IsVirtual;
-            var isInterface1 = isOverride && method!.DeclaringType!.IsInterface;
+            var isInterface = isOverride && method!.DeclaringType!.IsInterface;
             var isBaseType = isOverride && method!.DeclaringType == Context.TypeBuilder.BaseType;
             if (method != null)
             {
@@ -273,9 +261,9 @@ namespace Fireasy.Common.Emit
                 {
                     attrs &= ~MethodAttributes.NewSlot;
                 }
-                else if (isInterface1)
+                else if (isInterface)
                 {
-                    //如果没有传入 midifier，则加 Final 去除上面定义的 Virtual
+                    //如果没有传入 modifier，则加 Final 去除上面定义的 Virtual
                     if (modifier == Modifier.Standard)
                     {
                         attrs |= MethodAttributes.Final;
@@ -293,11 +281,15 @@ namespace Fireasy.Common.Emit
 
         private void ProcessGenericMethod()
         {
+            Dictionary<string, GenericTypeParameterBuilder>? builders = null;
+
+            //方法参数里有泛型类型参数
             if (ParameterTypes?.Any(s => s is GtpType) == true)
             {
+                //筛选没有在类型构造器里定义过的泛型类型参数
                 var names = ParameterTypes.Where(s => s is GtpType).Where(s => !Context.TypeBuilder.TryGetGenericParameterType(s.Name, out _)).Cast<GtpType>().Select(s => s.Name).ToArray();
-                Dictionary<string, GenericTypeParameterBuilder>? builders = null;
                 
+                //如果有新的泛型类型参数，则在方法构造器里定义
                 if (names.Length > 0)
                 {
                      builders = _methodBuilder.DefineGenericParameters(names).ToDictionary(s => s.Name);
@@ -319,17 +311,20 @@ namespace Fireasy.Common.Emit
                 }
 
                 MethodBuilder.SetParameters(ParameterTypes);
+            }
 
-                if (ReturnType is GtpType rgt)
+            //如果返回类型是泛型类型
+            if (ReturnType is GtpType rgt)
+            {
+                //先在方法构造器里查找
+                if (builders?.TryGetValue(rgt.Name, out var retb) == true)
                 {
-                    if (builders?.TryGetValue(rgt.Name, out var retb) == true)
-                    {
-                        ReturnType = rgt.Initialize(retb);
-                    }
-                    else if (Context.TypeBuilder.TryGetGenericParameterType(rgt.Name, out var gt1))
-                    {
-                        ReturnType = gt1.GenericTypeParameterBuilder;
-                    }
+                    ReturnType = rgt.Initialize(retb);
+                }
+                //在类型构造器里查找
+                else if (Context.TypeBuilder.TryGetGenericParameterType(rgt.Name, out var gt1))
+                {
+                    ReturnType = gt1.GenericTypeParameterBuilder;
                 }
             }
         }
@@ -371,44 +366,6 @@ namespace Fireasy.Common.Emit
             {
                 Context.TypeBuilder.TypeBuilder.DefineMethodOverride(_methodBuilder, Context.BaseMethod);
             }
-        }
-
-        private static bool IsEquals(ParameterInfo[] parameters, Type[] types2)
-        {
-            if (parameters.Length != types2.Length)
-            {
-                return false;
-            }
-
-            for (var i = 0; i < parameters.Length; i++)
-            {
-                if (parameters[i].ParameterType != types2[i])
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private static bool IsEquals(ParameterInfo[] parameters, GtpType[] gtypes)
-        {
-            var types = parameters.Where(s => s.ParameterType.IsGenericParameter).Select(s => s.ParameterType).ToArray();
-
-            if (types.Length != gtypes.Length)
-            {
-                return false;
-            }
-
-            for (var i = 0; i < types.Length; i++)
-            {
-                if (types[i].Name != gtypes[i].Name)
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
     }
 }

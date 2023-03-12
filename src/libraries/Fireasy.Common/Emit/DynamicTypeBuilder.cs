@@ -362,14 +362,11 @@ namespace Fireasy.Common.Emit
 
         private void InitBuilder()
         {
-            if (!_isNesetType)
-            {
-                _typeBuilder = Context.AssemblyBuilder.ModuleBuilder.DefineType(TypeName, _attributes, BaseType);
-            }
-            else
-            {
-                _typeBuilder = Context.TypeBuilder.TypeBuilder.DefineNestedType(TypeName, _attributes, BaseType);
-            }
+            Func<string, TypeAttributes, Type, TypeBuilder> defineFunc = _isNesetType ?
+                Context.TypeBuilder.TypeBuilder.DefineNestedType :
+                Context.AssemblyBuilder.ModuleBuilder.DefineType;
+
+            _typeBuilder = defineFunc(TypeName, _attributes, BaseType);
         }
     }
 }

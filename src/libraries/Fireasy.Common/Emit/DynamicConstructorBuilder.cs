@@ -38,15 +38,13 @@ namespace Fireasy.Common.Emit
             {
                 if (context.TypeBuilder.BaseType != typeof(object))
                 {
-                    var baseCon = parameterTypes == null ?
-                        context.TypeBuilder.BaseType.GetConstructors().FirstOrDefault(s => !s.IsStatic) :
-                        context.TypeBuilder.BaseType.GetConstructor(parameterTypes);
+                    var constructor = Helper.MatchConstructor(Context.TypeBuilder.BaseType, parameterTypes);
 
-                    if (baseCon != null)
+                    if (constructor != null)
                     {
                         ilCoding = c => c.Emitter.ldarg_0
-                            .If(parameterTypes != null, b => b.For(0, parameterTypes.Length, (e, i) => e.ldarg(i + 1)))
-                            .call(baseCon).ret();
+                            .If(parameterTypes != null, b => b.For(0, parameterTypes!.Length, (e, i) => e.ldarg(i + 1)))
+                            .call(constructor).ret();
                     }
                 }
             }
