@@ -84,10 +84,13 @@ namespace Fireasy.Common.Tests
 
             var assemblyBuilder = new DynamicAssemblyBuilder("MyAssembly");
             var typeBuilder = assemblyBuilder.DefineType("MyClass");
+            //定义泛型类型参数
             typeBuilder.DefineGenericParameters(gt, new GtpType("TS"));
 
+            //定义构造函数
             typeBuilder.DefineConstructor(new Type[] { new GtpType("TS") });
 
+            //定义一个泛型方法，TV不在类中定义，所以属于方法的泛型类型参数
             var methodBuilder = typeBuilder.DefineMethod("Hello", gt, new Type[] { gt, new GtpType("TV") }, ilCoding: c =>
             {
                 c.Emitter
@@ -438,20 +441,20 @@ namespace Fireasy.Common.Tests
             var typeBuilder = CreateBuilder();
 
             /*
-            public class DynamicBuilderBase : DynamicBuilderBase
+            public class testClass
             {
-                public DynamicBuilderBase(string name, string tt = "bbb")
+                public testClass(string name, string str = "bbb")
                 {
-                    Console.Write(name + tt);
+                    Console.Write(name + str);
                 }
             }
             */
 
-            var c = typeBuilder.DefineConstructor(new Type[] { typeof(string), typeof(string) });
+            var constructorBuilder = typeBuilder.DefineConstructor(new Type[] { typeof(string), typeof(string) });
 
-            c.DefineParameter("name").DefineParameter("tt", "bbb");
+            constructorBuilder.DefineParameter("name").DefineParameter("str", "bbb");
 
-            c.OverwriteCode(e =>
+            constructorBuilder.OverwriteCode(e =>
                 e.ldarg_1.ldarg_2
                     .call(typeof(string).GetMethod("Concat", new[] { typeof(string), typeof(string) }))
                     .call(typeof(Console).GetMethod("WriteLine", new[] { typeof(string) }))
@@ -459,8 +462,42 @@ namespace Fireasy.Common.Tests
             );
 
             var type = typeBuilder.CreateType();
+            var obj = Activator.CreateInstance(type, new[] { "fireasy", " is good" });
+            Assert.IsNotNull(obj);
+        }
 
-            type.GetConstructors().FirstOrDefault().Invoke(new object[] { "fireasy", null });
+        /// <summary>
+        /// 测试DefineConstructor方法。
+        /// </summary>
+        [TestMethod()]
+        public void TestDefineConstructorForGeneric()
+        {
+            var typeBuilder = CreateBuilder();
+
+            /*
+            public class testClass<T> : GenericClass<T>
+            {
+                public testClass(T value)
+                    : base (value)
+                {
+                }
+            }
+            */
+
+            var gtp = new GtpType("T");
+            typeBuilder.BaseType = typeof(GenericClass<>);
+            typeBuilder.DefineGenericParameters(gtp);
+
+            var constructorBuilder = typeBuilder.DefineConstructor(new Type[] { gtp });
+            constructorBuilder.DefineParameter("value");
+
+            var type = typeBuilder.CreateType();
+
+            type = type.MakeGenericType(typeof(string));
+
+            var obj = Activator.CreateInstance(type, new[] { "fireasy" });
+            Assert.IsNotNull(obj);
+
         }
 
         /// <summary>
@@ -674,6 +711,14 @@ namespace Fireasy.Common.Tests
         public virtual T2 Hello<T1, T2>(string name, T1 any1, T2 any2) where T1 : GenericMethodClass
         {
             return any2;
+        }
+    }
+
+    public class GenericClass<T>
+    {
+        public GenericClass(T value)
+        {
+            Console.WriteLine(value);
         }
     }
 }
