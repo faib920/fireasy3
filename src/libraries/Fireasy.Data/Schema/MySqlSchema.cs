@@ -127,6 +127,10 @@ namespace Fireasy.Data.Schema
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
 
+            restrictionValues
+                .Parameterize(parameters, "NAME", nameof(Table.Name))
+                .Parameterize(parameters, "TABLETYPE", nameof(Table.Type));
+
             SpecialCommand sql = $@"
 SELECT
   TABLE_CATALOG,
@@ -136,14 +140,10 @@ SELECT
   TABLE_COMMENT
 FROM INFORMATION_SCHEMA.TABLES T
 WHERE (T.TABLE_SCHEMA = '{connpar.Database}')
-  AND T.TABLE_TYPE <> 'VIEW'
-  AND (T.TABLE_NAME = ?NAME OR ?NAME IS NULL)
+  AND T.TABLE_TYPE <> 'VIEW'{(parameters.HasValue("NAME") ? @"
+  AND T.TABLE_NAME IN (?NAME)" : string.Empty)}
   AND ((T.TABLE_TYPE = 'BASE TABLE' AND (@TABLETYPE IS NULL OR @TABLETYPE = 0)) OR (T.TABLE_TYPE = 'SYSTEM TABLE' AND @TABLETYPE = 1))
 ORDER BY T.TABLE_CATALOG, T.TABLE_SCHEMA, T.TABLE_NAME";
-
-            restrictionValues
-                .Parameterize(parameters, "NAME", nameof(Table.Name))
-                .Parameterize(parameters, "TABLETYPE", nameof(Table.Type));
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new Table
             {
@@ -165,6 +165,10 @@ ORDER BY T.TABLE_CATALOG, T.TABLE_SCHEMA, T.TABLE_NAME";
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
 
+            restrictionValues
+                .Parameterize(parameters, "TABLENAME", nameof(Column.TableName))
+                .Parameterize(parameters, "COLUMNNAME", nameof(Column.Name));
+
             SpecialCommand sql = $@"
 SELECT T.TABLE_CATALOG,
        T.TABLE_SCHEMA,
@@ -183,14 +187,10 @@ SELECT T.TABLE_CATALOG,
 FROM INFORMATION_SCHEMA.COLUMNS T
 JOIN INFORMATION_SCHEMA.TABLES O
   ON O.TABLE_SCHEMA = T.TABLE_SCHEMA AND O.TABLE_NAME = T.TABLE_NAME
-WHERE (T.TABLE_SCHEMA = '{connpar.Database}') AND 
-  (T.TABLE_NAME = ?TABLENAME OR ?TABLENAME IS NULL) AND 
-  (T.COLUMN_NAME = ?COLUMNNAME OR ?COLUMNNAME IS NULL)
+WHERE (T.TABLE_SCHEMA = '{connpar.Database}'){(parameters.HasValue("TABLENAME") ? @"
+  AND T.TABLE_NAME IN (?TABLENAME)" : string.Empty)}{(parameters.HasValue("COLUMNNAME") ? @"
+  AND T.COLUMN_NAME IN (?COLUMNNAME)" : string.Empty)}
  ORDER BY T.TABLE_CATALOG, T.TABLE_SCHEMA, T.TABLE_NAME, T.ORDINAL_POSITION";
-
-            restrictionValues
-                .Parameterize(parameters, "TABLENAME", nameof(Column.TableName))
-                .Parameterize(parameters, "COLUMNNAME", nameof(Column.Name));
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetDataType(SetColumnType(new Column
             {

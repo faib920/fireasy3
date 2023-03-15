@@ -118,6 +118,10 @@ WHERE (T.USERNAME = :USERNAME OR (:USERNAME IS NULL))";
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
 
+            restrictionValues
+                .Parameterize(parameters, "TABLENAME", nameof(Table.Name))
+                .Parameterize(parameters, "TABLETYPE", nameof(Table.Type));
+
             SpecialCommand sql = $@"
 SELECT * FROM (
     SELECT T.OWNER,
@@ -154,14 +158,10 @@ SELECT * FROM (
     ON T.OWNER = C.OWNER
    AND T.TABLE_NAME = C.TABLE_NAME
 ) T
- WHERE (T.OWNER = '{connpar.UserId!.ToUpper()}') AND 
-  (T.TABLE_NAME = :TABLENAME OR (:TABLENAME IS NULL)) AND
+ WHERE (T.OWNER = '{connpar.UserId!.ToUpper()}'){(parameters.HasValue("TABLENAME") ? @"
+  AND T.TABLE_NAME IN (:TABLENAME)" : string.Empty)}
   ((T.TYPE = 'USER' AND (:TABLETYPE IS NULL OR :TABLETYPE = 0)) OR (T.TYPE = 'SYSTEM' AND :TABLETYPE = 1))
   ORDER BY OWNER, TABLE_NAME";
-
-            restrictionValues
-                .Parameterize(parameters, "TABLENAME", nameof(Table.Name))
-                .Parameterize(parameters, "TABLETYPE", nameof(Table.Type));
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new Table
             {
@@ -182,6 +182,10 @@ SELECT * FROM (
         {
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
+
+            restrictionValues
+                .Parameterize(parameters, "TABLENAME", nameof(Column.TableName))
+                .Parameterize(parameters, "COLUMNNAME", nameof(Column.Name));
 
             SpecialCommand sql = $@"
 SELECT T.OWNER,
@@ -220,14 +224,10 @@ SELECT T.OWNER,
     ON T.OWNER = P.OWNER
    AND T.TABLE_NAME =P.TABLE_NAME
    AND T.COLUMN_NAME = P.COLUMN_NAME
- WHERE (T.OWNER = '{connpar.UserId!.ToUpper()}') AND 
-   (T.TABLE_NAME = :TABLENAME OR :TABLENAME IS NULL) AND 
-   (T.COLUMN_NAME = :COLUMNNAME OR :COLUMNNAME IS NULL)
+ WHERE (T.OWNER = '{connpar.UserId!.ToUpper()}'){(parameters.HasValue("TABLENAME") ? @"
+  AND T.TABLE_NAME IN (:TABLENAME)" : string.Empty)}{(parameters.HasValue("COLUMNNAME") ? @"
+  AND T.COLUMN_NAME IN (:COLUMNNAME)" : string.Empty)}
  ORDER BY T.OWNER, T.TABLE_NAME, T.COLUMN_ID";
-
-            restrictionValues
-                .Parameterize(parameters, "TABLENAME", nameof(Column.TableName))
-                .Parameterize(parameters, "COLUMNNAME", nameof(Column.Name));
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetDataType(SetColumnType(new Column
             {

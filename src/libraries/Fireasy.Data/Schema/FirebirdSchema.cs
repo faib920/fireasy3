@@ -80,7 +80,11 @@ SELECT * FROM RDB$DATABASE";
         {
             var parameters = new ParameterCollection();
 
-            SpecialCommand sql = @"
+            restrictionValues
+                .Parameterize(parameters, "NAME", nameof(Table.Name))
+                .Parameterize(parameters, "TABLETYPE", nameof(Table.Type));
+
+            SpecialCommand sql = $@"
 SELECT
   null AS TABLE_CATALOG,
   null AS TABLE_SCHEMA,
@@ -88,15 +92,10 @@ SELECT
   (case when rdb$system_flag = 1 then 'SYSTEM_TABLE' else 'TABLE' end) AS TABLE_TYPE,
   rdb$description AS DESCRIPTION
 FROM rdb$relations
-WHERE 
-  (rdb$relation_name = @NAME OR @NAME IS NULL) AND 
-  ((@TABLETYPE = 1 and rdb$system_flag = 1) OR ((@TABLETYPE = 0 or @TABLETYPE IS NULL) and rdb$system_flag = 0)) AND
-  rdb$view_blr IS NULL
+WHERE rdb$view_blr IS NULL{(parameters.HasValue("NAME") ? @"
+  AND rdb$relation_name IN (@NAME)" : string.Empty)}
+  AND ((@TABLETYPE = 1 and rdb$system_flag = 1) OR ((@TABLETYPE = 0 or @TABLETYPE IS NULL) and rdb$system_flag = 0))
 ORDER BY rdb$system_flag, rdb$owner_name, rdb$relation_name";
-
-            restrictionValues
-                .Parameterize(parameters, "NAME", nameof(Table.Name))
-                .Parameterize(parameters, "TABLETYPE", nameof(Table.Type));
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new Table
             {
@@ -118,7 +117,11 @@ ORDER BY rdb$system_flag, rdb$owner_name, rdb$relation_name";
         {
             var parameters = new ParameterCollection();
 
-            SpecialCommand sql = @"
+            restrictionValues
+                .Parameterize(parameters, "TABLENAME", nameof(Column.TableName))
+                .Parameterize(parameters, "COLUMNNAME", nameof(Column.Name));
+
+            SpecialCommand sql = $@"
 SELECT
   null AS TABLE_CATALOG,
   null AS TABLE_SCHEMA,
@@ -149,14 +152,11 @@ FROM rdb$relation_fields rfr
 LEFT JOIN rdb$fields fld ON rfr.rdb$field_source = fld.rdb$field_name
 LEFT JOIN rdb$character_sets cs ON cs.rdb$character_set_id = fld.rdb$character_set_id
 LEFT JOIN rdb$collations coll ON (coll.rdb$collation_id = fld.rdb$collation_id AND coll.rdb$character_set_id = fld.rdb$character_set_id)
-WHERE (rfr.rdb$relation_name = @TABLENAME OR (@TABLENAME IS NULL)) AND 
-  (rfr.rdb$field_name = @COLUMNNAME OR (@COLUMNNAME IS NULL)) AND rfr.rdb$system_flag = 0
+WHERE rfr.rdb$system_flag = 0{(parameters.HasValue("TABLENAME") ? @"
+  AND rfr.rdb$relation_name IN (@TABLENAME)" : string.Empty)}{(parameters.HasValue("COLUMNNAME") ? @"
+  AND rfr.rdb$field_name IN (@COLUMNNAME)" : string.Empty)}
 ORDER BY rfr.rdb$relation_name, rfr.rdb$field_position
 ";
-
-            restrictionValues
-                .Parameterize(parameters, "TABLENAME", nameof(Column.TableName))
-                .Parameterize(parameters, "COLUMNNAME", nameof(Column.Name));
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetColumnType(SetDataType(wrapper!, reader, new Column
             {

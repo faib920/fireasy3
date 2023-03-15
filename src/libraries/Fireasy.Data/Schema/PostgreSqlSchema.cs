@@ -158,6 +158,9 @@ SELECT DATNAME FROM PG_DATABASE WHERE (DATNAME = @NAME OR (@NAME IS NULL))";
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
 
+            restrictionValues
+                .Parameterize(parameters, "NAME", nameof(Table.Name));
+
             SpecialCommand sql = $@"
 SELECT
   T.TABLE_CATALOG,
@@ -170,12 +173,9 @@ JOIN (
   SELECT RELNAME AS TABLE_NAME, CAST(OBJ_DESCRIPTION(RELFILENODE, 'pg_class') AS VARCHAR) AS TABLE_COMMENT FROM PG_CLASS C 
   WHERE RELKIND = 'r'
 ) C ON T.TABLE_NAME = C.TABLE_NAME
-WHERE (T.TABLE_CATALOG = '{connpar.Database}' AND T.TABLE_SCHEMA = ANY (CURRENT_SCHEMAS(false)))
-  AND (T.TABLE_NAME = :NAME OR :NAME IS NULL)
+WHERE (T.TABLE_CATALOG = '{connpar.Database}' AND T.TABLE_SCHEMA = ANY (CURRENT_SCHEMAS(false))){(parameters.HasValue("NAME") ? @"
+  AND T.TABLE_NAME IN (:NAME)" : string.Empty)}
  ORDER BY T.TABLE_CATALOG, T.TABLE_SCHEMA, T.TABLE_NAME";
-
-            restrictionValues
-                .Parameterize(parameters, "NAME", nameof(Table.Name));
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new Table
             {
@@ -197,6 +197,10 @@ WHERE (T.TABLE_CATALOG = '{connpar.Database}' AND T.TABLE_SCHEMA = ANY (CURRENT_
         {
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
+
+            restrictionValues
+                .Parameterize(parameters, "TABLENAME", nameof(Column.TableName))
+                .Parameterize(parameters, "COLUMNNAME", nameof(Column.Name));
 
             SpecialCommand sql = $@"
 SELECT
@@ -226,15 +230,11 @@ LEFT JOIN PG_DESCRIPTION DES
     ON PCL.OID = DES.OBJOID AND COL.ORDINAL_POSITION = DES.OBJSUBID
 LEFT JOIN PG_CONSTRAINT CON
 	ON CON.CONRELID = PCL.OID AND CON.CONTYPE = 'p'
-WHERE (COL.TABLE_CATALOG = '{connpar.Database}' AND COL.TABLE_SCHEMA = ANY (CURRENT_SCHEMAS(false)))
-  AND (COL.TABLE_NAME = :TABLENAME OR :TABLENAME IS NULL)
-  AND (COL.COLUMN_NAME = :COLUMNNAME OR :COLUMNNAME IS NULL)
+WHERE (COL.TABLE_CATALOG = '{connpar.Database}' AND COL.TABLE_SCHEMA = ANY (CURRENT_SCHEMAS(false))){(parameters.HasValue("TABLENAME") ? @"
+  AND COL.TABLE_NAME IN (@TABLENAME)" : string.Empty)}{(parameters.HasValue("COLUMNNAME") ? @"
+  AND COL.COLUMN_NAME IN (@COLUMNNAME)" : string.Empty)}
 ORDER BY
   COL.TABLE_CATALOG, COL.TABLE_SCHEMA, COL.TABLE_NAME, COL.ORDINAL_POSITION";
-
-            restrictionValues
-                .Parameterize(parameters, "TABLENAME", nameof(Column.TableName))
-                .Parameterize(parameters, "COLUMNNAME", nameof(Column.Name));
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetDataType(SetColumnType(new Column
             {

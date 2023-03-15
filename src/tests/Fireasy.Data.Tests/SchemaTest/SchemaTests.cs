@@ -3,6 +3,7 @@ using Fireasy.Common.Extensions;
 using Fireasy.Data.RecordWrapper;
 using Microsoft.Extensions.DependencyInjection;
 using System.Data.Entity;
+using static Azure.Core.HttpHeader;
 
 namespace Fireasy.Data.Tests.SchemaTest
 {
@@ -124,6 +125,36 @@ namespace Fireasy.Data.Tests.SchemaTest
         }
 
         /// <summary>
+        /// 测试获取 Table
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task TestGetTablesPredicatesAsync()
+        {
+            var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
+
+            using var database = factory.CreateDatabase<T>(ConnectionString);
+            var syntax = database.GetService<ISyntaxProvider>();
+            var schema = database.GetService<ISchemaProvider>();
+
+            var names = new[]
+            {
+                syntax!.ToggleCase("products"),
+                syntax!.ToggleCase("customers"),
+                syntax!.ToggleCase("orders")
+            };
+
+            var tables = await schema!.GetSchemasAsync<Data.Schema.Table>(database, s => names.Contains(s.Name)).ToListAsync();
+
+            foreach (var item in tables)
+            {
+                Console.WriteLine(item.Name);
+            }
+
+            Assert.IsTrue(tables.Any());
+        }
+
+        /// <summary>
         /// 测试获取 Column
         /// </summary>
         /// <returns></returns>
@@ -169,6 +200,41 @@ namespace Fireasy.Data.Tests.SchemaTest
             Assert.IsTrue(columns.Any());
         }
 
+        /// <summary>
+        /// 测试获取 Column
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task TestGetColumnsByNamesAsync()
+        {
+            var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
+
+            using var database = factory.CreateDatabase<T>(ConnectionString);
+            var syntax = database.GetService<ISyntaxProvider>();
+            var schema = database.GetService<ISchemaProvider>();
+
+            var tames = new[]
+            {
+                syntax!.ToggleCase("products"),
+                syntax!.ToggleCase("customers"),
+                syntax!.ToggleCase("orders")
+            };
+
+            var cnames = new[]
+            {
+                "ProductID",
+                "ProductName"
+            };
+
+            var columns = await schema!.GetSchemasAsync<Data.Schema.Column>(database, s => tames.Contains(s.TableName) && cnames.Contains(s.Name)).ToListAsync();
+
+            foreach (var item in columns)
+            {
+                Console.WriteLine($"{item.TableName}.{item.Name},pk:{item.IsPrimaryKey},type:{item.DataType}");
+            }
+
+            Assert.IsTrue(columns.Any());
+        }
         /// <summary>
         /// 测试获取 View
         /// </summary>

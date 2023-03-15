@@ -126,5 +126,19 @@ namespace Fireasy.Data.Schema.Linq
 
             return constExp;
         }
+
+        protected override Expression VisitMethodCall(MethodCallExpression node)
+        {
+            if (node.Method.DeclaringType == typeof(Enumerable))
+            {
+                if (node.Method.Name == nameof(Enumerable.Contains))
+                {
+                    Visit(node.Arguments[1]);
+                    Visit(node.Arguments[0]);
+                }
+            }
+
+            return node;
+        }
     }
 }

@@ -291,6 +291,17 @@ namespace Fireasy.Data
         }
 
         /// <summary>
+        /// 判断指定的参数是否有值。
+        /// </summary>
+        /// <param name="parameterName">参数名称。</param>
+        /// <returns></returns>
+        public bool HasValue(string parameterName)
+        {
+            var parameter = this[parameterName];
+            return parameter?.Value != null && parameter?.Value != DBNull.Value;
+        }
+
+        /// <summary>
         /// 根据值查看集合内的参数。
         /// </summary>
         /// <param name="value">欲判断参数值。</param>
@@ -617,7 +628,7 @@ namespace Fireasy.Data
         /// <summary>
         /// 根据参数名获取索引器的值。
         /// </summary>
-        public Parameter this[string parameterName]
+        public Parameter? this[string parameterName]
         {
             get
             {
