@@ -85,7 +85,7 @@ namespace Fireasy.Data.Schema
         {
             var sql = "SHOW DATABASES";
 
-            if (restrictionValues.TryGetValue(nameof(Database.Name), out string dbName))
+            if (restrictionValues.TryGetValue(nameof(Database.Name), out var dbName))
             {
                 sql += $" LIKE '{dbName}'";
             }
@@ -106,9 +106,10 @@ namespace Fireasy.Data.Schema
         {
             var parameters = new ParameterCollection();
 
-            SpecialCommand sql = "SELECT HOST, USER FROM MYSQL.USER WHERE (USER = ?NAME OR ?NAME IS NULL)";
-
             restrictionValues.Parameterize(parameters, "NAME", nameof(User.Name));
+
+            SpecialCommand sql = $@"SELECT HOST, USER FROM MYSQL.USER{(parameters.HasValue("NAME") ? @"
+  WHERE USER IN (?NAME)" : string.Empty)}";
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new User
             {
@@ -128,7 +129,7 @@ namespace Fireasy.Data.Schema
             var connpar = GetConnectionParameter(database);
 
             restrictionValues
-                .Parameterize(parameters, "NAME", nameof(Table.Name))
+                .Parameterize(parameters, "TABLENAME", nameof(Table.Name))
                 .Parameterize(parameters, "TABLETYPE", nameof(Table.Type));
 
             SpecialCommand sql = $@"
@@ -140,9 +141,9 @@ SELECT
   TABLE_COMMENT
 FROM INFORMATION_SCHEMA.TABLES T
 WHERE (T.TABLE_SCHEMA = '{connpar.Database}')
-  AND T.TABLE_TYPE <> 'VIEW'{(parameters.HasValue("NAME") ? @"
-  AND T.TABLE_NAME IN (?NAME)" : string.Empty)}
-  AND ((T.TABLE_TYPE = 'BASE TABLE' AND (@TABLETYPE IS NULL OR @TABLETYPE = 0)) OR (T.TABLE_TYPE = 'SYSTEM TABLE' AND @TABLETYPE = 1))
+  AND T.TABLE_TYPE <> 'VIEW'{(parameters.HasValue("TABLENAME") ? @"
+  AND T.TABLE_NAME IN (?TABLENAME)" : string.Empty)}
+  AND ((T.TABLE_TYPE = 'BASE TABLE' AND (?TABLETYPE IS NULL OR ?TABLETYPE = 0)) OR (T.TABLE_TYPE = 'SYSTEM TABLE' AND ?TABLETYPE = 1))
 ORDER BY T.TABLE_CATALOG, T.TABLE_SCHEMA, T.TABLE_NAME";
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new Table
@@ -222,17 +223,17 @@ WHERE (T.TABLE_SCHEMA = '{connpar.Database}'){(parameters.HasValue("TABLENAME") 
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
 
+            restrictionValues.Parameterize(parameters, "VIEWNAME", nameof(View.Name));
+
             SpecialCommand sql = $@"
 SELECT T.TABLE_CATALOG,
   T.TABLE_SCHEMA,
   T.TABLE_NAME
 FROM 
   INFORMATION_SCHEMA.VIEWS T
-WHERE (T.TABLE_SCHEMA = '{connpar.Database}') AND 
-  (T.TABLE_NAME = ?NAME OR ?NAME IS NULL)
+WHERE (T.TABLE_SCHEMA = '{connpar.Database}'){(parameters.HasValue("VIEWNAME") ? @"
+  AND T.TABLE_NAME IN (?VIEWNAME)" : string.Empty)}
  ORDER BY T.TABLE_CATALOG, T.TABLE_SCHEMA, T.TABLE_NAME";
-
-            restrictionValues.Parameterize(parameters, "NAME", nameof(View.Name));
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new View
             {
@@ -253,6 +254,10 @@ WHERE (T.TABLE_SCHEMA = '{connpar.Database}') AND
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
 
+            restrictionValues
+                .Parameterize(parameters, "VIEWNAME", nameof(ViewColumn.ViewName))
+                .Parameterize(parameters, "COLUMNNAME", nameof(ViewColumn.Name));
+
             SpecialCommand sql = $@"
 SELECT T.TABLE_CATALOG,
        T.TABLE_SCHEMA,
@@ -270,14 +275,10 @@ SELECT T.TABLE_CATALOG,
 FROM INFORMATION_SCHEMA.COLUMNS T
 JOIN INFORMATION_SCHEMA.VIEWS O
   ON O.TABLE_SCHEMA = T.TABLE_SCHEMA AND O.TABLE_NAME = T.TABLE_NAME
-WHERE (T.TABLE_SCHEMA = '{connpar.Database}') AND 
-  (T.TABLE_NAME = ?TABLENAME OR ?TABLENAME IS NULL) AND 
-  (T.COLUMN_NAME = ?COLUMNNAME OR ?COLUMNNAME IS NULL)
+WHERE (T.TABLE_SCHEMA = '{connpar.Database}'){(parameters.HasValue("VIEWNAME") ? @"
+  AND T.TABLE_NAME IN (?VIEWNAME)" : string.Empty)}{(parameters.HasValue("COLUMNNAME") ? @"
+  AND T.COLUMN_NAME IN (?COLUMNNAME)" : string.Empty)}
  ORDER BY T.TABLE_CATALOG, T.TABLE_SCHEMA, T.TABLE_NAME, T.ORDINAL_POSITION";
-
-            restrictionValues
-                .Parameterize(parameters, "TABLENAME", nameof(ViewColumn.ViewName))
-                .Parameterize(parameters, "COLUMNNAME", nameof(ViewColumn.Name));
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetDataType(new ViewColumn
             {
@@ -308,6 +309,10 @@ WHERE (T.TABLE_SCHEMA = '{connpar.Database}') AND
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
 
+            restrictionValues
+                .Parameterize(parameters, "TABLENAME", nameof(ForeignKey.TableName))
+                .Parameterize(parameters, "NAME", nameof(ForeignKey.Name));
+
             SpecialCommand sql = $@"
 SELECT 
     T.CONSTRAINT_CATALOG, 
@@ -319,14 +324,10 @@ SELECT
     T.REFERENCED_COLUMN_NAME 
 FROM  
     INFORMATION_SCHEMA.KEY_COLUMN_USAGE T
-WHERE (T.CONSTRAINT_SCHEMA = '{connpar.Database}') AND 
-   (T.TABLE_NAME = ?TABLENAME OR ?TABLENAME IS NULL) AND 
-   (T.CONSTRAINT_NAME = ?NAME OR ?NAME IS NULL) AND
-   REFERENCED_TABLE_NAME IS NOT NULL";
-
-            restrictionValues
-                .Parameterize(parameters, "TABLENAME", nameof(ForeignKey.TableName))
-                .Parameterize(parameters, "NAME", nameof(ForeignKey.Name));
+WHERE (T.CONSTRAINT_SCHEMA = '{connpar.Database}'){(parameters.HasValue("TABLENAME") ? @"
+  AND T.TABLE_NAME IN (?TABLENAME)" : string.Empty)}{(parameters.HasValue("NAME") ? @"
+  AND T.CONSTRAINT_NAME IN (?NAME)" : string.Empty)}
+  AND REFERENCED_TABLE_NAME IS NOT NULL";
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new ForeignKey
             {
@@ -341,6 +342,85 @@ WHERE (T.CONSTRAINT_SCHEMA = '{connpar.Database}') AND
         }
 
         /// <summary>
+        /// 获取 <see cref="Index"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
+        protected override IAsyncEnumerable<Index> GetIndexsAsync(IDatabase database, RestrictionDictionary restrictionValues)
+        {
+            var parameters = new ParameterCollection();
+            var connpar = GetConnectionParameter(database);
+
+            restrictionValues
+                .Parameterize(parameters, "TABLENAME", nameof(Index.TableName))
+                .Parameterize(parameters, "INDEXNAME", nameof(Index.Name));
+
+            SpecialCommand sql = $@"
+SELECT DISTINCT
+  TABLE_CATALOG,
+  TABLE_SCHEMA,
+  TABLE_NAME,
+  INDEX_NAME,
+  NON_UNIQUE
+FROM INFORMATION_SCHEMA.STATISTICS
+WHERE (TABLE_SCHEMA = '{connpar.Database}'){(parameters.HasValue("TABLENAME") ? @"
+  AND TABLE_NAME IN (?TABLENAME)" : string.Empty)}{(parameters.HasValue("INDEXNAME") ? @"
+  AND INDEX_NAME IN (?INDEXNAME)" : string.Empty)}
+ORDER BY TABLE_CATALOG, TABLE_SCHEMA, TABLE_NAME, INDEX_NAME";
+
+            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new Index
+            {
+                Catalog = wrapper!.GetString(reader, 0),
+                Schema = wrapper.GetString(reader, 1),
+                TableName = wrapper.GetString(reader, 2),
+                Name = wrapper.GetString(reader, 3),
+                IsUnique = wrapper.GetInt32(reader, 4) == 0,
+                IsPrimaryKey = wrapper.GetInt32(reader, 4) == 0 && wrapper.GetString(reader, 3) == "PRIMARY"
+            });
+        }
+
+        /// <summary>
+        /// 获取 <see cref="Index"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
+        protected override IAsyncEnumerable<IndexColumn> GetIndexColumnsAsync(IDatabase database, RestrictionDictionary restrictionValues)
+        {
+            var parameters = new ParameterCollection();
+            var connpar = GetConnectionParameter(database);
+
+            restrictionValues
+                .Parameterize(parameters, "TABLENAME", nameof(IndexColumn.TableName))
+                .Parameterize(parameters, "INDEXNAME", nameof(IndexColumn.IndexName))
+                .Parameterize(parameters, "COLUMNNAME", nameof(IndexColumn.ColumnName));
+
+            SpecialCommand sql = $@"
+SELECT 
+  TABLE_CATALOG,
+  TABLE_SCHEMA,
+  TABLE_NAME,
+  INDEX_NAME,
+  COLUMN_NAME
+FROM INFORMATION_SCHEMA.STATISTICS
+WHERE (TABLE_SCHEMA = '{connpar.Database}'){(parameters.HasValue("TABLENAME") ? @"
+  AND TABLE_NAME IN (?TABLENAME)" : string.Empty)}{(parameters.HasValue("INDEXNAME") ? @"
+  AND INDEX_NAME IN (?INDEXNAME)" : string.Empty)}{(parameters.HasValue("COLUMNNAME") ? @"
+  AND COLUMN_NAME IN (?COLUMNNAME)" : string.Empty)}
+ORDER BY TABLE_CATALOG, TABLE_SCHEMA, TABLE_NAME, INDEX_NAME, SEQ_IN_INDEX";
+
+            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new IndexColumn
+            {
+                Catalog = wrapper!.GetString(reader, 0),
+                Schema = wrapper.GetString(reader, 1),
+                TableName = wrapper.GetString(reader, 2),
+                IndexName = wrapper.GetString(reader, 3),
+                ColumnName = wrapper.GetString(reader, 4)
+            });
+        }
+
+        /// <summary>
         /// 获取 <see cref="Procedure"/> 元数据序列。
         /// </summary>
         /// <param name="database"></param>
@@ -351,6 +431,10 @@ WHERE (T.CONSTRAINT_SCHEMA = '{connpar.Database}') AND
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
 
+            restrictionValues
+                .Parameterize(parameters, "NAME", nameof(Procedure.Name))
+                .Parameterize(parameters, "TYPE", nameof(Procedure.Type));
+
             SpecialCommand sql = $@"
 SELECT
   SPECIFIC_NAME,
@@ -359,21 +443,17 @@ SELECT
   ROUTINE_NAME,
   ROUTINE_TYPE
 FROM INFORMATION_SCHEMA.ROUTINES
-WHERE (ROUTINE_SCHEMA = '{connpar.Database}')
-  AND (ROUTINE_NAME = @NAME OR (@NAME IS NULL))
-  AND (ROUTINE_TYPE = @TYPE OR (@TYPE IS NULL))
+WHERE (ROUTINE_SCHEMA = '{connpar.Database}'){(parameters.HasValue("NAME") ? @"
+  AND ROUTINE_NAME IN (?NAME)" : string.Empty)}
+  AND ((ROUTINE_TYPE = 'PROCEDURE' AND (?TYPE IS NULL OR ?TYPE = 0)) OR (ROUTINE_TYPE = 'FUNCTION' AND ?TYPE = 1))
 ORDER BY ROUTINE_CATALOG, ROUTINE_SCHEMA, ROUTINE_NAME";
-
-            restrictionValues
-                .Parameterize(parameters, "NAME", nameof(Procedure.Name))
-                .Parameterize(parameters, "TYPE", nameof(Procedure.Type));
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new Procedure
             {
                 Catalog = wrapper!.GetString(reader, 0),
-                Schema = wrapper.GetString(reader, 1),
-                Name = wrapper.GetString(reader, 2),
-                Type = wrapper.GetString(reader, 6)
+                Schema = wrapper.GetString(reader, 2),
+                Name = wrapper.GetString(reader, 3),
+                Type = wrapper.GetString(reader, 4) == "PROCEDURE" ? ProcedureType.Procedure : ProcedureType.Function
             });
         }
 
@@ -388,6 +468,10 @@ ORDER BY ROUTINE_CATALOG, ROUTINE_SCHEMA, ROUTINE_NAME";
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
 
+            restrictionValues
+                .Parameterize(parameters, "NAME", nameof(ProcedureParameter.ProcedureName))
+                .Parameterize(parameters, "PARAMETER", nameof(ProcedureParameter.Name));
+
             SpecialCommand sql = $@"
 SELECT
   SPECIFIC_CATALOG,
@@ -400,14 +484,11 @@ SELECT
   CHARACTER_MAXIMUM_LENGTH,
   NUMERIC_PRECISION,
   NUMERIC_SCALE
-WHERE (SPECIFIC_SCHEMA = '{connpar.Database}')
-  AND (SPECIFIC_NAME = @NAME OR (@NAME IS NULL))
-  AND (PARAMETER_NAME = @PARAMETER OR (@PARAMETER IS NULL))
+FROM INFORMATION_SCHEMA.PARAMETERS
+WHERE (SPECIFIC_SCHEMA = '{connpar.Database}'){(parameters.HasValue("NAME") ? @"
+  AND SPECIFIC_NAME IN (?NAME)" : string.Empty)}{(parameters.HasValue("PARAMETER") ? @"
+  AND PARAMETER_NAME IN (?PARAMETER)" : string.Empty)}
 ORDER BY SPECIFIC_CATALOG, SPECIFIC_SCHEMA, SPECIFIC_NAME, PARAMETER_NAME";
-
-            restrictionValues
-                .Parameterize(parameters, "NAME", nameof(ProcedureParameter.ProcedureName))
-                .Parameterize(parameters, "PARAMETER", nameof(ProcedureParameter.Name));
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new ProcedureParameter
             {

@@ -15,12 +15,21 @@ namespace Fireasy.Data.Schema.Linq
     public class SchemaQueryTranslateException : Exception
     {
         /// <summary>
-        /// 实例化类 <see cref="SchemaQueryTranslateException"/> 的新实例，表示指定的 <see cref="MemberInfo"/> 不支持限制查询。
+        /// 实例化 <see cref="SchemaQueryTranslateException"/> 类的新实例，表示指定的 <see cref="MemberInfo"/> 不支持限制查询。
         /// </summary>
         /// <param name="currMember">当前使用的 <see cref="MemberInfo"/> 对象。</param>
         /// <param name="mbrRestrs">提供限制查询的 <see cref="MemberInfo"/> 列表。</param>
         public SchemaQueryTranslateException(MemberInfo currMember, IEnumerable<MemberInfo> mbrRestrs)
             : base($"不能使用 {currMember.Name} 限制查询，仅能使用 {GetMemberNames(mbrRestrs)} 进行限制查询。")
+        {
+        }
+
+        /// <summary>
+        /// 实例化 <see cref="SchemaQueryTranslateException"/> 类的新实例。
+        /// </summary>
+        /// <param name="message">提示信息。</param>
+        public SchemaQueryTranslateException(string message) 
+            : base(message) 
         {
         }
 

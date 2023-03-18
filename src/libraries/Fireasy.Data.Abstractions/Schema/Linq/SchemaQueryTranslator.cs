@@ -5,7 +5,6 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-
 using Fireasy.Common.Linq.Expressions;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -14,9 +13,9 @@ namespace Fireasy.Data.Schema.Linq
 {
     internal sealed class SchemaQueryTranslator : ExpressionVisitor
     {
-        private Type _metadataType;
-        private string _memberName;
-        private List<MemberInfo> _members = null;
+        private Type? _metadataType;
+        private string? _memberName;
+        private List<MemberInfo>? _members = null;
         private readonly RestrictionDictionary _restrDict = new RestrictionDictionary();
 
         /// <summary>
@@ -34,7 +33,7 @@ namespace Fireasy.Data.Schema.Linq
 
             var translator = new SchemaQueryTranslator { _metadataType = typeof(T) };
 
-            if (!dicRestrMbrs.TryGetValue(typeof(T), out List<MemberInfo> properties))
+            if (!dicRestrMbrs.TryGetValue(typeof(T), out var properties))
             {
                 throw new SchemaQueryTranslateException(typeof(T));
             }
@@ -43,22 +42,6 @@ namespace Fireasy.Data.Schema.Linq
             expression = PartialEvaluator.Eval(expression);
             translator.Visit(expression);
             return translator._restrDict;
-        }
-
-        /// <summary>
-        /// 访问表达式树。
-        /// </summary>
-        /// <param name="expression"></param>
-        /// <returns></returns>
-        public override Expression Visit(Expression expression)
-        {
-            return expression.NodeType switch
-            {
-                ExpressionType.MemberAccess => VisitMember((MemberExpression)expression),
-                ExpressionType.Equal => VisitBinary((BinaryExpression)expression),
-                ExpressionType.Constant => VisitConstant((ConstantExpression)expression),
-                _ => base.Visit(expression),
-            };
         }
 
         /// <summary>
@@ -94,7 +77,7 @@ namespace Fireasy.Data.Schema.Linq
             //如果属性是架构元数据类的成员
             if (memberExp.Member.DeclaringType == _metadataType)
             {
-                if (!_members.Contains(memberExp.Member))
+                if (_members?.Contains(memberExp.Member) == false)
                 {
                     throw new SchemaQueryTranslateException(memberExp.Member, _members);
                 }
@@ -135,10 +118,22 @@ namespace Fireasy.Data.Schema.Linq
                 {
                     Visit(node.Arguments[1]);
                     Visit(node.Arguments[0]);
+
+                    return node;
+                }
+            }
+            else if (node.Method.DeclaringType == typeof(string))
+            {
+                if (node.Method.Name == nameof(string.Equals))
+                {
+                    Visit(node.Object);
+                    Visit(node.Arguments[0]);
+
+                    return node;
                 }
             }
 
-            return node;
+            throw new SchemaQueryTranslateException($"{node.Method.Name} 方法不受支持。");
         }
     }
 }

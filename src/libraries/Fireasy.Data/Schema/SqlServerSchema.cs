@@ -221,6 +221,8 @@ WHERE O.TABLE_TYPE <> 'view'{(parameters.HasValue("TABLENAME") ? @"
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
 
+            restrictionValues.Parameterize(parameters, "VIEWNAME", nameof(View.Name));
+
             SpecialCommand sql = $@"
 SELECT T.TABLE_CATALOG,
   T.TABLE_SCHEMA,
@@ -228,11 +230,9 @@ SELECT T.TABLE_CATALOG,
   (SELECT VALUE FROM ::FN_LISTEXTENDEDPROPERTY('MS_Description','user',t.TABLE_SCHEMA,'view',T.TABLE_NAME,NULL,NULL)) COMMENTS
 FROM 
   INFORMATION_SCHEMA.TABLES T
-WHERE TABLE_TYPE = 'view' AND
-  (T.TABLE_NAME = @NAME OR (@NAME IS NULL))
+WHERE TABLE_TYPE = 'view'{(parameters.HasValue("VIEWNAME") ? @"
+  AND T.TABLE_NAME IN (@VIEWNAME)" : string.Empty)}
  ORDER BY T.TABLE_CATALOG, T.TABLE_SCHEMA, T.TABLE_NAME";
-
-            restrictionValues.Parameterize(parameters, "NAME", nameof(View.Name));
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new View
             {
@@ -254,6 +254,10 @@ WHERE TABLE_TYPE = 'view' AND
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
 
+            restrictionValues
+                .Parameterize(parameters, "VIEWNAME", nameof(ViewColumn.ViewName))
+                .Parameterize(parameters, "COLUMNNAME", nameof(ViewColumn.Name));
+
             SpecialCommand sql = $@"
 SELECT T.TABLE_CATALOG,
        T.TABLE_SCHEMA,
@@ -273,14 +277,10 @@ SELECT T.TABLE_CATALOG,
   FROM INFORMATION_SCHEMA.COLUMNS T
   JOIN INFORMATION_SCHEMA.TABLES O
     ON O.TABLE_CATALOG = T.TABLE_CATALOG AND O.TABLE_SCHEMA = T.TABLE_SCHEMA AND T.TABLE_NAME = O.TABLE_NAME
-WHERE O.TABLE_TYPE = 'view' AND
-  (T.TABLE_NAME = @TABLENAME OR (@TABLENAME IS NULL)) AND 
-  (T.COLUMN_NAME = @COLUMNNAME OR (@COLUMNNAME IS NULL))
+WHERE O.TABLE_TYPE = 'view'{(parameters.HasValue("VIEWNAME") ? @"
+  AND T.TABLE_NAME IN (@VIEWNAME)" : string.Empty)}{(parameters.HasValue("COLUMNNAME") ? @"
+  AND T.COLUMN_NAME IN (@COLUMNNAME)" : string.Empty)}
  ORDER BY T.TABLE_CATALOG, T.TABLE_SCHEMA, T.TABLE_NAME, T.ORDINAL_POSITION";
-
-            restrictionValues
-                .Parameterize(parameters, "TABLENAME", nameof(ViewColumn.ViewName))
-                .Parameterize(parameters, "COLUMNNAME", nameof(ViewColumn.Name));
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new ViewColumn
             {
@@ -311,6 +311,10 @@ WHERE O.TABLE_TYPE = 'view' AND
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
 
+            restrictionValues
+                .Parameterize(parameters, "TABLENAME", nameof(ForeignKey.TableName))
+                .Parameterize(parameters, "NAME", nameof(ForeignKey.Name));
+
             SpecialCommand sql = $@"
 SELECT
   TC.CONSTRAINT_CATALOG, 
@@ -334,13 +338,9 @@ AND KCU.CONSTRAINT_NAME = FC.CONSTRAINT_NAME
 LEFT JOIN [INFORMATION_SCHEMA].[KEY_COLUMN_USAGE] FKCU
   ON FKCU.CONSTRAINT_SCHEMA = FC.UNIQUE_CONSTRAINT_SCHEMA
   AND FKCU.CONSTRAINT_NAME = FC.UNIQUE_CONSTRAINT_NAME
-WHERE TC.CONSTRAINT_TYPE = 'FOREIGN KEY' AND 
-   (TC.TABLE_NAME = @TABLENAME OR @TABLENAME IS NULL) AND 
-   (TC.CONSTRAINT_NAME = @NAME OR @NAME IS NULL)";
-
-            restrictionValues
-                .Parameterize(parameters, "TABLENAME", nameof(ForeignKey.TableName))
-                .Parameterize(parameters, "NAME", nameof(ForeignKey.Name));
+WHERE TC.CONSTRAINT_TYPE = 'FOREIGN KEY'{(parameters.HasValue("TABLENAME") ? @"
+  AND TC.TABLE_NAME IN (@TABLENAME)" : string.Empty)}{(parameters.HasValue("NAME") ? @"
+  AND TC.CONSTRAINT_NAME IN (@NAME)" : string.Empty)}";
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new ForeignKey
             {
@@ -365,6 +365,10 @@ WHERE TC.CONSTRAINT_TYPE = 'FOREIGN KEY' AND
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
 
+            restrictionValues
+                .Parameterize(parameters, "TABLENAME", nameof(Index.TableName))
+                .Parameterize(parameters, "INDEXNAME", nameof(Index.Name));
+
             SpecialCommand sql = $@"
 SELECT DISTINCT
   DB_NAME() AS CONSTRAINT_CATALOG,
@@ -375,14 +379,11 @@ SELECT DISTINCT
   TABLE_NAME = O.NAME,
   INDEX_NAME = X.NAME
 FROM SYSOBJECTS O, SYSINDEXES X, SYSINDEXKEYS XK
-WHERE O.TYPE IN ('U') AND X.ID = O.ID  AND O.ID = XK.ID AND X.INDID = XK.INDID AND XK.KEYNO &LT; = X.KEYCNT AND
- (DB_NAME() = '{connpar.Database}') AND
- (O.NAME = @TABLE OR (@TABLE IS NULL)) AND
- (X.NAME = @NAME OR (@NAME IS NULL)) ORDER BY TABLE_NAME, INDEX_NAME";
-
-            restrictionValues
-                .Parameterize(parameters, "TABLE", nameof(Index.TableName))
-                .Parameterize(parameters, "NAME", nameof(Index.Name));
+WHERE O.TYPE IN ('U') AND X.ID = O.ID  AND O.ID = XK.ID AND X.INDID = XK.INDID AND XK.KEYNO <= X.KEYCNT
+  {(parameters.HasValue("TABLENAME") ? @"
+  AND O.NAME IN (@TABLENAME)" : string.Empty)}{(parameters.HasValue("INDEXNAME") ? @"
+  AND X.NAME IN (@INDEXNAME)" : string.Empty)}
+ORDER BY TABLE_NAME, INDEX_NAME";
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new Index
             {
@@ -403,6 +404,11 @@ WHERE O.TYPE IN ('U') AND X.ID = O.ID  AND O.ID = XK.ID AND X.INDID = XK.INDID A
         {
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
+            
+            restrictionValues
+                .Parameterize(parameters, "TABLENAME", nameof(IndexColumn.TableName))
+                .Parameterize(parameters, "INDEXNAME", nameof(IndexColumn.IndexName))
+                .Parameterize(parameters, "COLUMNNAME", nameof(IndexColumn.ColumnName));
 
             SpecialCommand sql = $@"
 SELECT DISTINCT
@@ -418,15 +424,11 @@ SELECT DISTINCT
   INDEX_NAME = X.NAME
 FROM SYSOBJECTS O, SYSINDEXES X, SYSCOLUMNS C, SYSINDEXKEYS XK
 WHERE O.TYPE IN ('U') AND X.ID = O.ID  AND O.ID = C.ID AND O.ID = XK.ID AND X.INDID = XK.INDID AND C.COLID = XK.COLID AND XK.KEYNO <= X.KEYCNT AND PERMISSIONS(O.ID, C.NAME) <> 0 
-  AND (DB_NAME() = '{connpar.Database}')
-  AND (X.NAME = @CONSTRAINTNAME OR (@CONSTRAINTNAME IS NULL))
-  AND (C.NAME = @COLUMN OR (@COLUMN IS NULL))
+  {(parameters.HasValue("TABLENAME") ? @"
+  AND O.NAME IN (@TABLENAME)" : string.Empty)}{(parameters.HasValue("INDEXNAME") ? @"
+  AND X.NAME IN (@INDEXNAME)" : string.Empty)}{(parameters.HasValue("COLUMNNAME") ? @"
+  AND C.NAME IN (@COLUMNNAME)" : string.Empty)}
 ORDER BY TABLE_NAME, INDEX_NAME";
-
-            restrictionValues
-                .Parameterize(parameters, "TABLE", nameof(IndexColumn.TableName))
-                .Parameterize(parameters, "CONSTRAINTNAME", nameof(IndexColumn.IndexName))
-                .Parameterize(parameters, "COLUMN", nameof(IndexColumn.ColumnName));
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new IndexColumn
             {
@@ -449,6 +451,10 @@ ORDER BY TABLE_NAME, INDEX_NAME";
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
 
+            restrictionValues
+                .Parameterize(parameters, "NAME", nameof(Procedure.Name))
+                .Parameterize(parameters, "TYPE", nameof(Procedure.Type));
+
             SpecialCommand sql = $@"
 SELECT
   SPECIFIC_CATALOG,
@@ -461,21 +467,17 @@ SELECT
   CREATED,
   LAST_ALTERED
 FROM INFORMATION_SCHEMA.ROUTINES
-WHERE (SPECIFIC_CATALOG = '{connpar.Database}')
-  AND (SPECIFIC_NAME = @NAME OR (@NAME IS NULL))
-  AND (ROUTINE_TYPE = @TYPE OR (@TYPE IS NULL))
+WHERE 1 = 1{(parameters.HasValue("NAME") ? @"
+  AND SPECIFIC_NAME IN (@NAME)" : string.Empty)}
+  AND ((ROUTINE_TYPE = 'PROCEDURE' AND (@TYPE IS NULL OR @TYPE = 0)) OR (ROUTINE_TYPE = 'FUNCTION' AND @TYPE = 1))
 ORDER BY SPECIFIC_CATALOG, SPECIFIC_SCHEMA, SPECIFIC_NAME";
-
-            restrictionValues
-                .Parameterize(parameters, "NAME", nameof(Procedure.Name))
-                .Parameterize(parameters, "TYPE", nameof(Procedure.Type));
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new Procedure
             {
                 Catalog = wrapper!.GetString(reader, 0),
                 Schema = wrapper.GetString(reader, 1),
                 Name = wrapper.GetString(reader, 2),
-                Type = wrapper.GetString(reader, 6)
+                Type = wrapper.GetString(reader, 6) == "PROCEDURE" ? ProcedureType.Procedure : ProcedureType.Function
             });
         }
 
@@ -489,6 +491,10 @@ ORDER BY SPECIFIC_CATALOG, SPECIFIC_SCHEMA, SPECIFIC_NAME";
         {
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
+
+            restrictionValues
+                .Parameterize(parameters, "NAME", nameof(ProcedureParameter.ProcedureName))
+                .Parameterize(parameters, "PARAMETER", nameof(ProcedureParameter.Name));
 
             SpecialCommand sql = $@"
 SELECT
@@ -516,14 +522,10 @@ SELECT
   INTERVAL_TYPE,
   INTERVAL_PRECISION
 FROM INFORMATION_SCHEMA.PARAMETERS
-WHERE (SPECIFIC_CATALOG = '{connpar.Database}')
-  AND (SPECIFIC_NAME = @NAME OR (@NAME IS NULL))
-  AND (PARAMETER_NAME = @PARAMETER OR (@PARAMETER IS NULL))
+WHERE 1 = 1{(parameters.HasValue("NAME") ? @"
+  AND SPECIFIC_NAME IN (@NAME)" : string.Empty)}{(parameters.HasValue("PARAMETER") ? @"
+  AND PARAMETER_NAME IN (@PARAMETER)" : string.Empty)}
 ORDER BY SPECIFIC_CATALOG, SPECIFIC_SCHEMA, SPECIFIC_NAME, PARAMETER_NAME";
-
-            restrictionValues
-                .Parameterize(parameters, "NAME", nameof(ProcedureParameter.ProcedureName))
-                .Parameterize(parameters, "PARAMETER", nameof(ProcedureParameter.Name));
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new ProcedureParameter
             {

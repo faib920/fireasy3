@@ -31,6 +31,21 @@ namespace Fireasy.Data.Schema
         /// <summary>
         /// 获取存储过程类型。
         /// </summary>
-        public string Type { get; set; }
+        public ProcedureType Type { get; set; }
+    }
+
+    /// <summary>
+    /// 存储过程的类型。
+    /// </summary>
+    public enum ProcedureType
+    {
+        /// <summary>
+        /// 存储过程。
+        /// </summary>
+        Procedure,
+        /// <summary>
+        /// 函数。
+        /// </summary>
+        Function
     }
 }

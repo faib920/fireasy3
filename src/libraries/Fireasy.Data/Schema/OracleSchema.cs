@@ -44,8 +44,8 @@ namespace Fireasy.Data.Schema
             AddDataType("clob", DbType.String, typeof(string));
             AddDataType("date", DbType.Date, typeof(DateTime));
             AddDataType("float", DbType.Decimal, typeof(decimal));
-            AddDataType(@"interval day\([\d+]\) to second\([\d+]\)", DbType.Time, typeof(TimeSpan));
-            AddDataType(@"interval year\([\d+]\) to month", DbType.Int64, typeof(long));
+            AddDataType(@"interval day\([\d+]\) to second\([\d+]\)", DbType.Time, typeof(TimeSpan), true);
+            AddDataType(@"interval year\([\d+]\) to month", DbType.Int64, typeof(long), true);
             AddDataType("long", DbType.String, typeof(string));
             AddDataType("long raw", DbType.Binary, typeof(byte[]));
             AddDataType("nchar", DbType.String, typeof(string));
@@ -54,9 +54,9 @@ namespace Fireasy.Data.Schema
             AddDataType("nvarchar2", DbType.String, typeof(string));
             AddDataType("raw", DbType.Binary, typeof(byte[]));
             AddDataType("rowid", DbType.String, typeof(string));
-            AddDataType(@"timestamp\([\d+]\)", DbType.DateTime, typeof(DateTime));
-            AddDataType(@"timestamp\([\d+]\) with local time zone", DbType.DateTime, typeof(DateTime));
-            AddDataType(@"timestamp\([\d+]\) with time zone", DbType.DateTime, typeof(DateTime));
+            AddDataType(@"timestamp\([\d+]\)", DbType.DateTime, typeof(DateTime), true);
+            AddDataType(@"timestamp\([\d+]\) with local time zone", DbType.DateTime, typeof(DateTime), true);
+            AddDataType(@"timestamp\([\d+]\) with time zone", DbType.DateTime, typeof(DateTime), true);
             AddDataType("varchar2", DbType.String, typeof(string));
         }
 
@@ -160,8 +160,8 @@ SELECT * FROM (
 ) T
  WHERE (T.OWNER = '{connpar.UserId!.ToUpper()}'){(parameters.HasValue("TABLENAME") ? @"
   AND T.TABLE_NAME IN (:TABLENAME)" : string.Empty)}
-  ((T.TYPE = 'USER' AND (:TABLETYPE IS NULL OR :TABLETYPE = 0)) OR (T.TYPE = 'SYSTEM' AND :TABLETYPE = 1))
-  ORDER BY OWNER, TABLE_NAME";
+  AND ((T.TYPE = 'USER' AND (:TABLETYPE IS NULL OR :TABLETYPE = 0)) OR (T.TYPE = 'SYSTEM' AND :TABLETYPE = 1))
+ORDER BY OWNER, TABLE_NAME";
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new Table
             {
@@ -256,6 +256,10 @@ SELECT T.OWNER,
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
 
+            restrictionValues
+                .Parameterize(parameters, "TABLENAME", nameof(ForeignKey.TableName))
+                .Parameterize(parameters, "CONSTRAINTNAME", nameof(ForeignKey.Name));
+
             SpecialCommand sql = $@"
 SELECT PKCON.CONSTRAINT_NAME AS PRIMARY_KEY_CONSTRAINT_NAME,
        PKCON.OWNER AS PRIMARY_KEY_OWNER,
@@ -288,12 +292,10 @@ SELECT PKCON.CONSTRAINT_NAME AS PRIMARY_KEY_CONSTRAINT_NAME,
  WHERE PKCON.OWNER = FKCON.R_OWNER
    AND PKCON.CONSTRAINT_NAME = FKCON.R_CONSTRAINT_NAME
    AND FKCON.CONSTRAINT_TYPE = 'R'
-   and (FKCON.OWNER = '{connpar.UserId!.ToUpper()}')
-   AND (FKCON.TABLE_NAME = :TABLENAME OR :TABLENAME is null) AND (FKCON.CONSTRAINT_NAME = :CONSTRAINTNAME OR :CONSTRAINTNAME is null)";
-
-            restrictionValues
-                .Parameterize(parameters, "TABLENAME", nameof(ForeignKey.TableName))
-                .Parameterize(parameters, "CONSTRAINTNAME", nameof(ForeignKey.Name));
+   and (FKCON.OWNER = '{connpar.UserId!.ToUpper()}'){(parameters.HasValue("TABLENAME") ? @"
+  AND FKCON.TABLE_NAME IN (:TABLENAME)" : string.Empty)}{(parameters.HasValue("CONSTRAINTNAME") ? @"
+  AND FKCON.CONSTRAINT_NAME IN (:CONSTRAINTNAME)" : string.Empty)}
+";
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new ForeignKey
             {
@@ -317,6 +319,9 @@ SELECT PKCON.CONSTRAINT_NAME AS PRIMARY_KEY_CONSTRAINT_NAME,
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
 
+            restrictionValues
+                .Parameterize(parameters, "VIEWNAME", nameof(Table.Name));
+
             SpecialCommand sql = $@"
 SELECT * FROM (
     SELECT T.OWNER,
@@ -327,12 +332,9 @@ SELECT * FROM (
     ON T.OWNER = C.OWNER
    AND T.VIEW_NAME = C.TABLE_NAME
 ) T
- WHERE (T.OWNER = '{connpar.UserId!.ToUpper()}') AND 
-  (T.VIEW_NAME = :VIEWNAME OR (:VIEWNAME IS NULL))
-  ORDER BY OWNER, VIEW_NAME";
-
-            restrictionValues
-                .Parameterize(parameters, "VIEWNAME", nameof(Table.Name));
+ WHERE (T.OWNER = '{connpar.UserId!.ToUpper()}'){(parameters.HasValue("TABLENAME") ? @"
+  AND T.VIEW_NAME IN (:TABLENAME)" : string.Empty)}
+ORDER BY OWNER, VIEW_NAME";
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new View
             {
@@ -352,6 +354,10 @@ SELECT * FROM (
         {
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
+
+            restrictionValues
+                .Parameterize(parameters, "VIEWNAME", nameof(ViewColumn.ViewName))
+                .Parameterize(parameters, "COLUMNNAME", nameof(ViewColumn.Name));
 
             SpecialCommand sql = $@"
 SELECT T.OWNER,
@@ -375,14 +381,10 @@ SELECT T.OWNER,
     ON T.OWNER = D.OWNER
    AND T.TABLE_NAME = D.TABLE_NAME
    AND T.COLUMN_NAME = D.COLUMN_NAME
- WHERE (T.OWNER = '{connpar.UserId!.ToUpper()}') AND 
-   (T.TABLE_NAME = :VIEWNAME OR :VIEWNAME IS NULL) AND 
-   (T.COLUMN_NAME = :COLUMNNAME OR :COLUMNNAME IS NULL)
+ WHERE (T.OWNER = '{connpar.UserId!.ToUpper()}'){(parameters.HasValue("VIEWNAME") ? @"
+  AND T.TABLE_NAME IN (:VIEWNAME)" : string.Empty)}{(parameters.HasValue("COLUMNNAME") ? @"
+  AND T.COLUMN_NAME IN (:COLUMNNAME)" : string.Empty)}
  ORDER BY T.OWNER, T.TABLE_NAME, T.COLUMN_ID";
-
-            restrictionValues
-                .Parameterize(parameters, "VIEWNAME", nameof(ViewColumn.ViewName))
-                .Parameterize(parameters, "COLUMNNAME", nameof(ViewColumn.Name));
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetDataType(new ViewColumn
             {
@@ -409,20 +411,20 @@ SELECT T.OWNER,
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
 
+            restrictionValues
+                .Parameterize(parameters, "TABLENAME", nameof(Index.TableName))
+                .Parameterize(parameters, "INDEXNAME", nameof(Index.Name));
+
             SpecialCommand sql = $@"
 SELECT T.OWNER,
        T.INDEX_NAME, 
        T.TABLE_NAME,
        T.UNIQUENESS
  FROM ALL_INDEXES T
- WHERE (T.OWNER = '{connpar.UserId!.ToUpper()}') AND 
-   (T.TABLE_NAME = :TABLENAME OR :TABLENAME IS NULL) AND 
-   (T.INDEX_NAME = :INDEXNAME OR :INDEXNAME IS NULL)
+ WHERE (T.OWNER = '{connpar.UserId!.ToUpper()}'){(parameters.HasValue("TABLENAME") ? @"
+  AND T.TABLE_NAME IN (:TABLENAME)" : string.Empty)}{(parameters.HasValue("INDEXNAME") ? @"
+  AND T.INDEX_NAME IN (:INDEXNAME)" : string.Empty)}
  ORDER BY T.OWNER, T.TABLE_NAME";
-
-            restrictionValues
-                .Parameterize(parameters, "TABLENAME", nameof(Index.TableName))
-                .Parameterize(parameters, "INDEXNAME", nameof(Index.Name));
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new Index
             {
@@ -444,22 +446,22 @@ SELECT T.OWNER,
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
 
+            restrictionValues
+                .Parameterize(parameters, "TABLENAME", nameof(IndexColumn.TableName))
+                .Parameterize(parameters, "INDEXNAME", nameof(IndexColumn.IndexName))
+                .Parameterize(parameters, "COLUMNNAME", nameof(IndexColumn.ColumnName));
+
             SpecialCommand sql = $@"
 SELECT T.INDEX_OWNER,
        T.INDEX_NAME, 
        T.TABLE_NAME,
        T.COLUMN_NAME
  FROM ALL_IND_COLUMNS T
- WHERE (T.INDEX_OWNER = '{connpar.UserId!.ToUpper()}') AND 
-   (T.TABLE_NAME = :TABLENAME OR :TABLENAME IS NULL) AND 
-   (T.INDEX_NAME = :INDEXNAME OR :INDEXNAME IS NULL) AND
-   (T.COLUMN_NAME = :COLUMNNAME OR :COLUMNNAME IS NULL) 
+ WHERE (T.INDEX_OWNER = '{connpar.UserId!.ToUpper()}'){(parameters.HasValue("TABLENAME") ? @"
+  AND T.TABLE_NAME IN (:TABLENAME)" : string.Empty)}{(parameters.HasValue("INDEXNAME") ? @"
+  AND T.INDEX_NAME IN (:INDEXNAME)" : string.Empty)}{(parameters.HasValue("COLUMNNAME") ? @"
+  AND T.COLUMN_NAME IN (:COLUMNNAME)" : string.Empty)}
  ORDER BY T.INDEX_OWNER, T.TABLE_NAME";
-
-            restrictionValues
-                .Parameterize(parameters, "TABLENAME", nameof(IndexColumn.TableName))
-                .Parameterize(parameters, "INDEXNAME", nameof(IndexColumn.IndexName))
-                .Parameterize(parameters, "COLUMNNAME", nameof(IndexColumn.ColumnName));
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new IndexColumn
             {

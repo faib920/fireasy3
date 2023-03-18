@@ -39,9 +39,18 @@ namespace Fireasy.Data.Schema
         public string Description { get; set; }
     }
 
+    /// <summary>
+    /// 表的类型。
+    /// </summary>
     public enum TableType
     {
+        /// <summary>
+        /// 一般表、基础表、用户表。
+        /// </summary>
         BaseTable,
+        /// <summary>
+        /// 系统表。
+        /// </summary>
         SystemTable
     }
 }

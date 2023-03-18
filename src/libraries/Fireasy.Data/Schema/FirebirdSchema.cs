@@ -184,7 +184,11 @@ ORDER BY rfr.rdb$relation_name, rfr.rdb$field_position
         {
             var parameters = new ParameterCollection();
 
-            SpecialCommand sql = @"
+            restrictionValues
+                .Parameterize(parameters, "TABLENAME", nameof(ForeignKey.TableName))
+                .Parameterize(parameters, "NAME", nameof(ForeignKey.Name));
+
+            SpecialCommand sql = $@"
 SELECT
   null AS CONSTRAINT_CATALOG,
   null AS CONSTRAINT_SCHEMA,
@@ -205,13 +209,9 @@ INNER JOIN rdb$indices tempidx ON co.rdb$index_name = tempidx.rdb$index_name
 INNER JOIN rdb$index_segments coidxseg ON co.rdb$index_name = coidxseg.rdb$index_name
 INNER JOIN rdb$indices refidx ON refidx.rdb$index_name = tempidx.rdb$foreign_key
 INNER JOIN rdb$index_segments refidxseg ON refidxseg.rdb$index_name = refidx.rdb$index_name AND refidxseg.rdb$field_position = coidxseg.rdb$field_position
-where co.rdb$constraint_type = 'FOREIGN KEY' AND
-  (co.rdb$relation_name = @TABLENAME OR (@TABLENAME IS NULL)) AND 
-  (co.rdb$constraint_name = @NAME OR (@NAME IS NULL))";
-
-            restrictionValues
-                .Parameterize(parameters, "TABLENAME", nameof(ForeignKey.TableName))
-                .Parameterize(parameters, "NAME", nameof(ForeignKey.Name));
+WHERE co.rdb$constraint_type = 'FOREIGN KEY'{(parameters.HasValue("TABLENAME") ? @"
+  AND co.rdb$relation_name IN (@TABLENAME)" : string.Empty)}{(parameters.HasValue("NAME") ? @"
+  AND co.rdb$constraint_name IN (@NAME)" : string.Empty)}";
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new ForeignKey
             {
@@ -235,7 +235,10 @@ where co.rdb$constraint_type = 'FOREIGN KEY' AND
         {
             var parameters = new ParameterCollection();
 
-            SpecialCommand sql = @"
+            restrictionValues
+                .Parameterize(parameters, "NAME", nameof(View.Name));
+
+            SpecialCommand sql = $@"
 SELECT
   null AS TABLE_CATALOG,
   null AS TABLE_SCHEMA,
@@ -244,13 +247,10 @@ SELECT
   rdb$description AS DESCRIPTION,
   rdb$view_source AS VIEW_SOURCE
 FROM rdb$relations
-WHERE 
-  (rdb$relation_name = @NAME OR (@NAME IS NULL)) AND 
-  rdb$system_flag = 0 AND NOT rdb$view_blr IS NULL
+WHERE rdb$system_flag = 0
+  AND NOT rdb$view_blr IS NULL{(parameters.HasValue("NAME") ? @"
+  AND rdb$relation_name IN (@NAME)" : string.Empty)}
 ORDER BY rdb$system_flag, rdb$owner_name, rdb$relation_name";
-
-            restrictionValues
-                .Parameterize(parameters, "NAME", nameof(View.Name));
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new View
             {
@@ -271,7 +271,11 @@ ORDER BY rdb$system_flag, rdb$owner_name, rdb$relation_name";
         {
             var parameters = new ParameterCollection();
 
-            SpecialCommand sql = @"
+            restrictionValues
+                .Parameterize(parameters, "TABLENAME", nameof(ViewColumn.ViewName))
+                .Parameterize(parameters, "COLUMNNAME", nameof(ViewColumn.Name));
+
+            SpecialCommand sql = $@"
 SELECT
   null AS TABLE_CATALOG,
   null AS TABLE_SCHEMA,
@@ -303,14 +307,11 @@ JOIN rdb$relations rel ON rel.rdb$relation_name = rfr.rdb$relation_name
 LEFT JOIN rdb$fields fld ON rfr.rdb$field_source = fld.rdb$field_name
 LEFT JOIN rdb$character_sets cs ON cs.rdb$character_set_id = fld.rdb$character_set_id
 LEFT JOIN rdb$collations coll ON (coll.rdb$collation_id = fld.rdb$collation_id AND coll.rdb$character_set_id = fld.rdb$character_set_id)
-WHERE (rfr.rdb$relation_name = @TABLENAME OR (@TABLENAME IS NULL)) AND 
-  (rfr.rdb$field_name = @COLUMNNAME OR (@COLUMNNAME IS NULL)) AND rfr.rdb$system_flag = 0 AND NOT rel.rdb$view_blr IS NULL
+WHERE rfr.rdb$system_flag = 0 AND NOT rel.rdb$view_blr IS NULL{(parameters.HasValue("TABLENAME") ? @"
+  AND rfr.rdb$relation_name IN (@TABLENAME)" : string.Empty)}{(parameters.HasValue("COLUMNNAME") ? @"
+  AND rfr.rdb$field_name IN (@COLUMNNAME)" : string.Empty)}
 ORDER BY rfr.rdb$relation_name, rfr.rdb$field_position
 ";
-
-            restrictionValues
-                .Parameterize(parameters, "TABLENAME", nameof(ViewColumn.ViewName))
-                .Parameterize(parameters, "COLUMNNAME", nameof(ViewColumn.Name));
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetDataType(wrapper!, reader, new ViewColumn
             {

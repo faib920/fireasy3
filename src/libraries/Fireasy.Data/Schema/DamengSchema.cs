@@ -98,7 +98,7 @@ namespace Fireasy.Data.Schema
             var parameters = new ParameterCollection();
 
             SpecialCommand sql = @"
-SELECT NAME, CREATED FROM V$DATABASE T
+SELECT NAME, CREATE_TIME FROM V$DATABASE T
 WHERE (T.NAME = :NAME OR (:NAME IS NULL))";
 
             restrictionValues
@@ -145,18 +145,18 @@ WHERE (T.USERNAME = :USERNAME OR (:USERNAME IS NULL))";
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
 
+            restrictionValues
+                .Parameterize(parameters, "TABLENAME", nameof(Table.Name), addNullValue: false);
+
             SpecialCommand sql = $@"
 SELECT T.OWNER,
-       T.TABLE_NAME,
-       C.COMMENTS 
+  T.TABLE_NAME,
+  C.COMMENTS 
 FROM DBA_TABLES T
 JOIN USER_TAB_COMMENTS C ON C.TABLE_NAME = T.TABLE_NAME
-WHERE (T.OWNER = '{connpar.UserId!.ToUpper()}') AND 
-  (T.TABLE_NAME = :TABLENAME OR (:TABLENAME IS NULL))
-  ORDER BY T.OWNER, T.TABLE_NAME";
-
-            restrictionValues
-                .Parameterize(parameters, "TABLENAME", nameof(Table.Name));
+WHERE (T.OWNER = '{connpar.UserId!.ToUpper()}'){(parameters.HasValue("TABLENAME") ? @"
+  AND T.TABLE_NAME IN (:TABLENAME)" : string.Empty)}
+ORDER BY T.OWNER, T.TABLE_NAME";
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new Table
             {
@@ -177,6 +177,10 @@ WHERE (T.OWNER = '{connpar.UserId!.ToUpper()}') AND
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
 
+            restrictionValues
+                .Parameterize(parameters, "TABLENAME", nameof(Column.TableName), addNullValue: false)
+                .Parameterize(parameters, "COLUMNNAME", nameof(Column.Name), addNullValue: false);
+
             SpecialCommand sql = $@"
 SELECT 
     T.OWNER,
@@ -195,14 +199,10 @@ JOIN DBA_COL_COMMENTS C ON T.TABLE_NAME = C.TABLE_NAME AND T.COLUMN_NAME = C.COL
 LEFT JOIN USER_IND_COLUMNS B ON T.TABLE_NAME = T.TABLE_NAME AND B.COLUMN_NAME = T.COLUMN_NAME
 LEFT JOIN SYSOBJECTS O ON O.NAME = T.TABLE_NAME AND O.SUBTYPE$='UTAB'
 LEFT JOIN SYSCOLUMNS D ON D.NAME = T.COLUMN_NAME AND D.ID = O.ID AND D.INFO2 & 1 = 1
- WHERE (T.OWNER = '{connpar.UserId!.ToUpper()}') AND 
-   (T.TABLE_NAME = :TABLENAME OR :TABLENAME IS NULL) AND 
-   (T.COLUMN_NAME = :COLUMNNAME OR :COLUMNNAME IS NULL)
+WHERE T.OWNER = '{connpar.UserId!.ToUpper()}'{(parameters.HasValue("TABLENAME") ? @"
+  AND T.TABLE_NAME IN (:TABLENAME)" : string.Empty)}{(parameters.HasValue("COLUMNNAME") ? @"
+  AND T.COLUMN_NAME IN (:COLUMNNAME)" : string.Empty)}
  ORDER BY T.OWNER, T.TABLE_NAME, T.COLUMN_ID";
-
-            restrictionValues
-                .Parameterize(parameters, "TABLENAME", nameof(Column.TableName))
-                .Parameterize(parameters, "COLUMNNAME", nameof(Column.Name));
 
             return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetDataType(SetColumnType(new Column
             {
@@ -219,6 +219,120 @@ LEFT JOIN SYSCOLUMNS D ON D.NAME = T.COLUMN_NAME AND D.ID = O.ID AND D.INFO2 & 1
                 //Default = wrapper.GetString(reader, 9),
                 Description = wrapper.GetString(reader, 10),
             })));
+        }
+
+        /// <summary>
+        /// 获取 <see cref="ForeignKey"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
+        protected override IAsyncEnumerable<ForeignKey> GetForeignKeysAsync(IDatabase database, RestrictionDictionary restrictionValues)
+        {
+            var parameters = new ParameterCollection();
+            var connpar = GetConnectionParameter(database);
+
+            restrictionValues
+                .Parameterize(parameters, "TABLENAME", nameof(ForeignKey.TableName), addNullValue: false)
+                .Parameterize(parameters, "NAME", nameof(ForeignKey.Name), addNullValue: false);
+
+            SpecialCommand sql = $@"
+SELECT 
+  T.OWNER,
+  T.CONSTRAINT_NAME,
+  T.TABLE_NAME,
+  C.COLUMN_NAME, 
+  R.TABLE_NAME REF_TABLE_NAME,
+  R.COLUMN_NAME REF_COLUMN_NAME
+FROM 
+  DBA_CONSTRAINTS T
+JOIN ALL_CONS_COLUMNS C ON T.CONSTRAINT_NAME=C.CONSTRAINT_NAME
+JOIN ALL_CONS_COLUMNS R ON T.R_CONSTRAINT_NAME = R.CONSTRAINT_NAME
+WHERE (T.OWNER = '{connpar.UserId!.ToUpper()}') AND T.CONSTRAINT_TYPE='R'{(parameters.HasValue("TABLENAME") ? @"
+  AND T.TABLE_NAME IN (:TABLENAME)" : string.Empty)}{(parameters.HasValue("NAME") ? @"
+  AND T.CONSTRAINT_NAME IN (:NAME)" : string.Empty)};";
+
+            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new ForeignKey
+            {
+                Schema = wrapper!.GetString(reader, 0),
+                Name = wrapper.GetString(reader, 1),
+                TableName = wrapper.GetString(reader, 2),
+                ColumnName = wrapper.GetString(reader, 3),
+                PKTable = wrapper.GetString(reader, 4),
+                PKColumn = wrapper.GetString(reader, 5),
+            });
+        }
+
+        /// <summary>
+        /// 获取 <see cref="Index"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
+        protected override IAsyncEnumerable<Index> GetIndexsAsync(IDatabase database, RestrictionDictionary restrictionValues)
+        {
+            var parameters = new ParameterCollection();
+            var connpar = GetConnectionParameter(database);
+
+            restrictionValues
+                .Parameterize(parameters, "TABLENAME", nameof(Index.TableName), addNullValue: false)
+                .Parameterize(parameters, "INDEXNAME", nameof(Index.Name), addNullValue: false);
+
+            SpecialCommand sql = $@"
+SELECT DISTINCT
+  TABLE_OWNER,
+  TABLE_NAME,
+  INDEX_NAME
+FROM DBA_IND_COLUMNS
+WHERE (TABLE_OWNER = '{connpar.UserId!.ToUpper()}'){(parameters.HasValue("TABLENAME") ? @"
+  AND TABLE_NAME IN (:TABLENAME)" : string.Empty)}{(parameters.HasValue("INDEXNAME") ? @"
+  AND INDEX_NAME IN (:INDEXNAME)" : string.Empty)}
+ORDER BY TABLE_OWNER, TABLE_NAME, INDEX_NAME";
+
+            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new Index
+            {
+                Schema = wrapper!.GetString(reader, 0),
+                TableName = wrapper.GetString(reader, 1),
+                Name = wrapper.GetString(reader, 2)
+            });
+        }
+
+        /// <summary>
+        /// 获取 <see cref="IndexColumn"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
+        protected override IAsyncEnumerable<IndexColumn> GetIndexColumnsAsync(IDatabase database, RestrictionDictionary restrictionValues)
+        {
+            var parameters = new ParameterCollection();
+            var connpar = GetConnectionParameter(database);
+
+            restrictionValues
+                .Parameterize(parameters, "TABLENAME", nameof(IndexColumn.TableName), addNullValue: false)
+                .Parameterize(parameters, "INDEXNAME", nameof(IndexColumn.IndexName), addNullValue: false)
+                .Parameterize(parameters, "COLUMNNAME", nameof(IndexColumn.ColumnName), addNullValue: false);
+
+            SpecialCommand sql = $@"
+SELECT 
+  TABLE_OWNER,
+  TABLE_NAME,
+  INDEX_NAME,
+  COLUMN_NAME
+FROM DBA_IND_COLUMNS
+WHERE (TABLE_OWNER = '{connpar.UserId!.ToUpper()}'){(parameters.HasValue("TABLENAME") ? @"
+  AND TABLE_NAME IN (:TABLENAME)" : string.Empty)}{(parameters.HasValue("INDEXNAME") ? @"
+  AND INDEX_NAME IN (:INDEXNAME)" : string.Empty)}{(parameters.HasValue("COLUMNNAME") ? @"
+  AND COLUMN_NAME IN (:COLUMNNAME)" : string.Empty)}
+ORDER BY TABLE_OWNER, TABLE_NAME, INDEX_NAME, COLUMN_POSITION";
+
+            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new IndexColumn
+            {
+                Schema = wrapper!.GetString(reader, 0),
+                TableName = wrapper.GetString(reader, 1),
+                IndexName = wrapper.GetString(reader, 2),
+                ColumnName = wrapper.GetString(reader, 3)
+            });
         }
     }
 }

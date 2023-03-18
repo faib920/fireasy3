@@ -157,17 +157,19 @@ namespace Fireasy.Data.Schema
         /// <param name="name">类型名称。</param>
         /// <param name="dbType"></param>
         /// <param name="systemType"></param>
-        protected void AddDataType(string name, DbType dbType, Type systemType)
+        /// <param name="regexMatch">正则表达式匹配。</param>
+        protected void AddDataType(string name, DbType dbType, Type systemType, bool regexMatch = false)
         {
             var map = _dataTypes.FirstOrDefault(s => s.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
             if (map != null)
             {
                 map.DbType = dbType;
                 map.SystemType = systemType;
+                map.RegexMatch = regexMatch;
             }
             else
             {
-                _dataTypes.Add(new DataType { Name = name, DbType = dbType, SystemType = systemType });
+                _dataTypes.Add(new DataType { Name = name, DbType = dbType, SystemType = systemType, RegexMatch = regexMatch });
             }
         }
 
@@ -408,7 +410,8 @@ namespace Fireasy.Data.Schema
         /// <returns></returns>
         protected T SetDataType<T>(T column) where T : IDbTypeColumn
         {
-            var map = _dataTypes.FirstOrDefault(s => Regex.IsMatch(column.DataType, s.Name, RegexOptions.IgnoreCase));
+            var map = _dataTypes.FirstOrDefault(s => s.IsMatch(column.DataType));
+
             if (map != null)
             {
                 column.DbType = map.DbType;
