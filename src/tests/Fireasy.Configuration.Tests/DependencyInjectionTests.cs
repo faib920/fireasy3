@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Fireasy.Tests.Base;
+using Microsoft.Extensions.Options;
 
 namespace Fireasy.Configuration.Tests
 {

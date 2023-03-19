@@ -1,6 +1,7 @@
-﻿using Fireasy.Tests.Base;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Fireasy.Configuration.Tests
+namespace Fireasy.Tests.Base
 {
     public class ConfigurationBaseTests : ServiceProviderBaseTests
     {

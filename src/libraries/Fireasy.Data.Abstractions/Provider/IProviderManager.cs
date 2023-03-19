@@ -25,5 +25,11 @@ namespace Fireasy.Data.Provider
         /// </summary>
         /// <returns></returns>
         string[] GetSupportedProviderNames();
+
+        /// <summary>
+        /// 获取注册的所有数据库提供者映射。
+        /// </summary>
+        /// <returns></returns>
+        IEnumerable<ProviderDescriptor> GetSupportedProviders();
     }
 }

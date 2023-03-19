@@ -11,6 +11,8 @@ using Fireasy.Common.Threading;
 using Fireasy.Configuration;
 using Fireasy.Data.Configuration.Providers;
 using Microsoft.Extensions.DependencyInjection;
+using System.ComponentModel;
+using System.Reflection;
 
 namespace Fireasy.Data.Provider
 {
@@ -61,6 +63,15 @@ namespace Fireasy.Data.Provider
         public string[] GetSupportedProviderNames()
         {
             return GetWrapper().SelectMany(s => s.Alias).ToArray();
+        }
+
+        /// <summary>
+        /// 获取注册的所有数据库提供者映射。
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<ProviderDescriptor> GetSupportedProviders()
+        {
+            return GetWrapper().SelectMany(s => s.Alias.Select(t => new ProviderDescriptor(t, s.Description ?? t, s.ProviderType)));
         }
 
         private void AddProvider<T>(string providerName, int priority = 2) where T : IProvider
@@ -158,6 +169,8 @@ namespace Fireasy.Data.Provider
         internal List<string> Alias { get; set; } = new List<string>();
 
         internal Type ProviderType { get; set; }
+
+        internal string Description => ProviderType?.GetCustomAttribute<DescriptionAttribute>()?.Description;
 
         internal int Priority { get; set; }
 

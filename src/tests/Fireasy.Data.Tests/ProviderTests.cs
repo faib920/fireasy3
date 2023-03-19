@@ -49,6 +49,28 @@ namespace Fireasy.Data.Tests
         }
 
         /// <summary>
+        /// 测试获取所有定义的提供者名称
+        /// </summary>
+        [TestMethod]
+        public void TestGetSupportedProviders()
+        {
+            var manager = ServiceProvider.GetRequiredService<IProviderManager>();
+
+            var descriptors = manager.GetSupportedProviders();
+
+            foreach (var item in descriptors)
+            {
+                Console.WriteLine($"{item.Alais} {item.Description}");
+            }
+
+            //通过配置 fireasy:dataProviders 自动注册了提供者
+            Assert.IsTrue(descriptors.Any(s => s.Alais == "myprovider"));
+
+            //由于引用了 Fireasy.Data.OleDb，自动注册了 OleDbProvider
+            Assert.IsTrue(descriptors.Any(s => s.Alais == "OleDb"));
+        }
+
+        /// <summary>
         /// 测试获取指定名称的提供者
         /// </summary>
         [TestMethod]

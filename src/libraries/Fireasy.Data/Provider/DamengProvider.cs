@@ -11,12 +11,14 @@ using Fireasy.Data.Schema;
 using Fireasy.Data.Syntax;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.ComponentModel;
 
 namespace Fireasy.Data.Provider
 {
     /// <summary>
     /// Dameng(达梦)数据库提供者。
     /// </summary>
+    [Description("达梦")]
     public class DamengProvider : ProviderBase
     {
         /// <summary>

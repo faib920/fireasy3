@@ -6,12 +6,14 @@
 // </copyright>
 // -----------------------------------------------------------------------
 using Microsoft.Extensions.DependencyInjection;
+using System.ComponentModel;
 
 namespace Fireasy.Data.Provider
 {
     /// <summary>
     /// ShenTong(神通)数据库提供者。
     /// </summary>
+    [Description("神通")]
     public class ShenTongProvider : ProviderBase
     {
         /// <summary>

@@ -1,4 +1,6 @@
-﻿namespace Fireasy.Data.Tests
+﻿using Fireasy.Tests.Base;
+
+namespace Fireasy.Data.Tests
 {
     public abstract class DbInstanceBaseTests : ConfigurationBaseTests
     {

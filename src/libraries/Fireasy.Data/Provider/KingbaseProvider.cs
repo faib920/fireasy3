@@ -6,12 +6,14 @@
 // </copyright>
 // -----------------------------------------------------------------------
 using Microsoft.Extensions.DependencyInjection;
+using System.ComponentModel;
 
 namespace Fireasy.Data.Provider
 {
     /// <summary>
     /// Kingbase(人大金仓)数据库提供者。
     /// </summary>
+    [Description("人大金仓")]
     public class KingbaseProvider : ProviderBase
     {
         /// <summary>
