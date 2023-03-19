@@ -222,6 +222,79 @@ WHERE T.OWNER = '{connpar.UserId!.ToUpper()}'{(parameters.HasValue("TABLENAME") 
         }
 
         /// <summary>
+        /// 获取 <see cref="View"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
+        protected override IAsyncEnumerable<View> GetViewsAsync(IDatabase database, RestrictionDictionary restrictionValues)
+        {
+            var parameters = new ParameterCollection();
+            var connpar = GetConnectionParameter(database);
+
+            restrictionValues
+                .Parameterize(parameters, "VIEWNAME", nameof(View.Name), addNullValue: false);
+
+            SpecialCommand sql = $@"
+SELECT T.OWNER,
+  T.VIEW_NAME
+FROM DBA_VIEWS T
+WHERE (T.OWNER = '{connpar.UserId!.ToUpper()}'){(parameters.HasValue("VIEWNAME") ? @"
+  AND T.VIEW_NAME IN (:VIEWNAME)" : string.Empty)}
+ORDER BY T.OWNER, T.VIEW_NAME";
+
+            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new View
+            {
+                Schema = wrapper!.GetString(reader, 0),
+                Name = wrapper.GetString(reader, 1)
+            });
+        }
+
+        /// <summary>
+        /// 获取 <see cref="ViewColumn"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
+        protected override IAsyncEnumerable<ViewColumn> GetViewColumnsAsync(IDatabase database, RestrictionDictionary restrictionValues)
+        {
+            var parameters = new ParameterCollection();
+            var connpar = GetConnectionParameter(database);
+
+            restrictionValues
+                .Parameterize(parameters, "VIEWNAME", nameof(ViewColumn.ViewName), addNullValue: false)
+                .Parameterize(parameters, "COLUMNNAME", nameof(ViewColumn.Name), addNullValue: false);
+
+            SpecialCommand sql = $@"
+SELECT 
+    T.OWNER,
+    T.TABLE_NAME,
+    T.COLUMN_NAME,
+    T.DATA_TYPE,
+    T.DATA_LENGTH,
+    T.DATA_PRECISION,
+    T.DATA_SCALE,
+    T.NULLABLE
+FROM DBA_TAB_COLUMNS T
+WHERE T.OWNER = '{connpar.UserId!.ToUpper()}'{(parameters.HasValue("VIEWNAME") ? @"
+  AND T.TABLE_NAME IN (:VIEWNAME)" : string.Empty)}{(parameters.HasValue("COLUMNNAME") ? @"
+  AND T.COLUMN_NAME IN (:COLUMNNAME)" : string.Empty)}
+ ORDER BY T.OWNER, T.TABLE_NAME, T.COLUMN_ID";
+
+            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetDataType(new ViewColumn
+            {
+                Schema = wrapper!.GetString(reader, 0),
+                ViewName = wrapper.GetString(reader, 1),
+                Name = wrapper.GetString(reader, 2),
+                DataType = wrapper.GetString(reader, 3),
+                Length = reader.IsDBNull(4) ? (long?)null : wrapper.GetInt32(reader, 4),
+                NumericPrecision = reader.IsDBNull(5) ? (int?)null : wrapper.GetInt32(reader, 5),
+                NumericScale = reader.IsDBNull(6) ? (int?)null : wrapper.GetInt32(reader, 6),
+                IsNullable = wrapper.GetString(reader, 7) == "Y",
+            }));
+        }
+
+        /// <summary>
         /// 获取 <see cref="ForeignKey"/> 元数据序列。
         /// </summary>
         /// <param name="database"></param>

@@ -378,7 +378,7 @@ ORDER BY
                 .Parameterize(parameters, "TABLENAME", nameof(ViewColumn.ViewName))
                 .Parameterize(parameters, "COLUMNNAME", nameof(ViewColumn.Name));
 
-            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new ViewColumn
+            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetDataType(new ViewColumn
             {
                 Catalog = wrapper!.GetString(reader, 0),
                 Schema = wrapper.GetString(reader, 1),
@@ -388,7 +388,7 @@ ORDER BY
                 Length = reader.IsDBNull(6) ? (long?)null : wrapper.GetInt64(reader, 6),
                 NumericPrecision = reader.IsDBNull(7) ? (int?)null : wrapper.GetInt32(reader, 7),
                 NumericScale = reader.IsDBNull(8) ? (int?)null : wrapper.GetInt32(reader, 8)
-            });
+            }));
         }
     }
 }

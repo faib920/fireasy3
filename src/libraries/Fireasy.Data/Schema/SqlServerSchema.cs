@@ -282,7 +282,7 @@ WHERE O.TABLE_TYPE = 'view'{(parameters.HasValue("VIEWNAME") ? @"
   AND T.COLUMN_NAME IN (@COLUMNNAME)" : string.Empty)}
  ORDER BY T.TABLE_CATALOG, T.TABLE_SCHEMA, T.TABLE_NAME, T.ORDINAL_POSITION";
 
-            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => new ViewColumn
+            return ExecuteAndParseMetadataAsync(database, sql, parameters, (wrapper, reader) => SetDataType(new ViewColumn
             {
                 Catalog = wrapper!.GetString(reader, 0),
                 Schema = wrapper.GetString(reader, 1),
@@ -297,7 +297,7 @@ WHERE O.TABLE_TYPE = 'view'{(parameters.HasValue("VIEWNAME") ? @"
                 Default = wrapper.GetString(reader, 10),
                 Description = wrapper.GetString(reader, 11),
                 Autoincrement = wrapper.GetInt16(reader, 12) == 1
-            });
+            }));
         }
 
         /// <summary>
