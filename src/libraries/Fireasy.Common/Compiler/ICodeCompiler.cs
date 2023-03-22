@@ -17,9 +17,9 @@ namespace Fireasy.Common.Compiler
         /// <summary>
         /// 编译代码生成一个程序集。
         /// </summary>
-        /// <param name="source">程序源代码。</param>
+        /// <param name="sources">程序源代码。</param>
         /// <param name="options">配置选项。</param>
         /// <returns>由代码编译成的程序集。</returns>
-        Assembly? CompileAssembly(string source, ConfigureOptions? options = null);
+        Assembly? CompileAssembly(IEnumerable<string> sources, ConfigureOptions? options = null);
     }
 }

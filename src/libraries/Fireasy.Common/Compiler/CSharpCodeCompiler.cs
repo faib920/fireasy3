@@ -22,14 +22,14 @@ namespace Fireasy.Common.Compiler
         /// <summary>
         /// 编译代码生成一个程序集。
         /// </summary>
-        /// <param name="source">程序源代码。</param>
+        /// <param name="sources">程序源代码。</param>
         /// <param name="options">配置选项。</param>
         /// <returns>由代码编译成的程序集。</returns>
-        public Assembly? CompileAssembly(string source, ConfigureOptions? options = null)
+        public Assembly? CompileAssembly(IEnumerable<string> sources, ConfigureOptions? options = null)
         {
             options ??= new ConfigureOptions();
             var compilation = CSharpCompilation.Create(Guid.NewGuid().ToString())
-                .AddSyntaxTrees(CSharpSyntaxTree.ParseText(source))
+                .AddSyntaxTrees(sources.Select(s => CSharpSyntaxTree.ParseText(s)))
                 .AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly.Location))
                 .AddReferences(options.Assemblies.Select(s => MetadataReference.CreateFromFile(s)))
                 .WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, optimizationLevel: OptimizationLevel.Release));

@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.VisualBasic;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -25,14 +26,14 @@ namespace Fireasy.CodeCompiler.VBasic
         /// <summary>
         /// 编译代码生成一个程序集。
         /// </summary>
-        /// <param name="source">程序源代码。</param>
+        /// <param name="sources">程序源代码。</param>
         /// <param name="options">配置选项。</param>
         /// <returns>由代码编译成的程序集。</returns>
-        public Assembly? CompileAssembly(string source, ConfigureOptions? options = null)
+        public Assembly? CompileAssembly(IEnumerable<string> sources, ConfigureOptions? options = null)
         {
             options ??= new ConfigureOptions();
             var compilation = VisualBasicCompilation.Create(Guid.NewGuid().ToString())
-                .AddSyntaxTrees(VisualBasicSyntaxTree.ParseText(source))
+                .AddSyntaxTrees(sources.Select(s => VisualBasicSyntaxTree.ParseText(s)))
                 .AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly.Location))
                 .AddReferences(options.Assemblies.Select(s => MetadataReference.CreateFromFile(s)))
                 .WithOptions(new VisualBasicCompilationOptions(OutputKind.DynamicallyLinkedLibrary, optimizationLevel: OptimizationLevel.Release));
