@@ -13,7 +13,7 @@ namespace Fireasy.Data
     /// <summary>
     /// <see cref="DbConnection"/> 对象的状态管理器。
     /// </summary>
-    public sealed class ConnectionStateManager
+    public sealed class ConnectionStateManager : DisposableBase
     {
         private readonly DbConnection _connection;
         private ConnectionState _state;
@@ -112,6 +112,18 @@ namespace Fireasy.Data
             }
 
             return this;
+        }
+
+        protected override bool Dispose(bool disposing)
+        {
+            TryClose();
+            return base.Dispose(disposing);
+        }
+
+        protected override async ValueTask<bool> DisposeAsync(bool disposing)
+        {
+            await TryCloseAsync();
+            return await base.DisposeAsync(disposing);
         }
     }
 }

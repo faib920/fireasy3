@@ -46,13 +46,10 @@ namespace Fireasy.Data.Schema
         /// <returns></returns>
         public bool TryGetValue(string name, out string? value)
         {
-            if (TryGetValue(name, out var obj))
+            if (TryGetValue(name, out object? obj) && obj != null)
             {
-                if (obj != null)
-                {
-                    value = obj.ToString();
-                    return true;
-                }
+                value = obj.ToString();
+                return true;
             }
 
             value = null;
@@ -66,12 +63,9 @@ namespace Fireasy.Data.Schema
         /// <returns></returns>
         public string? GetValue(string name)
         {
-            if (TryGetValue(name, out var obj))
+            if (TryGetValue(name, out object? obj) && obj != null)
             {
-                if (obj != null)
-                {
-                    return obj.ToString();
-                }
+                return obj.ToString();
             }
 
             return null;

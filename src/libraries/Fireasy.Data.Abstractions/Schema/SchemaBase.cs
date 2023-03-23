@@ -44,6 +44,11 @@ namespace Fireasy.Data.Schema
         protected abstract void InitializeDataTypes();
 
         /// <summary>
+        /// 获取是否提供同一限制的集合查询。
+        /// </summary>
+        public virtual bool RestrictionMultipleQuerySupport => true;
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="database"></param>
@@ -62,7 +67,7 @@ namespace Fireasy.Data.Schema
         /// <returns></returns>
         public virtual IAsyncEnumerable<T> GetSchemasAsync<T>(IDatabase database, Expression<Func<T, bool>>? predicate = null) where T : ISchemaMetadata
         {
-            var restrictionValues = SchemaQueryTranslator.GetRestrictions<T>(predicate, _dicRestrMbrs);
+            var restrictionValues = SchemaQueryTranslator.GetRestrictions<T>(predicate, _dicRestrMbrs, RestrictionMultipleQuerySupport);
 
             if (typeof(Database) == typeof(T))
             {

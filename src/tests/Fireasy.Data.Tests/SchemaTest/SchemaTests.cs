@@ -166,11 +166,13 @@ namespace Fireasy.Data.Tests.SchemaTest
             var syntax = database.GetService<ISyntaxProvider>();
             var schema = database.GetService<ISchemaProvider>();
 
-            var columns = await schema!.GetSchemasAsync<Data.Schema.Column>(database, s => s.TableName == syntax!.ToggleCase("products")).ToListAsync();
+            var columns = await schema!.GetSchemasAsync<Data.Schema.Column>(database).ToListAsync();
+
+            var columns1 = await schema!.GetSchemasAsync<Data.Schema.Column>(database).ToListAsync();
 
             foreach (var item in columns)
             {
-                Console.WriteLine($"{item.TableName}.{item.Name},pk:{item.IsPrimaryKey},type:{item.DataType}");
+                Console.WriteLine($"{item.TableName}.{item.Name},pk:{item.IsPrimaryKey},type:{item.DataType},clrtype:{item.ClrType?.Name}");
             }
 
             Assert.IsTrue(columns.Any());

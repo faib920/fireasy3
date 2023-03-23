@@ -16,22 +16,24 @@ namespace Fireasy.Data.Schema.Linq
         private Type? _metadataType;
         private string? _memberName;
         private List<MemberInfo>? _members = null;
+        private bool _multipleQuerySupport;
         private readonly RestrictionDictionary _restrDict = new RestrictionDictionary();
 
         /// <summary>
         /// 对表达式进行解析，并返回限制值字典。
         /// </summary>
         /// <param name="expression">查询表达式。</param>
-        /// <param name="dicRestrMbrs"></param>
+        /// <param name="dicRestrMbrs">限制成员表。</param>
+        /// <param name="multipleQuerySupport">是否支持多个限制值进行查询。</param>
         /// <returns></returns>
-        public static RestrictionDictionary GetRestrictions<T>(Expression? expression, Dictionary<Type, List<MemberInfo>> dicRestrMbrs)
+        public static RestrictionDictionary GetRestrictions<T>(Expression? expression, Dictionary<Type, List<MemberInfo>> dicRestrMbrs, bool multipleQuerySupport)
         {
             if (expression == null)
             {
                 return RestrictionDictionary.Empty;
             }
 
-            var translator = new SchemaQueryTranslator { _metadataType = typeof(T) };
+            var translator = new SchemaQueryTranslator { _metadataType = typeof(T), _multipleQuerySupport = multipleQuerySupport };
 
             if (!dicRestrMbrs.TryGetValue(typeof(T), out var properties))
             {
@@ -114,7 +116,7 @@ namespace Fireasy.Data.Schema.Linq
         {
             if (node.Method.DeclaringType == typeof(Enumerable))
             {
-                if (node.Method.Name == nameof(Enumerable.Contains))
+                if (node.Method.Name == nameof(Enumerable.Contains) && _multipleQuerySupport)
                 {
                     Visit(node.Arguments[1]);
                     Visit(node.Arguments[0]);
@@ -133,7 +135,7 @@ namespace Fireasy.Data.Schema.Linq
                 }
             }
 
-            throw new SchemaQueryTranslateException($"{node.Method.Name} 方法不受支持。");
+            throw new SchemaQueryTranslateException($"{node.Method.DeclaringType.Name}.{node.Method.Name} 方法不受支持。");
         }
     }
 }

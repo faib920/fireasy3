@@ -483,11 +483,30 @@ namespace Fireasy.Data.Tests.SyntaxTest
             using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
-            var sql = $"select {syntax!.String.PadLeft(syntax.Delimit("CustomerID"), 2, "'-'")} from customers where {syntax.Delimit("CustomerID")}='ALFKI'";
+            var sql = $"select {syntax!.String.PadLeft(syntax.Delimit("CustomerID"), 7, "'-'")} from customers where {syntax.Delimit("CustomerID")}='ALFKI'";
 
             var ret = await database.ExecuteScalarAsync<string>(sql);
 
             Assert.AreEqual("--ALFKI", ret);
+        }
+
+        /// <summary>
+        /// 测试 String.PadLeft
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task TestStringPadLeftLessAsync()
+        {
+            var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
+
+            using var database = factory.CreateDatabase<T>(ConnectionString);
+            var syntax = database.GetService<ISyntaxProvider>();
+
+            var sql = $"select {syntax!.String.PadLeft(syntax.Delimit("CustomerID"), 2, "'-'")} from customers where {syntax.Delimit("CustomerID")}='ALFKI'";
+
+            var ret = await database.ExecuteScalarAsync<string>(sql);
+
+            Assert.AreEqual("AL", ret);
         }
 
         /// <summary>
@@ -502,11 +521,30 @@ namespace Fireasy.Data.Tests.SyntaxTest
             using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
-            var sql = $"select {syntax!.String.PadRight(syntax.Delimit("CustomerID"), 2, "'-'")} from customers where {syntax.Delimit("CustomerID")}='ALFKI'";
+            var sql = $"select {syntax!.String.PadRight(syntax.Delimit("CustomerID"), 7, "'-'")} from customers where {syntax.Delimit("CustomerID")}='ALFKI'";
 
             var ret = await database.ExecuteScalarAsync<string>(sql);
 
             Assert.AreEqual("ALFKI--", ret);
+        }
+
+        /// <summary>
+        /// 测试 String.PadRight
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task TestStringPadRightLessAsync()
+        {
+            var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
+
+            using var database = factory.CreateDatabase<T>(ConnectionString);
+            var syntax = database.GetService<ISyntaxProvider>();
+
+            var sql = $"select {syntax!.String.PadRight(syntax.Delimit("CustomerID"), 2, "'-'")} from customers where {syntax.Delimit("CustomerID")}='ALFKI'";
+
+            var ret = await database.ExecuteScalarAsync<string>(sql);
+
+            Assert.AreEqual("AL", ret);
         }
 
         /// <summary>

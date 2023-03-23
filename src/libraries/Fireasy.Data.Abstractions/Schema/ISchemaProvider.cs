@@ -17,6 +17,11 @@ namespace Fireasy.Data.Schema
     public interface ISchemaProvider : IProviderService
     {
         /// <summary>
+        /// 获取是否提供同一限制的集合查询。
+        /// </summary>
+        bool RestrictionMultipleQuerySupport { get; }
+
+        /// <summary>
         /// 获取指定类型的数据库架构信息。
         /// </summary>
         /// <typeparam name="T">架构信息的类型。</typeparam>

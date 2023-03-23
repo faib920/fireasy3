@@ -116,7 +116,7 @@ namespace Fireasy.Data.Syntax
         /// <returns></returns>
         public virtual string PadLeft(object sourceExp, object count, object? padding = null)
         {
-            return $"LPAD({sourceExp}, LENGTH({sourceExp}) + {count}, {padding ?? "' '"})";
+            return $"LPAD({sourceExp}, {count}, {padding ?? "' '"})";
         }
 
         /// <summary>
@@ -128,7 +128,7 @@ namespace Fireasy.Data.Syntax
         /// <returns></returns>
         public virtual string PadRight(object sourceExp, object count, object? padding = null)
         {
-            return $"RPAD({sourceExp}, LENGTH({sourceExp}) + {count}, {padding ?? "' '"})";
+            return $"RPAD({sourceExp}, {count}, {padding ?? "' '"})";
         }
 
         /// <summary>

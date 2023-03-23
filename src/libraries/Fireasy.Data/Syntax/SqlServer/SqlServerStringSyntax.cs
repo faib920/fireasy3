@@ -113,7 +113,7 @@ namespace Fireasy.Data.Syntax
         /// <returns></returns>
         public virtual string PadLeft(object sourceExp, object count, object? padding = null)
         {
-            return $"CONCAT(REPLICATE({padding ?? "' '"}, {count}), {sourceExp})";
+            return $"IIF(LEN({sourceExp}) >= {count}, SUBSTRING({sourceExp}, 1, {count}), CONCAT(REPLICATE({padding ?? "' '"}, {count} - LEN({sourceExp})), {sourceExp}))";
         }
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace Fireasy.Data.Syntax
         /// <returns></returns>
         public virtual string PadRight(object sourceExp, object count, object? padding = null)
         {
-            return $"CONCAT({sourceExp}, REPLICATE({padding ?? "' '"}, {count}))";
+            return $"IIF(LEN({sourceExp}) >= {count}, SUBSTRING({sourceExp}, 1, {count}), CONCAT({sourceExp}, REPLICATE({padding ?? "' '"}, {count} - LEN({sourceExp}))))";
         }
 
         /// <summary>
