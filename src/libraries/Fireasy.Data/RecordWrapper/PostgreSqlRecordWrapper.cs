@@ -8,6 +8,9 @@
 
 namespace Fireasy.Data.RecordWrapper
 {
+    /// <summary>
+    /// PostgreSql记录包装器。
+    /// </summary>
     public class PostgreSqlRecordWrapper : GeneralRecordWrapper
     {
         /// <summary>
@@ -32,7 +35,7 @@ namespace Fireasy.Data.RecordWrapper
                 case "NpgsqlTypes.NpgsqlPolygon":
                 case "NpgsqlTypes.NpgsqlTsQuery":
                 case "NpgsqlTypes.NpgsqlTsVector":
-                    return typeof(object);
+                    return typeof(string);
                 case "System.Collections.BitArray":
                     return typeof(byte[]);
             }
@@ -46,7 +49,7 @@ namespace Fireasy.Data.RecordWrapper
         /// <param name="reader">一个 <see cref="IDataRecord"/> 对象。</param>
         /// <param name="i">字段的索引。</param>
         /// <returns>该字段包含的对象。</returns>
-        public override object GetValue(IDataRecord reader, int i)
+        public override object? GetValue(IDataRecord reader, int i)
         {
             if (reader.IsDBNull(i))
             {

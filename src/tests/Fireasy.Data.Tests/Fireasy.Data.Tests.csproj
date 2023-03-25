@@ -28,6 +28,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Reference Include="Kdbndp">
+	    <HintPath>..\..\..\lib\Kdbndp.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
+
+	<ItemGroup>
 	  <None Update="appsettings.json">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>

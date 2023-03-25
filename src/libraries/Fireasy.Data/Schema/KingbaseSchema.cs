@@ -1,19 +1,12 @@
-﻿// -----------------------------------------------------------------------
-// <copyright company="Fireasy"
-//      email="faib920@126.com"
-//      qq="55570729">
-//   (c) Copyright Fireasy. All rights reserved.
-// </copyright>
-// -----------------------------------------------------------------------
-using System.Net;
+﻿using System.Net;
 using System.Net.NetworkInformation;
 
 namespace Fireasy.Data.Schema
 {
     /// <summary>
-    /// PostgreSql 数据库架构信息的获取方法。
+    /// Kingbase 数据库架构信息的获取方法。
     /// </summary>
-    public class PostgreSqlSchema : SchemaBase
+    public sealed class KingbaseSchema : SchemaBase
     {
         /// <summary>
         /// 初始化约定查询限制。
@@ -35,28 +28,34 @@ namespace Fireasy.Data.Schema
         {
             AddDataType("bigint", DbType.Int64, typeof(long));
             AddDataType("bigserial", DbType.Int64, typeof(long));
+            AddDataType("binary_integer", DbType.Int64, typeof(long));
             AddDataType("bit", DbType.Boolean, typeof(bool));
             AddDataType("bit varying", DbType.Binary, typeof(byte[]));
             AddDataType("bool", DbType.Boolean, typeof(bool));
             AddDataType("boolean", DbType.Boolean, typeof(bool));
-            AddDataType("box", DbType.String, typeof(object)); //NpgsqlTypes.NpgsqlBox
+            AddDataType("box", DbType.String, typeof(string)); //KdbndpTypes.KdbndpBox
             AddDataType("bpchar", DbType.String, typeof(string));
+            AddDataType("bpcharbyte", DbType.String, typeof(string));
             AddDataType("bytea", DbType.Binary, typeof(byte[]));
             AddDataType("char", DbType.String, typeof(string));
             AddDataType("character", DbType.String, typeof(string));
             AddDataType("character varying", DbType.String, typeof(string));
-            AddDataType("cidr", DbType.String, typeof(ValueTuple<IPAddress, int>));
-            AddDataType("circle", DbType.String, typeof(object)); //NpgsqlTypes.NpgsqlCircle
+            AddDataType("cidr", DbType.Object, typeof(ValueTuple<IPAddress, int>));
+            AddDataType("circle", DbType.String, typeof(string)); //KdbndpTypes.KdbndpCircle
             AddDataType("date", DbType.Date, typeof(DateTime));
+            AddDataType("daterange", DbType.Object, typeof(DateTime?[])); //KdbndpTypes.KdbndpRange<DateTime>
             AddDataType("decimal", DbType.Decimal, typeof(decimal));
             AddDataType("double precision", DbType.Double, typeof(double));
+            AddDataType("dsinterval", DbType.String, typeof(string));
             AddDataType("float4", DbType.Single, typeof(float));
             AddDataType("float8", DbType.Double, typeof(double));
-            AddDataType("inet", DbType.String, typeof(IPAddress));
+            AddDataType("inet", DbType.Object, typeof(IPAddress));
             AddDataType("int", DbType.Int32, typeof(int));
             AddDataType("int2", DbType.Int16, typeof(short));
             AddDataType("int4", DbType.Int32, typeof(int));
+            AddDataType("int4range", DbType.Object, typeof(int[])); //KdbndpTypes.KdbndpRange<int>
             AddDataType("int8", DbType.Int64, typeof(long));
+            AddDataType("int8range", DbType.Object, typeof(long[])); ////KdbndpTypes.KdbndpRange<long>
             AddDataType("integer", DbType.Int32, typeof(int));
             AddDataType("interval", DbType.Time, typeof(TimeSpan));
             AddDataType("interval year", DbType.Time, typeof(TimeSpan));
@@ -74,17 +73,19 @@ namespace Fireasy.Data.Schema
             AddDataType("interval second", DbType.Time, typeof(TimeSpan));
             AddDataType("json", DbType.String, typeof(string));
             AddDataType("jsonb", DbType.String, typeof(string));
-            AddDataType("line", DbType.String, typeof(string)); //NpgsqlTypes.NpgsqlLine
-            AddDataType("lseg", DbType.String, typeof(string)); //NpgsqlTypes.NpgsqlLSeg
+            AddDataType("line", DbType.String, typeof(string)); //KdbndpTypes.KdbndpLine
+            AddDataType("lseg", DbType.String, typeof(string)); //KdbndpTypes.KdbndpLSeg
             AddDataType("macaddr", DbType.String, typeof(PhysicalAddress));
             AddDataType("macaddr8", DbType.String, typeof(PhysicalAddress));
             AddDataType("money", DbType.Currency, typeof(decimal));
+            AddDataType("mysql_date", DbType.String, typeof(string));
+            AddDataType("mysql_time", DbType.String, typeof(string));
             AddDataType("numeric", DbType.Decimal, typeof(decimal));
-            AddDataType("path", DbType.String, typeof(string)); //NpgsqlTypes.NpgsqlPath
-            AddDataType("pg_lsn", DbType.String, typeof(string)); //NpgsqlTypes.NpgsqlLogSequenceNumber
+            AddDataType("path", DbType.String, typeof(string)); //KdbndpTypes.KdbndpPath
+            AddDataType("pg_lsn", DbType.String, typeof(string));
             AddDataType("pg_snapshot", DbType.String, typeof(string));
-            AddDataType("point", DbType.String, typeof(string)); //NpgsqlTypes.NpgsqlPoint
-            AddDataType("polygon", DbType.String, typeof(string)); //NpgsqlTypes.NpgsqlPolygon
+            AddDataType("point", DbType.String, typeof(string)); //KdbndpTypes.KdbndpPoint
+            AddDataType("polygon", DbType.String, typeof(string)); //KdbndpTypes.KdbndpPolygon
             AddDataType("real", DbType.Double, typeof(double));
             AddDataType("smallint", DbType.Int16, typeof(short));
             AddDataType("smallserial", DbType.Int16, typeof(short));
@@ -97,12 +98,13 @@ namespace Fireasy.Data.Schema
             AddDataType("timetz", DbType.DateTimeOffset, typeof(DateTimeOffset));
             AddDataType("timestamp", DbType.DateTime, typeof(DateTime));
             AddDataType("timestamptz", DbType.DateTimeOffset, typeof(DateTimeOffset));
-            AddDataType("tsquery", DbType.String, typeof(string)); //NpgsqlTypes.NpgsqlTsQuery
-            AddDataType("tsvector", DbType.String, typeof(string)); //NpgsqlTypes.NpgsqlTsVector
+            AddDataType("tsquery", DbType.String, typeof(string)); //KdbndpTypes.KdbndpTsQuery
+            AddDataType("tsvector", DbType.String, typeof(string)); //KdbndpTypes.KdbndpTsVector
             AddDataType("txid_snapshot", DbType.String, typeof(string));
             AddDataType("uuid", DbType.Guid, typeof(Guid));
             AddDataType("varbit", DbType.Binary, typeof(byte[]));
             AddDataType("varchar", DbType.String, typeof(string));
+            AddDataType("varcharbyte", DbType.Binary, typeof(byte[]));
             AddDataType("xml", DbType.Xml, typeof(string));
         }
 
@@ -310,6 +312,9 @@ WHERE (TC.CONSTRAINT_CATALOG = '{connpar.Database}' AND TC.TABLE_SCHEMA = ANY (C
         {
             var parameters = new ParameterCollection();
             var connpar = GetConnectionParameter(database);
+
+            restrictionValues
+                .Parameterize(parameters, "NAME", nameof(View.Name));
 
             SpecialCommand sql = $@"
 SELECT
