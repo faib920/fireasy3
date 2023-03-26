@@ -11,7 +11,10 @@ using Fireasy.Data.Syntax;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
+using System.Data.Common;
 using System.Data.OleDb;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Fireasy.Data.Provider
 {
@@ -61,6 +64,35 @@ namespace Fireasy.Data.Provider
         public override void UpdateConnectionString(ConnectionString connectionString, ConnectionParameter parameter)
         {
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 处理 <see cref="DbCommand"/> 对象。
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        public override DbCommand PrepareCommand(DbCommand command)
+        {
+            //OleDb需要调整参数的顺序
+            var matches = Regex.Matches(command.CommandText, @"(@[\w]+)");
+            if (matches.Count > 0)
+            {
+                var parameters = new DbParameter[command.Parameters.Count];
+                command.Parameters.CopyTo(parameters, 0);
+                command.Parameters.Clear();
+
+                var dict = parameters.ToDictionary(s => s.ParameterName);
+
+                foreach (Match match in matches)
+                {
+                    if (dict.TryGetValue(match.Value.Substring(1), out var par))
+                    {
+                        command.Parameters.Add(par);
+                    }
+                }
+            }
+
+            return base.PrepareCommand(command);
         }
     }
 }

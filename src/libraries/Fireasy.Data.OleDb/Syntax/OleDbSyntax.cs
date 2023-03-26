@@ -100,6 +100,13 @@ namespace Fireasy.Data.Syntax
         /// <exception cref="SegmentNotSupportedException">当前数据库或版本不支持分段时，引发该异常。</exception>
         public virtual string Segment(string commandText, IDataSegment segment)
         {
+            if (segment.Start == 1)
+            {
+                return $"SELECT TOP {segment.Length} T.* FROM ({commandText}) T";
+            }
+
+            //todo 暂时没有处理反向TOP分页
+
             throw new SyntaxNotSupportedException(nameof(Segment));
         }
 
