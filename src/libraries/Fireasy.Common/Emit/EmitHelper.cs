@@ -5,6 +5,9 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
+#if NETFRAMEWORK
+using System.Diagnostics.SymbolStore;
+#endif
 using System.Reflection;
 using System.Reflection.Emit;
 

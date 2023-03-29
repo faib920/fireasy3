@@ -33,6 +33,11 @@ namespace Fireasy.Composition.Configuration
         /// <summary>
         /// 获取或设置程序集名称。
         /// </summary>
-        public string Assembly { get; set; }
+        public string? Assembly { get; set; }
+
+        /// <summary>
+        /// 文件匹配符
+        /// </summary>
+        public string? Pattern { get; set; }
     }
 }

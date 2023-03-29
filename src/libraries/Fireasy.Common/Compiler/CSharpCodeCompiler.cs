@@ -27,11 +27,17 @@ namespace Fireasy.Common.Compiler
         /// <returns>由代码编译成的程序集。</returns>
         public Assembly? CompileAssembly(IEnumerable<string> sources, ConfigureOptions? options = null)
         {
+            var dotnetPath = Path.GetDirectoryName(typeof(object).Assembly.Location);
+            Func<string, MetadataReference> parser = path => File.Exists(path) ?
+                MetadataReference.CreateFromFile(path) :
+                MetadataReference.CreateFromFile(Path.Combine(dotnetPath, path));
+
             options ??= new ConfigureOptions();
-            var compilation = CSharpCompilation.Create(Guid.NewGuid().ToString())
+            var assemblyName = string.IsNullOrWhiteSpace(options.AssemblyName) ? Guid.NewGuid().ToString() : options.AssemblyName;
+            var compilation = CSharpCompilation.Create(assemblyName)
                 .AddSyntaxTrees(sources.Select(s => CSharpSyntaxTree.ParseText(s)))
                 .AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly.Location))
-                .AddReferences(options.Assemblies.Select(s => MetadataReference.CreateFromFile(s)))
+                .AddReferences(options.Assemblies.Select(parser))
                 .WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, optimizationLevel: OptimizationLevel.Release));
 
             if (!string.IsNullOrEmpty(options.OutputAssembly))
@@ -39,7 +45,7 @@ namespace Fireasy.Common.Compiler
                 var result = compilation.Emit(options.OutputAssembly);
                 if (result.Success)
                 {
-                    return Assembly.Load(options.OutputAssembly);
+                    return Assembly.LoadFrom(options.OutputAssembly);
                 }
                 else
                 {

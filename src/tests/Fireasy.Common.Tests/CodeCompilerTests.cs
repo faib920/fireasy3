@@ -21,7 +21,10 @@ public class A
             var codeCompilerManager = ServiceProvider.GetService<ICodeCompilerManager>();
             var codeCompiler = codeCompilerManager!.CreateCompiler("csharp");
 
-            var assembly = codeCompiler!.CompileAssembly(source);
+            var opt = new ConfigureOptions();
+            opt.Assemblies.Add("System.Core.dll");
+
+            var assembly = codeCompiler!.CompileAssembly(source, opt);
 
             var type = assembly!.GetType("A");
 

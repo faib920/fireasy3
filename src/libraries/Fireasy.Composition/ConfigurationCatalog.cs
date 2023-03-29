@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition.Hosting;
 using System.ComponentModel.Composition.Primitives;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -65,21 +66,32 @@ namespace Fireasy.Composition
         /// </summary>
         /// <param name="setting">用于配置目录的配置对象。</param>
         /// <returns>从 <paramref name="setting"/> 解析出的 <see cref="ComposablePartCatalog"/> 对象。</returns>
-        protected ComposablePartCatalog? ResolveCatalog(ImportConfigurationSetting? setting)
+        protected IEnumerable<ComposablePartCatalog?> ResolveCatalogs(ImportConfigurationSetting? setting)
         {
             if (setting == null)
             {
-                return null;
+                yield break;
             }
+
+            _files ??= new List<string>();
 
             if (!string.IsNullOrEmpty(setting.Assembly))
             {
                 var assembly = Assembly.Load(new AssemblyName(setting.Assembly));
                 _files.Add(assembly.Location);
-                return new AssemblyCatalog(assembly);
+                yield return new AssemblyCatalog(assembly);
+            }
+            else if (!string.IsNullOrEmpty(setting.Pattern))
+            {
+                foreach (var file in Directory.GetFiles(Directory.GetCurrentDirectory(), setting.Pattern))
+                {
+                    var assembly = Assembly.LoadFrom(file);
+                    _files.Add(assembly.Location);
+                    yield return new AssemblyCatalog(assembly);
+                }
             }
 
-            return setting.ImportType == null || setting.ContractType == null
+            yield return setting.ImportType == null || setting.ContractType == null
                        ? null : new TypeCatalog(setting.ImportType);
         }
 
@@ -90,7 +102,7 @@ namespace Fireasy.Composition
         protected virtual IQueryable<ComposablePartDefinition>? CreateDefinitions()
         {
             var list = _configSection.Settings
-                .Select(setting => ResolveCatalog(setting.Value))
+                .SelectMany(setting => ResolveCatalogs(setting.Value))
                 .Where(catalog => catalog != null).ToList();
 
             return list.SelectMany(s => s.Parts).AsQueryable();
@@ -121,7 +133,7 @@ namespace Fireasy.Composition
             var contractType = typeof(T);
             var list = _configSection.Settings
                 .Where(s => s.Value?.ContractType == contractType)
-                .Select(setting => ResolveCatalog(setting.Value))
+                .SelectMany(setting => ResolveCatalogs(setting.Value))
                 .Where(catalog => catalog != null).ToList();
 
             return list.SelectMany(s => s.Parts).AsQueryable();

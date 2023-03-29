@@ -29,7 +29,8 @@ namespace Fireasy.Composition.Configuration
                 {
                     Assembly = c.Configuration.GetSection("assembly").Value,
                     ContractType = Type.GetType(c.Configuration.GetSection("contractType").Value ?? string.Empty, false, true),
-                    ImportType = Type.GetType(c.Configuration.GetSection("importType").Value ?? string.Empty, false, true)
+                    ImportType = Type.GetType(c.Configuration.GetSection("importType").Value ?? string.Empty, false, true),
+                    Pattern = c.Configuration.GetSection("pattern").Value
                 });
         }
     }

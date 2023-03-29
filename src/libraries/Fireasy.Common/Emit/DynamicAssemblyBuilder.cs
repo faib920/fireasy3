@@ -6,6 +6,9 @@
 // </copyright>
 // -----------------------------------------------------------------------
 using Fireasy.Common.Collections;
+#if NETFRAMEWORK
+using System.IO;
+#endif
 using System.Reflection;
 using System.Reflection.Emit;
 

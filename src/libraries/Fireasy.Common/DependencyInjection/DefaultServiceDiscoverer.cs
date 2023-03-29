@@ -80,8 +80,11 @@ namespace Fireasy.Common.DependencyInjection
                 _assemblies.Add(assembly);
 
                 ConfigureServices(services, assembly);
-                //使用 SourceGenerator 生成注册
-                //DiscoverServices(services, assembly);
+
+                if (_options?.UseAnalyzers == false)
+                {
+                    DiscoverServices(services, assembly);
+                }
             }
         }
 

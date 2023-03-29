@@ -46,5 +46,10 @@ namespace Fireasy.Common
         /// 获取类型过滤判断式列表。
         /// </summary>
         public List<Func<Assembly, Type, bool>> TypeFilterPredicates { get; } = new();
+
+        /// <summary>
+        /// 获取或设置是否使用 Fireasy.Common.Analyzers 来发现并注册服务。默认为 true。
+        /// </summary>
+        public bool UseAnalyzers { get; set; } = true;
     }
 }

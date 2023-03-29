@@ -316,7 +316,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
             using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
-            var pager = new DataPager(10, 0);
+            var pager = new DataPager(10, 1);
             var list = await database.ExecuteEnumerableAsync($"select * from customers order by {syntax!.Delimit("CustomerID")}", pager);
 
             Assert.AreEqual(10, list.Count());

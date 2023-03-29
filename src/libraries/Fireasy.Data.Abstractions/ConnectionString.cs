@@ -260,8 +260,12 @@ namespace Fireasy.Data
                 var file = urlExpression.Slice(dirIndex + 1);
                 if (urlExpression.IndexOf("|datadirectory|".AsSpan(), StringComparison.OrdinalIgnoreCase) != -1)
                 {
+#if !NETFRAMEWORK
                     var data = AppContext.GetData("DataDirectory");
                     directory = data == null ? AppContext.BaseDirectory : data.ToString();
+#else
+                    directory = AppContext.BaseDirectory;
+#endif
                 }
                 else if (urlExpression.IndexOf("|appdir|".AsSpan(), StringComparison.OrdinalIgnoreCase) != -1)
                 {

@@ -104,7 +104,7 @@ namespace Fireasy.Data.Schema
             AddDataType("uuid", DbType.Guid, typeof(Guid));
             AddDataType("varbit", DbType.Binary, typeof(byte[]));
             AddDataType("varchar", DbType.String, typeof(string));
-            AddDataType("varcharbyte", DbType.Binary, typeof(byte[]));
+            AddDataType("varcharbyte", DbType.String, typeof(string));
             AddDataType("xml", DbType.Xml, typeof(string));
         }
 

@@ -85,7 +85,7 @@ namespace Fireasy.Data
         /// <returns></returns>
         public ConnectionStateManager TryClose()
         {
-            if (_state == ConnectionState.Closed || _state == ConnectionState.Broken)
+            if (_state == ConnectionState.Open || _state == ConnectionState.Broken)
             {
                 _connection.Close();
             }
@@ -102,7 +102,7 @@ namespace Fireasy.Data
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (_state == ConnectionState.Closed || _state == ConnectionState.Broken)
+            if (_state == ConnectionState.Open || _state == ConnectionState.Broken)
             {
 #if NETFRAMEWORK || NETSTANDARD2_0
                 _connection.Close();

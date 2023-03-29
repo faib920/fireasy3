@@ -14,6 +14,11 @@ namespace Fireasy.Common.Compiler
     public class ConfigureOptions
     {
         /// <summary>
+        /// 获取或设置程序集名称。
+        /// </summary>
+        public string? AssemblyName { get; set; }
+
+        /// <summary>
         /// 获取或设置输出的程序集。
         /// </summary>
         public string? OutputAssembly { get; set; }
