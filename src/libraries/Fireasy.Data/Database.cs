@@ -27,7 +27,13 @@ namespace Fireasy.Data
     /// <summary>
     /// 提供数据库基本操作的方法。
     /// </summary>
-    public class Database : DisposableBase, IDatabase, IDistributedDatabase, IServiceProvider
+    public class Database :
+#if NETSTANDARD2_0 || NETFRAMEWORK
+        DisposableBase
+#else
+        AsyncDisposableBase
+#endif
+        , IDatabase, IDistributedDatabase, IServiceProvider
     {
         private TransactionStack? _tranStack;
         private DbConnection? _connMaster;
@@ -209,6 +215,29 @@ namespace Fireasy.Data
             _transaction.Rollback();
 #endif
             await _connMaster!.TryCloseAsync();
+            _transactionScope?.Dispose();
+            _transaction = null;
+            _transactionScope = null;
+
+            return true;
+        }
+
+        /// <summary>
+        /// 如果与方法 BeginTransaction 匹配，则回滚数据库事务。
+        /// </summary>
+        /// <returns>成功回滚事务则为 true，否则为 false。</returns>
+        private bool RollbackTransaction()
+        {
+            if (_transaction == null || (_tranStack != null && !_tranStack.Pop()))
+            {
+                return false;
+            }
+
+            var logger = GetService<ILogger<Database>>();
+            logger?.LogInformation("Rollbacking transcation.");
+
+            _transaction.Rollback();
+            _connMaster!.TryClose();
             _transactionScope?.Dispose();
             _transaction = null;
             _transactionScope = null;
@@ -417,7 +446,7 @@ namespace Fireasy.Data
             InitiaizeDistributedSynchronizer(queryCommand);
 
             var connection = await GetConnectionAsync(DistributedMode.Master);
-            var constateMgr = await new ConnectionStateManager(connection).TryOpenAsync(cancellationToken);
+            await connection.TryOpenAsync(cancellationToken);
 
             using var command = CreateDbCommand(connection, queryCommand, parameters);
             try
@@ -430,7 +459,7 @@ namespace Fireasy.Data
             }
             finally
             {
-                await constateMgr.TryCloseAsync(cancellationToken);
+                await connection.TryCloseAsync(cancellationToken);
             }
         }
 
@@ -503,7 +532,7 @@ namespace Fireasy.Data
             var mode = await CheckForceUseMasterAsync(() => AdjustModeAsync(queryCommand));
 
             var connection = await GetConnectionAsync(mode);
-            var constateMgr = await new ConnectionStateManager(connection).TryOpenAsync(cancellationToken);
+            await connection.TryOpenAsync(cancellationToken);
 
             using var command = CreateDbCommand(connection, queryCommand, parameters);
             try
@@ -516,7 +545,7 @@ namespace Fireasy.Data
             }
             finally
             {
-                await constateMgr.TryCloseAsync(cancellationToken);
+                await connection.TryCloseAsync(cancellationToken);
             }
         }
 
@@ -555,7 +584,7 @@ namespace Fireasy.Data
 
             var mode = await CheckForceUseMasterAsync(() => AdjustModeAsync(queryCommand));
             var connection = await GetConnectionAsync(mode);
-            var constateMgr = await new ConnectionStateManager(connection).TryOpenAsync();
+            await connection.TryOpenAsync();
 
             using var command = CreateDbCommand(connection, queryCommand, parameters);
             adapter.SelectCommand = command;
@@ -588,7 +617,7 @@ namespace Fireasy.Data
             }
             finally
             {
-                await constateMgr.TryCloseAsync();
+                await connection.TryCloseAsync();
             }
         }
 
@@ -597,13 +626,12 @@ namespace Fireasy.Data
         /// </summary>
         /// <param name="cancellationToken">取消操作的通知。</param>
         /// <returns>如果连接成功，则为 null，否则为异常对象。</returns>
-        public virtual async Task<Exception> TryConnectAsync(CancellationToken cancellationToken = default)
+        public virtual async Task<Exception?> TryConnectAsync(CancellationToken cancellationToken = default)
         {
             using var connection = this.CreateConnection();
-            var constateMgr = new ConnectionStateManager(connection);
             try
             {
-                await constateMgr.TryOpenAsync(cancellationToken);
+                await connection.TryOpenAsync(cancellationToken);
 
                 return null;
             }
@@ -613,7 +641,7 @@ namespace Fireasy.Data
             }
             finally
             {
-                await constateMgr.TryCloseAsync(cancellationToken);
+                await connection.TryCloseAsync(cancellationToken);
             }
         }
 
@@ -626,7 +654,7 @@ namespace Fireasy.Data
         {
             Guard.ArgumentNull(dataTable, nameof(dataTable));
             var connection = await GetConnectionAsync(DistributedMode.Master);
-            var constateMgr = await new ConnectionStateManager(connection).TryOpenAsync();
+            await connection.TryOpenAsync(cancellationToken);
 
             var builder = new CommandBuilder(Provider, dataTable, connection, Transaction);
             var adapter = Provider.DbProviderFactory.CreateDataAdapter();
@@ -642,7 +670,7 @@ namespace Fireasy.Data
             }
             finally
             {
-                await constateMgr.TryCloseAsync();
+                await connection.TryCloseAsync();
             }
         }
 
@@ -662,7 +690,7 @@ namespace Fireasy.Data
             InitiaizeDistributedSynchronizer(insertCommand);
 
             var connection = await GetConnectionAsync(DistributedMode.Master);
-            var constateMgr = await new ConnectionStateManager(connection).TryOpenAsync();
+            await connection.TryOpenAsync(cancellationToken);
 
             HandleDynamicDataTable(dataTable);
 
@@ -703,10 +731,50 @@ namespace Fireasy.Data
             }
             finally
             {
-                await constateMgr.TryCloseAsync();
+                await connection.TryCloseAsync();
             }
         }
 
+#if NETSTANDARD2_0 || NETFRAMEWORK
+        protected override bool Dispose(bool disposing)
+        {
+            var logger = GetService<ILogger<Database>>();
+
+            logger?.LogInformation("The Database is Disposing.");
+
+            RollbackTransaction();
+
+            if (_connMaster != null)
+            {
+                _connMaster.TryClose();
+
+                if (disposing)
+                {
+                    _connMaster.Dispose();
+                    _connMaster = null;
+                }
+            }
+
+            if (_connSlave != null)
+            {
+                _connSlave.TryClose();
+
+                if (disposing)
+                {
+                    _connSlave.Dispose();
+                    _connSlave = null;
+                }
+            }
+
+            var sp = Provider.TryGetServiceProvider();
+            if (sp is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+
+            return base.Dispose(disposing);
+        }
+#else
         protected override async ValueTask<bool> DisposeAsync(bool disposing)
         {
             var logger = GetService<ILogger<Database>>();
@@ -745,6 +813,7 @@ namespace Fireasy.Data
 
             return await base.DisposeAsync(disposing);
         }
+#endif
 
         /// <summary>
         /// 创建一个 DbCommand 对象。
@@ -986,7 +1055,7 @@ namespace Fireasy.Data
             }
 
             var connection = await GetConnectionAsync(DistributedMode.Master);
-            var connstateMgr = new ConnectionStateManager(connection);
+            await connection.TryOpenAsync();
 
             await BeginTransactionAsync();
 
@@ -1014,7 +1083,7 @@ namespace Fireasy.Data
             }
             finally
             {
-                await connstateMgr?.TryCloseAsync();
+                await connection?.TryCloseAsync();
             }
         }
 

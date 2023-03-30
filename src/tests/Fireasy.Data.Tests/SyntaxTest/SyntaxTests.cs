@@ -19,7 +19,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             if (!string.IsNullOrEmpty(syntax!.IdentityValue))
@@ -44,7 +44,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             if (!string.IsNullOrEmpty(syntax!.NewGuid))
@@ -69,7 +69,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select 120{syntax!.FakeTable}";
@@ -87,7 +87,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = syntax!.Segment($"select * from customers", new DataPager(10, 0));
@@ -104,7 +104,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Coalesce(syntax.Delimit("Region"), syntax.Delimit("City"))} from customers";
@@ -121,7 +121,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Delimit("Quantity")} from {syntax.Delimit(syntax.ToggleCase("Order Details"))}";
@@ -138,7 +138,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var parameters = new ParameterCollection();
@@ -158,7 +158,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var parameters = new ParameterCollection();
@@ -178,7 +178,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Delimiter[0] + "CustomerID" + syntax!.Delimiter[1]} from customers";
@@ -195,7 +195,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = syntax!.ExistsTable("customers");
@@ -214,7 +214,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Convert(syntax.Delimit("ShipVia"), DbType.String)} from orders where {syntax.Delimit("OrderID")}=10248";
@@ -233,7 +233,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Convert(syntax.Delimit("Discontinued"), DbType.Boolean)} from products where {syntax.Delimit("ProductID")}=5";
@@ -252,7 +252,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Convert(syntax.Delimit("Freight"), DbType.Byte)} from orders where {syntax.Delimit("OrderID")}=10248";
@@ -271,7 +271,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Convert(syntax.Delimit("Freight"), DbType.Int16)} from orders where {syntax.Delimit("OrderID")} =10248";
@@ -290,7 +290,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Convert("'34.6'", DbType.Decimal)}{syntax.FakeTable}";
@@ -309,7 +309,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Convert(syntax.Delimit("Freight"), DbType.Int64)} from orders where {syntax.Delimit("OrderID")}=10248";
@@ -328,7 +328,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Convert(syntax.Delimit("ShipVia"), DbType.Single)} from orders where {syntax.Delimit("OrderID")}=10248";
@@ -347,7 +347,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Convert(syntax.Delimit("ShipVia"), DbType.Double)} from orders where {syntax.Delimit("OrderID")}=10248";
@@ -366,7 +366,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sb = new StringBuilder();
@@ -404,7 +404,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.String.Length(syntax.Delimit("CustomerID"))} from customers where {syntax.Delimit("CustomerID")}='ALFKI'";
@@ -423,7 +423,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.String.Substring(syntax.Delimit("CustomerID"), 2, 2)} from customers where {syntax.Delimit("CustomerID")}='ALFKI'";
@@ -442,7 +442,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.String.Substring(syntax.Delimit("CustomerID"), 2)} from customers where {syntax.Delimit("CustomerID")}='ALFKI'";
@@ -461,7 +461,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.String.Concat(syntax.Delimit("CustomerID"), "'-'", syntax.Delimit("City"))} from customers where {syntax.Delimit("CustomerID")}='ALFKI'";
@@ -480,7 +480,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.String.PadLeft(syntax.Delimit("CustomerID"), 7, "'-'")} from customers where {syntax.Delimit("CustomerID")}='ALFKI'";
@@ -499,7 +499,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.String.PadLeft(syntax.Delimit("CustomerID"), 2, "'-'")} from customers where {syntax.Delimit("CustomerID")}='ALFKI'";
@@ -518,7 +518,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.String.PadRight(syntax.Delimit("CustomerID"), 7, "'-'")} from customers where {syntax.Delimit("CustomerID")}='ALFKI'";
@@ -537,7 +537,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.String.PadRight(syntax.Delimit("CustomerID"), 2, "'-'")} from customers where {syntax.Delimit("CustomerID")}='ALFKI'";
@@ -556,7 +556,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.String.ToUpper(syntax.Delimit("City"))} from customers where {syntax.Delimit("CustomerID")}='ALFKI'";
@@ -575,7 +575,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.String.ToLower(syntax.Delimit("City"))} from customers where {syntax.Delimit("CustomerID")}='ALFKI'";
@@ -594,7 +594,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.String.IndexOf(syntax.Delimit("ContactName"), "'i'")} from customers where {syntax.Delimit("CustomerID")}='CACTU'";
@@ -613,7 +613,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.String.IndexOf(syntax.Delimit("ContactName"), "'i'", 6)} from customers where {syntax.Delimit("CustomerID")}='CACTU'";
@@ -632,7 +632,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.String.Reverse(syntax.Delimit("CustomerID"))} from customers where {syntax.Delimit("CustomerID")}='ALFKI'";
@@ -651,7 +651,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.String.Replace(syntax.Delimit("CustomerID"), "'I'", "'a'")} from customers where {syntax.Delimit("CustomerID")}='ALFKI'";
@@ -670,7 +670,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.String.TrimStart(syntax.String.Concat("'    '", syntax.Delimit("CustomerID")))} from customers where {syntax.Delimit("CustomerID")}='ALFKI'";
@@ -689,7 +689,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.String.TrimEnd(syntax.String.Concat(syntax.Delimit("CustomerID"), "'    '"))} from customers where {syntax.Delimit("CustomerID")}='ALFKI'";
@@ -708,7 +708,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.String.Trim(syntax.String.Concat("'    '", syntax.Delimit("CustomerID"), "'    '"))} from customers where {syntax.Delimit("CustomerID")}='ALFKI'";
@@ -727,7 +727,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.String.GroupConcat(syntax.Delimit("ProductName"), "','")} from products where {syntax.Delimit("CategoryID")}=6 group by {syntax.Delimit("CategoryID")}";
@@ -746,7 +746,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.String.GroupConcat(syntax.Delimit("ProductName"), "','", syntax.Delimit("ProductName") + " ASC")} from products where {syntax.Delimit("CategoryID")}=6 group by {syntax.Delimit("CategoryID")}";
@@ -765,7 +765,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.String.IsMatch(syntax.Delimit("CustomerID"), "'\\w*'")} from customers where {syntax.Delimit("CustomerID")}='ALFKI'";
@@ -784,7 +784,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Math.Abs("0 - " + syntax.Delimit("Freight"))} from orders where {syntax.Delimit("OrderID")}=10249";
@@ -803,7 +803,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Math.Negate(syntax.Delimit("Freight"))} from orders where {syntax.Delimit("OrderID")}=10252";
@@ -822,7 +822,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Math.Truncate(syntax.Delimit("Freight"))} from orders where {syntax.Delimit("OrderID")}=10252";
@@ -841,7 +841,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Math.Ceiling(syntax.Delimit("Freight"))} from orders where {syntax.Delimit("OrderID")}=10252";
@@ -860,7 +860,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Math.Floor(syntax.Delimit("Freight"))} from orders where {syntax.Delimit("OrderID")}=10252";
@@ -879,7 +879,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Math.Round(syntax.Delimit("Freight"), 1)} from orders where {syntax.Delimit("OrderID")}=10252";
@@ -898,7 +898,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Math.Modulo(syntax.Delimit("Freight"), 2)} from orders where {syntax.Delimit("OrderID")}=10252";
@@ -917,7 +917,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Math.BitAnd(syntax.Delimit("UnitsInStock"), 2)} from products where {syntax.Delimit("ProductID")}=1";
@@ -936,7 +936,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Math.BitOr(syntax.Delimit("UnitsInStock"), 2)} from products where {syntax.Delimit("ProductID")}=1";
@@ -955,7 +955,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Math.BitNot(syntax.Delimit("SupplierID"))} from products where {syntax.Delimit("ProductID")}=1";
@@ -974,7 +974,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Math.ExclusiveOr(syntax.Delimit("UnitsInStock"), 20)} from products where {syntax.Delimit("ProductID")}=1";
@@ -993,7 +993,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Math.LeftShift(syntax.Delimit("UnitsInStock"), 2)} from products where {syntax.Delimit("ProductID")}=1";
@@ -1012,7 +1012,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Math.RightShift(syntax.Delimit("UnitsInStock"), 2)} from products where {syntax.Delimit("ProductID")}=1";
@@ -1031,7 +1031,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Math.Random()}{syntax.FakeTable}";
@@ -1050,7 +1050,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Math.Power(syntax.Delimit("UnitsInStock"), 2)} from products where {syntax.Delimit("ProductID")}=1";
@@ -1069,7 +1069,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.Math.Sqrt(syntax.Delimit("UnitsInStock"))} from products where {syntax.Delimit("ProductID")}=1";
@@ -1088,7 +1088,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.DateTime.Now()}{syntax.FakeTable}";
@@ -1107,7 +1107,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.DateTime.UtcNow()}{syntax.FakeTable}";
@@ -1126,7 +1126,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.DateTime.New(2023, 1, 1)}{syntax.FakeTable}";
@@ -1145,7 +1145,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.DateTime.New(2023, 1, 1, 12, 20, 33)}{syntax.FakeTable}";
@@ -1164,7 +1164,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.DateTime.Year(syntax.Delimit("OrderDate"))} from orders where {syntax.Delimit("OrderID")}=10248";
@@ -1183,7 +1183,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.DateTime.Month(syntax.Delimit("OrderDate"))} from orders where {syntax.Delimit("OrderID")}=10248";
@@ -1202,7 +1202,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.DateTime.Day(syntax.Delimit("OrderDate"))} from orders where {syntax.Delimit("OrderID")}=10248";
@@ -1221,7 +1221,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.DateTime.DayOfWeek(syntax.Delimit("OrderDate"))} from orders where {syntax.Delimit("OrderID")}=10248";
@@ -1240,7 +1240,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.DateTime.DayOfYear(syntax.Delimit("OrderDate"))} from orders where {syntax.Delimit("OrderID")}=10248";
@@ -1259,7 +1259,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.DateTime.WeekOfYear(syntax.Delimit("OrderDate"))} from orders where {syntax.Delimit("OrderID")}=10248";
@@ -1278,7 +1278,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.DateTime.Hour(syntax.DateTime.Now())}{syntax.FakeTable}";
@@ -1297,7 +1297,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.DateTime.Minute(syntax.DateTime.Now())}{syntax.FakeTable}";
@@ -1316,7 +1316,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.DateTime.Second("'2023-01-01 12:22:45'")}{syntax.FakeTable}";
@@ -1335,7 +1335,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.DateTime.Millisecond(syntax.DateTime.Now())}{syntax.FakeTable}";
@@ -1354,7 +1354,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.DateTime.AddYears(syntax.Delimit("OrderDate"), 10)} from orders where {syntax.Delimit("OrderID")}=10248";
@@ -1373,7 +1373,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.DateTime.AddMonths(syntax.Delimit("OrderDate"), 10)} from orders where {syntax.Delimit("OrderID")}=10248";
@@ -1392,7 +1392,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.DateTime.AddDays(syntax.Delimit("OrderDate"), 10)} from orders where {syntax.Delimit("OrderID")}=10248";
@@ -1411,7 +1411,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.DateTime.AddHours(syntax.Delimit("OrderDate"), 10)} from orders where {syntax.Delimit("OrderID")}=10248";
@@ -1430,7 +1430,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.DateTime.AddMinutes(syntax.Delimit("OrderDate"), 10)} from orders where {syntax.Delimit("OrderID")}=10248";
@@ -1449,7 +1449,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.DateTime.AddSeconds(syntax.Delimit("OrderDate"), 10)} from orders where {syntax.Delimit("OrderID")}=10248";
@@ -1468,7 +1468,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.DateTime.DiffDays(syntax.Delimit("OrderDate"), syntax.Convert(syntax.Delimit("RequiredDate"), DbType.DateTime))} from orders where {syntax.Delimit("OrderID")}=10248";
@@ -1487,7 +1487,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.DateTime.DiffHours(syntax.Delimit("OrderDate"), syntax.Convert(syntax.Delimit("RequiredDate"), DbType.DateTime))} from orders where {syntax.Delimit("OrderID")}=10248";
@@ -1506,7 +1506,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.DateTime.DiffMinutes("'2023-01-01 14:20:44'", "'2023-01-01 14:21:44'")}{syntax.FakeTable}";
@@ -1525,7 +1525,7 @@ namespace Fireasy.Data.Tests.SyntaxTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var sql = $"select {syntax!.DateTime.DiffSeconds("'2023-01-01 14:20:44'", "'2023-01-01 14:21:44'")}{syntax.FakeTable}";

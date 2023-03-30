@@ -114,15 +114,22 @@ namespace Fireasy.Data.Schema.Linq
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
-            if (node.Method.DeclaringType == typeof(Enumerable))
+            if (_multipleQuerySupport &&
+                node.Method.DeclaringType == typeof(Enumerable) && node.Method.Name == nameof(Enumerable.Contains))
             {
-                if (node.Method.Name == nameof(Enumerable.Contains) && _multipleQuerySupport)
-                {
-                    Visit(node.Arguments[1]);
-                    Visit(node.Arguments[0]);
+                Visit(node.Arguments[1]);
+                Visit(node.Arguments[0]);
 
-                    return node;
-                }
+                return node;
+            }
+            if (_multipleQuerySupport &&
+                node.Method.DeclaringType?.IsGenericType == true && node.Method.DeclaringType.GetGenericTypeDefinition() == typeof(List<>) &&
+                   node.Method.Name == nameof(List<string>.Contains))
+            {
+                Visit(node.Object);
+                Visit(node.Arguments[0]);
+
+                return node;
             }
             else if (node.Method.DeclaringType == typeof(string))
             {

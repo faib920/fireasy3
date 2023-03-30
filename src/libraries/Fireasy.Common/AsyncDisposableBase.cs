@@ -10,9 +10,9 @@ using System.Diagnostics.CodeAnalysis;
 namespace Fireasy.Common
 {
     /// <summary>
-    /// 实现了标准的 <see cref="IDisposable"/> 模式的抽象类。
+    /// 实现了标准的 <see cref="IAsyncDisposable"/> 模式的抽象类。
     /// </summary>
-    public abstract class DisposableBase : IDisposable, ISpecificDisposable
+    public abstract class AsyncDisposableBase : IAsyncDisposable, ISpecificAsyncDisposable
     {
         protected bool IsDisposed = false;
 
@@ -25,22 +25,27 @@ namespace Fireasy.Common
         /// 
         /// </summary>
         [SuppressMessage("Design", "CA1063")]
-        ~DisposableBase()
+        ~AsyncDisposableBase()
         {
-            DoDispose(false);
+            DisposeAsync(false).ConfigureAwait(false).GetAwaiter().GetResult();
+        }
+
+        ValueTask ISpecificAsyncDisposable.DisposeAsync(bool disposing)
+        {
+            return DoDisposeAsync(disposing);
         }
 
         /// <summary>
-        /// 释放对象所占用的非托管和托管资源。
+        /// 异步的，释放对象所占用的非托管和托管资源。
         /// </summary>
         /// <param name="disposing">为 true 则释放托管资源和非托管资源；为 false 则仅释放非托管资源。</param>
         /// <returns></returns>
-        protected virtual bool Dispose(bool disposing)
+        protected virtual ValueTask<bool> DisposeAsync(bool disposing)
         {
-            return true;
+            return new ValueTask<bool>(true);
         }
 
-        private void DoDispose(bool disposing)
+        private async ValueTask DoDisposeAsync(bool disposing)
         {
             if (VerifyDisposed && IsDisposed)
             {
@@ -49,7 +54,7 @@ namespace Fireasy.Common
 
             if (!IsDisposed)
             {
-                if (Dispose(disposing))
+                if (await DisposeAsync(disposing))
                 {
                     IsDisposed = true;
                 }
@@ -62,17 +67,11 @@ namespace Fireasy.Common
         }
 
         /// <summary>
-        /// 手动释放非托管资源。
+        /// 异步的，手动释放非托管资源。
         /// </summary>
-        [SuppressMessage("Design", "CA1063")]
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            DoDispose(true);
-        }
-
-        void ISpecificDisposable.Dispose(bool disposing)
-        {
-            DoDispose(disposing);
+            await DoDisposeAsync(true);
         }
     }
 }

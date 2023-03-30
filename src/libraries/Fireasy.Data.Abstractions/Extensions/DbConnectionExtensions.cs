@@ -18,13 +18,80 @@ namespace Fireasy.Data
         /// 尝试打开数据库链接。
         /// </summary>
         /// <param name="connection"></param>
+        /// <returns></returns>
+        public static DbConnection TryOpen(this DbConnection connection)
+        {
+            Guard.ArgumentNull(connection, nameof(connection));
+
+            var _state = connection.State;
+            if (_state != ConnectionState.Open)
+            {
+                connection.Open();
+            }
+            else if (_state == ConnectionState.Broken)
+            {
+                connection.Close();
+                connection.OpenAsync();
+            }
+
+            return connection;
+        }
+
+        /// <summary>
+        /// 尝试打开数据库链接。
+        /// </summary>
+        /// <param name="connection"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public static async Task<DbConnection> TryOpenAsync(this DbConnection connection, CancellationToken cancellationToken = default)
         {
+            Guard.ArgumentNull(connection, nameof(connection));
+
             cancellationToken.ThrowIfCancellationRequested();
 
-            await new ConnectionStateManager(connection).TryOpenAsync(cancellationToken);
+            var _state = connection.State;
+            if (_state != ConnectionState.Open)
+            {
+                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            }
+            else if (_state == ConnectionState.Broken)
+            {
+#if NETFRAMEWORK || NETSTANDARD2_0
+                connection.Close();
+#else
+                await connection.CloseAsync().ConfigureAwait(false);
+#endif
+                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            }
+
+            return connection;
+        }
+
+        /// <summary>
+        /// 打开数据库链接，并返回一个作用域，作用域销毁时自动关闭数据库链接。
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public static async Task<ConnectionStateKeepScope> OpenScopeAsync(this DbConnection connection, CancellationToken cancellationToken = default)
+        {
+            return new ConnectionStateKeepScope(await connection.TryOpenAsync(cancellationToken), cancellationToken);
+        }
+
+        /// <summary>
+        /// 尝试关闭数据库链接。
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <returns></returns>
+        public static DbConnection TryClose(this DbConnection connection)
+        {
+            Guard.ArgumentNull(connection, nameof(connection));
+
+            var _state = connection.State;
+            if (_state == ConnectionState.Open || _state == ConnectionState.Broken)
+            {
+                connection.Close();
+            }
 
             return connection;
         }
@@ -33,17 +100,23 @@ namespace Fireasy.Data
         /// 尝试关闭数据库链接。
         /// </summary>
         /// <param name="connection"></param>
-        /// <param name="allowClose"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static async Task<DbConnection> TryCloseAsync(this DbConnection connection, bool allowClose = true, CancellationToken cancellationToken = default)
+        public static async Task<DbConnection> TryCloseAsync(this DbConnection connection, CancellationToken cancellationToken = default)
         {
-            if (!allowClose)
-            {
-                return connection;
-            }
+            Guard.ArgumentNull(connection, nameof(connection));
 
-            await new ConnectionStateManager(connection).TryOpenAsync(cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var _state = connection.State;
+            if (_state == ConnectionState.Open || _state == ConnectionState.Broken)
+            {
+#if NETFRAMEWORK || NETSTANDARD2_0
+                connection.Close();
+#else
+                await connection.CloseAsync().ConfigureAwait(false);
+#endif
+            }
 
             return connection;
         }

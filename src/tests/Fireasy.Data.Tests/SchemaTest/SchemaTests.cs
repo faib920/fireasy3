@@ -21,7 +21,7 @@ namespace Fireasy.Data.Tests.SchemaTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var schema = database.GetService<ISchemaProvider>();
 
             var databases = await schema!.GetSchemasAsync<Data.Schema.Database>(database).ToListAsync();
@@ -43,7 +43,7 @@ namespace Fireasy.Data.Tests.SchemaTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var schema = database.GetService<ISchemaProvider>();
 
             var users = await schema!.GetSchemasAsync<Data.Schema.User>(database).ToListAsync();
@@ -65,7 +65,7 @@ namespace Fireasy.Data.Tests.SchemaTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var schema = database.GetService<ISchemaProvider>();
 
             var tables = await schema!.GetSchemasAsync<Data.Schema.DataType>(database).ToListAsync();
@@ -87,7 +87,7 @@ namespace Fireasy.Data.Tests.SchemaTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var schema = database.GetService<ISchemaProvider>();
 
             var tables = await schema!.GetSchemasAsync<Data.Schema.Table>(database).ToListAsync();
@@ -109,7 +109,7 @@ namespace Fireasy.Data.Tests.SchemaTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
             var schema = database.GetService<ISchemaProvider>();
 
@@ -132,7 +132,7 @@ namespace Fireasy.Data.Tests.SchemaTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
             var schema = database.GetService<ISchemaProvider>();
 
@@ -162,7 +162,7 @@ namespace Fireasy.Data.Tests.SchemaTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
             var schema = database.GetService<ISchemaProvider>();
 
@@ -187,7 +187,7 @@ namespace Fireasy.Data.Tests.SchemaTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
             var schema = database.GetService<ISchemaProvider>();
 
@@ -210,7 +210,7 @@ namespace Fireasy.Data.Tests.SchemaTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
             var schema = database.GetService<ISchemaProvider>();
 
@@ -245,7 +245,7 @@ namespace Fireasy.Data.Tests.SchemaTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var schema = database.GetService<ISchemaProvider>();
 
             var views = await schema!.GetSchemasAsync<Data.Schema.View>(database).ToListAsync();
@@ -267,7 +267,7 @@ namespace Fireasy.Data.Tests.SchemaTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
             var schema = database.GetService<ISchemaProvider>();
 
@@ -290,7 +290,7 @@ namespace Fireasy.Data.Tests.SchemaTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
             var schema = database.GetService<ISchemaProvider>();
 
@@ -320,7 +320,7 @@ namespace Fireasy.Data.Tests.SchemaTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
             var schema = database.GetService<ISchemaProvider>();
 
@@ -343,7 +343,7 @@ namespace Fireasy.Data.Tests.SchemaTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
             var schema = database.GetService<ISchemaProvider>();
 
@@ -372,7 +372,7 @@ namespace Fireasy.Data.Tests.SchemaTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
             var schema = database.GetService<ISchemaProvider>();
             var recordWrapper = database.GetService<IRecordWrapper>();
@@ -407,7 +407,7 @@ namespace Fireasy.Data.Tests.SchemaTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
             var schema = database.GetService<ISchemaProvider>();
 
@@ -430,7 +430,7 @@ namespace Fireasy.Data.Tests.SchemaTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
             var schema = database.GetService<ISchemaProvider>();
 
@@ -460,7 +460,7 @@ namespace Fireasy.Data.Tests.SchemaTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var schema = database.GetService<ISchemaProvider>();
 
             var procedures = await schema!.GetSchemasAsync<Data.Schema.Procedure>(database).ToListAsync();
@@ -482,7 +482,7 @@ namespace Fireasy.Data.Tests.SchemaTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
             var schema = database.GetService<ISchemaProvider>();
 
@@ -511,7 +511,7 @@ namespace Fireasy.Data.Tests.SchemaTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
             var schema = database.GetService<ISchemaProvider>();
 
@@ -540,7 +540,7 @@ namespace Fireasy.Data.Tests.SchemaTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var schema = database.GetService<ISchemaProvider>();
 
             var indexes = await schema!.GetSchemasAsync<Data.Schema.Index>(database).ToListAsync();
@@ -562,7 +562,7 @@ namespace Fireasy.Data.Tests.SchemaTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
             var schema = database.GetService<ISchemaProvider>();
 

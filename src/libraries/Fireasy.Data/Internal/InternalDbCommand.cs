@@ -86,7 +86,7 @@ namespace Fireasy.Data.Internal
 
         public IDataReader ExecuteReader()
         {
-            new ConnectionStateManager((DbConnection)_command.Connection).TryOpen();
+            ((DbConnection)_command.Connection).TryOpen();
             return new InternalDataReader(this, _command.ExecuteReader());
         }
 
@@ -94,14 +94,14 @@ namespace Fireasy.Data.Internal
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            await new ConnectionStateManager((DbConnection)_command.Connection).TryOpenAsync();
+            await ((DbConnection)_command.Connection).TryOpenAsync();
             var reader = await ((DbCommand)_command).ExecuteReaderAsync(cancellationToken);
             return new InternalDataReader(this, reader);
         }
 
         public IDataReader ExecuteReader(CommandBehavior behavior)
         {
-            new ConnectionStateManager((DbConnection)_command.Connection).TryOpen();
+            ((DbConnection)_command.Connection).TryOpen();
             return new InternalDataReader(this, _command.ExecuteReader(behavior));
         }
 
@@ -109,7 +109,7 @@ namespace Fireasy.Data.Internal
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            await new ConnectionStateManager((DbConnection)_command.Connection).TryOpenAsync();
+            await ((DbConnection)_command.Connection).TryOpenAsync();
             var reader = await ((DbCommand)_command).ExecuteReaderAsync(behavior, cancellationToken);
             return new InternalDataReader(this, reader);
         }

@@ -87,11 +87,11 @@ namespace Fireasy.Data.Tests
         /// 测试更换了 DbProviderFactory
         /// </summary>
         [TestMethod]
-        public void TestChangeProviderFactory()
+        public async Task TestChangeProviderFactory()
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase("sqlserver");
+            await using var database = factory.CreateDatabase("sqlserver");
             Assert.IsNotNull(database);
 
             //被更换了DbProviderFactory
@@ -102,11 +102,11 @@ namespace Fireasy.Data.Tests
         /// 测试更换了提供者
         /// </summary>
         [TestMethod]
-        public void TestChangeProvider()
+        public async Task TestChangeProvider()
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase("mysql");
+            await using var database = factory.CreateDatabase("mysql");
             Assert.IsNotNull(database);
 
             //被更换了provider
@@ -117,11 +117,11 @@ namespace Fireasy.Data.Tests
         /// 测试自定义提供者
         /// </summary>
         [TestMethod]
-        public void TestCustomizedProvider()
+        public async Task TestCustomizedProvider()
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase("testdb");
+            await using var database = factory.CreateDatabase("testdb");
             Assert.IsNotNull(database);
 
             //自定义provider
@@ -136,7 +136,7 @@ namespace Fireasy.Data.Tests
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<SqlServerProvider>(Constants.SqlServer_ConnectionString);
+            await using var database = factory.CreateDatabase<SqlServerProvider>(Constants.SqlServer_ConnectionString);
             Assert.IsNotNull(database);
 
             var syntax = database.Provider.GetService<ISyntaxProvider>();

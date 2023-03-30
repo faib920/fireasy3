@@ -28,7 +28,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             Assert.IsNotNull(database);
 
             var exp = await database.TryConnectAsync();
@@ -41,9 +41,9 @@ namespace Fireasy.Data.Tests.DatabaseTest
         /// </summary>
         /// <returns></returns>
         [TestMethod]
-        public void TestDependencyInjectionDatabase()
+        public async Task TestDependencyInjectionDatabase()
         {
-            using var database = ServiceProvider.GetService<IDatabase>();
+            await using var database = ServiceProvider.GetService<IDatabase>();
             Assert.IsNotNull(database);
 
             //配置里默认使用sqlserver
@@ -54,7 +54,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         /// 测试注入 <see cref="IProvider"/>
         /// </summary>
         [TestMethod]
-        public void TestDependencyInjectionProvider()
+        public async Task TestDependencyInjectionProvider()
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
@@ -63,7 +63,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
             Assert.IsNull(provider);
 
             //IProvider 是注册在 InternalServiceProvider 里面的，只有在 IDatabase 实例中可以获取
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             provider = database.GetService<IProvider>();
 
             Assert.IsNotNull(provider);
@@ -76,9 +76,9 @@ namespace Fireasy.Data.Tests.DatabaseTest
         /// </summary>
         /// <returns></returns>
         [TestMethod]
-        public void TestDependencyInjectionDatabaseByAnotherObject()
+        public async Task TestDependencyInjectionDatabaseByAnotherObject()
         {
-            using var database = ServiceProvider.GetService<IDatabase>();
+            await using var database = ServiceProvider.GetService<IDatabase>();
             Assert.IsNotNull(database);
 
             var obj1 = ServiceProvider.GetService<TestDIDatabase>();
@@ -96,7 +96,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase(InstanceName);
+            await using var database = factory.CreateDatabase(InstanceName);
             Assert.IsNotNull(database);
 
             var exp = await database.TryConnectAsync();
@@ -112,7 +112,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase(ProviderName, ConnectionString);
+            await using var database = factory.CreateDatabase(ProviderName, ConnectionString);
             Assert.IsNotNull(database);
 
             var exp = await database.TryConnectAsync();
@@ -129,7 +129,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             await database.BeginTransactionAsync();
 
             try
@@ -157,7 +157,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var list = await database.ExecuteEnumerableAsync<Customers>($"select * from customers order by {syntax!.Delimit("CustomerID")}");
@@ -174,7 +174,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var list = await database.ExecuteEnumerableAsync<string>($"select {syntax!.Delimit("CustomerID")} from customers order by {syntax!.Delimit("CustomerID")}");
@@ -191,7 +191,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var list = await database.ExecuteEnumerableAsync($"select * from customers order by {syntax!.Delimit("CustomerID")}");
@@ -208,7 +208,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             await foreach (var item in database.ExecuteAsyncEnumerable($"select * from customers order by {syntax!.Delimit("CustomerID")}"))
@@ -227,7 +227,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var list = await database.ExecuteAsyncEnumerable($"select * from customers order by {syntax!.Delimit("CustomerID")}").ToListAsync();
@@ -243,7 +243,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var item = await database.ExecuteAsyncEnumerable($"select * from customers order by {syntax!.Delimit("CustomerID")}").FirstOrDefaultAsync();
@@ -259,7 +259,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var parameters = new ParameterCollection();
@@ -278,7 +278,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var parameters = ParameterCollection.With(new { customerId = "ALFKI" });
@@ -296,7 +296,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
 
             var pager = new DataPager(10, 0);
             var list = await database.ExecuteEnumerableAsync("select * from customers", pager);
@@ -313,7 +313,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var pager = new DataPager(10, 1);
@@ -331,7 +331,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var parameters = new ParameterCollection();
@@ -350,7 +350,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var parameters = new ParameterCollection();
@@ -370,7 +370,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var value = await database.ExecuteScalarAsync<string>($"select {syntax!.Delimit("CustomerID")} from customers order by {syntax!.Delimit("CustomerID")}");
@@ -387,7 +387,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var value = await database.ExecuteScalarAsync<byte[]>($"select {syntax!.Delimit("Picture")} from categories where {syntax!.Delimit("CategoryID")}=1");
@@ -404,7 +404,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             await Assert.ThrowsExceptionAsync<InvalidCastException>(async () =>
@@ -422,7 +422,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var value = await database.ExecuteScalarAsync<long>($"select {syntax!.Delimit("CategoryID")} from categories where {syntax!.Delimit("CategoryID")}=1");
@@ -439,7 +439,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var value = await database.ExecuteScalarAsync<int?>($"select {syntax!.Delimit("CategoryID")} from categories where {syntax!.Delimit("CategoryID")}=1");
@@ -456,7 +456,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-            using var database = factory.CreateDatabase<T>(ConnectionString);
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
             var syntax = database.GetService<ISyntaxProvider>();
 
             var value = await database.ExecuteScalarAsync<ShipVia?>($"select {syntax!.Delimit("ShipVia")} from orders where {syntax!.Delimit("OrderID")}=10248");

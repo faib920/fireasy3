@@ -93,6 +93,11 @@ namespace Fireasy.Data.Schema
         }
 
         /// <summary>
+        /// 获取是否提供同一限制的集合查询。
+        /// </summary>
+        public override bool RestrictionMultipleQuerySupport => false;
+
+        /// <summary>
         /// 获取 <see cref="Database"/> 元数据序列。
         /// </summary>
         /// <param name="database"></param>

@@ -15,7 +15,14 @@ namespace Fireasy.Data
     /// <summary>
     /// 提供一组数据库的基本操作方法。
     /// </summary>
-    public interface IDatabase : IDisposable, IServiceProvider
+    public interface IDatabase :
+#if NETSTANDARD2_0 || NETFRAMEWORK
+        IDisposable
+#else
+        IAsyncDisposable
+#endif
+
+        , IServiceProvider
     {
         /// <summary>
         /// 获取或设置数据库连接字符串。
@@ -210,7 +217,7 @@ namespace Fireasy.Data
         /// </summary>
         /// <param name="cancellationToken">取消操作的通知。</param>
         /// <returns>如果连接成功，则为 null，否则为异常对象。</returns>
-        Task<Exception> TryConnectAsync(CancellationToken cancellationToken = default);
+        Task<Exception?> TryConnectAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 获取服务。

@@ -44,12 +44,11 @@ namespace Fireasy.Data.Batcher
             }
 
             cancellationToken.ThrowIfCancellationRequested();
-            ConnectionStateManager? constateMgr = null;
 
             try
             {
                 var connection = await GetConnectionAsync(database);
-                constateMgr = await new ConnectionStateManager(connection).TryOpenAsync(cancellationToken);
+                await using var scope = await connection.OpenScopeAsync(cancellationToken);
 
                 var syntax = database.Provider.GetService<ISyntaxProvider>();
                 var tableName = syntax!.Delimit(dataTable.TableName);
@@ -61,10 +60,6 @@ namespace Fireasy.Data.Batcher
             catch (Exception exp)
             {
                 throw new BatcherException(dataTable.Rows, exp);
-            }
-            finally
-            {
-                await constateMgr?.TryCloseAsync(cancellationToken);
             }
         }
 
@@ -80,12 +75,11 @@ namespace Fireasy.Data.Batcher
         public async Task InsertAsync<T>(IDatabase database, IEnumerable<T> list, string tableName, int batchSize = 1000, Action<int> completePercentage = null, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            ConnectionStateManager constateMgr = null;
 
             try
             {
                 var connection = await GetConnectionAsync(database);
-                constateMgr = await new ConnectionStateManager(connection).TryOpenAsync(cancellationToken);
+                await using var scope = await connection.OpenScopeAsync(cancellationToken);
 
                 using var bulk = GetBulkCopyProvider();
                 bulk.Initialize(connection, database.Transaction, tableName, batchSize);
@@ -95,10 +89,6 @@ namespace Fireasy.Data.Batcher
             catch (Exception exp)
             {
                 throw new BatcherException(list.ToList(), exp);
-            }
-            finally
-            {
-                await constateMgr?.TryCloseAsync(cancellationToken);
             }
         }
 
@@ -113,12 +103,11 @@ namespace Fireasy.Data.Batcher
         public async Task InsertAsync(IDatabase database, IDataReader reader, string tableName, int batchSize = 1000, Action<int> completePercentage = null, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            ConnectionStateManager constateMgr = null;
 
             try
             {
                 var connection = await GetConnectionAsync(database);
-                constateMgr = await new ConnectionStateManager(connection).TryOpenAsync(cancellationToken);
+                await using var scope = await connection.OpenScopeAsync(cancellationToken);
 
                 using var bulk = GetBulkCopyProvider();
                 bulk.Initialize(connection, database.Transaction, tableName, batchSize);
@@ -127,10 +116,6 @@ namespace Fireasy.Data.Batcher
             catch (Exception exp)
             {
                 throw new BatcherException(null, exp);
-            }
-            finally
-            {
-                await constateMgr?.TryCloseAsync(cancellationToken);
             }
         }
 
