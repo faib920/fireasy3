@@ -1589,6 +1589,8 @@ namespace Fireasy.Windows.Forms
                 SelectedItems.InternalClear();
             }
 
+            RowNumberWidth = Items.Count > 999 ? 46 : (Items.Count > 99 ? 38 : 30);
+
             _virMgr.Recalc();
             SetScrollBars();
             Invalidate();

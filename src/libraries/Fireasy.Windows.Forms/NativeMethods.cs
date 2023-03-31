@@ -9,11 +9,52 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Permissions;
+using System.Text;
 
 namespace Fireasy.Windows.Forms
 {
     internal class NativeMethods
     {
+        internal delegate bool EnumChildProc(IntPtr hWnd, IntPtr param);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        internal extern static IntPtr FindWindow(string className, string caption);
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        internal static extern uint SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        internal static extern bool EnumChildWindows(IntPtr hWndParent, EnumChildProc callback, IntPtr param);
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        internal extern static IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        internal static extern bool ScreenToClient(IntPtr hWnd, ref POINT pt);
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        internal static extern int GetClassName(IntPtr hWnd, StringBuilder className, int maxCount);
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        internal static extern int GetWindowText(IntPtr hWnd, StringBuilder sb, int maxCount);
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        internal static extern int GetWindowLong(IntPtr hWnd, int Index);
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        internal static extern bool GetWindowRect(IntPtr hWnd, ref RECT rect);
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct RECT
+        {
+            public int left;
+            public int top;
+            public int right;
+            public int bottom;
+            public override string ToString()
+            {
+                return ("{left=" + left.ToString() + ", top=" + top.ToString() + ", right=" + right.ToString() + ", bottom=" + bottom.ToString() + "}");
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct POINT
+        {
+            public int x;
+            public int y;
+        }
         internal static int HIWORD(int n)
         {
             return (short)((n >> 16) & 0xffff);
@@ -34,6 +75,15 @@ namespace Fireasy.Windows.Forms
             return LOWORD(unchecked((int)(long)n));
         }
 
+        internal static IntPtr MakeWParam(int lowWord, int highWord)
+        {
+            int wparam = highWord << 16;
+            wparam |= (lowWord & 0xffff);
+
+            return new IntPtr(wparam);
+        }
+
+        internal const int W_COMMAND = 0x111;
         internal const int W_USER = 0x400;
         internal const int W_REFLECT = W_USER + 0x1C00;
 

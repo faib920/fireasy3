@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 	<PropertyGroup>
-		<TargetFrameworks>net472;net7.0-windows</TargetFrameworks>
+		<TargetFrameworks>net462;net7.0-windows</TargetFrameworks>
 		<UseWindowsForms>true</UseWindowsForms>
 	</PropertyGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Fireasy.Windows.Forms\Fireasy.Windows.Forms.csproj" />
 	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)'=='net472'">
+	<ItemGroup Condition="'$(TargetFramework)'=='net462'">
 		<Reference Include="System.Design" />
 		<Reference Include="System.Drawing.Design" />
 		<Reference Include="System.Windows.Forms" />

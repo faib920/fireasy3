@@ -304,16 +304,6 @@ namespace Fireasy.Windows.Forms
                 });
             }
 
-            if (Application.RenderWithVisualStyles && e.DrawState == DrawState.Selected)
-            {
-                var bkElement = e.Item.TreeList.Focused ? VisualStyleElement.Header.Item.Hot : VisualStyleElement.Header.Item.Normal;
-                if (VisualStyleRenderer.IsElementDefined(bkElement))
-                {
-                    new VisualStyleRenderer(bkElement).DrawBackground(e.Graphics, e.Bounds);
-                    return;
-                }
-            }
-
             var backColor = GetItemBackgroundColor(e);
 
             if (!backColor.IsEmpty)
