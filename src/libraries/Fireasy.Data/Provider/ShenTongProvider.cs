@@ -5,7 +5,12 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
+using Fireasy.Data.Identity;
+using Fireasy.Data.RecordWrapper;
+using Fireasy.Data.Schema;
+using Fireasy.Data.Syntax;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.ComponentModel;
 
 namespace Fireasy.Data.Provider
@@ -21,14 +26,14 @@ namespace Fireasy.Data.Provider
         /// </summary>
         /// <param name="serviceProvider"></param>
         public ShenTongProvider(IServiceProvider serviceProvider)
-            : base(serviceProvider, new AssemblyProviderFactoryResolver("System.Data.OscarClient.OscarFactory, System.Data.OscarClient"))
+            : base(serviceProvider, new AssemblyProviderFactoryResolver("System.Data.OscarClient.OscarFactory, Oscar.Data.SqlClient"))
         {
         }
 
         /// <summary>
         /// 获取提供者名称。
         /// </summary>
-        public override string ProviderName => "Kingbase";
+        public override string ProviderName => "ShenTong";
 
         /// <summary>
         /// 获取当前连接的参数。
@@ -65,6 +70,12 @@ namespace Fireasy.Data.Provider
         /// <param name="services"></param>
         public override IServiceCollection RegisterServices(IServiceCollection services)
         {
+            services = base.RegisterServices(services);
+            services.TryAddSingleton<IGeneratorProvider, BaseSequenceGenerator>();
+            services.TryAddSingleton<ISyntaxProvider, ShenTongSyntax>();
+            services.TryAddSingleton<ISchemaProvider, ShenTongSchema>();
+            services.TryAddSingleton<IRecordWrapper, GeneralRecordWrapper>();
+
             return services;
         }
     }
