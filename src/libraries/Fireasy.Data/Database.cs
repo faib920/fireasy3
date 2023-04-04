@@ -459,7 +459,7 @@ namespace Fireasy.Data
             }
             finally
             {
-                await connection.TryCloseAsync(cancellationToken);
+                await connection.TryCloseAsync(Transaction == null, cancellationToken);
             }
         }
 
@@ -545,7 +545,7 @@ namespace Fireasy.Data
             }
             finally
             {
-                await connection.TryCloseAsync(cancellationToken);
+                await connection.TryCloseAsync(Transaction == null, cancellationToken);
             }
         }
 
@@ -641,7 +641,7 @@ namespace Fireasy.Data
             }
             finally
             {
-                await connection.TryCloseAsync(cancellationToken);
+                await connection.TryCloseAsync(Transaction == null, cancellationToken);
             }
         }
 

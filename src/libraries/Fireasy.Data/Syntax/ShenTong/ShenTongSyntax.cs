@@ -32,12 +32,12 @@ namespace Fireasy.Data.Syntax
         /// <summary>
         /// 获取最近创建的自动编号的查询文本。
         /// </summary>
-        public virtual string IdentityValue => string.Empty;
+        public virtual string IdentityValue => "SELECT LAST_INSERT_ID()";
 
         /// <summary>
         /// 获取自增长列的关键词。
         /// </summary>
-        public string IdentityColumn => string.Empty;
+        public string IdentityColumn => "AUTO_INCREMENT";
 
         /// <summary>
         /// 获取受影响的行数的查询文本。
@@ -105,13 +105,8 @@ namespace Fireasy.Data.Syntax
         /// <exception cref="SegmentNotSupportedException">当前数据库或版本不支持分段时，引发该异常。</exception>
         public virtual string Segment(string commandText, IDataSegment segment)
         {
-            //** rownnum <= n 放在内层能够提高10倍的速度!
-            return @$"
-                SELECT T.* FROM
-                (
-                    SELECT T.*, ROWNUM ROW_NUM
-                    FROM ({commandText}) T {(segment.End != null ? $"WHERE ROWNUM <= {segment.End}" : string.Empty)}
-                ) T {(segment.Start != null ? $"WHERE ROW_NUM >= {segment.Start}" : string.Empty)}";
+            return @$"{commandText}
+LIMIT {(segment.Length != 0 ? segment.Length : 1000)}{(segment.Start != null ? $" OFFSET {segment.Start - 1}" : string.Empty)}";
         }
 
         /// <summary>

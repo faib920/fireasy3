@@ -35,7 +35,7 @@ namespace Fireasy.Data
         /// <returns></returns>
         protected override async ValueTask<bool> DisposeAsync(bool disposing)
         {
-            await _connection.TryCloseAsync(_cancellationToken);
+            await _connection.TryCloseAsync(true, _cancellationToken);
             return true;
         }
     }

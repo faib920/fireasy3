@@ -82,10 +82,16 @@ namespace Fireasy.Data
         /// 尝试关闭数据库链接。
         /// </summary>
         /// <param name="connection"></param>
+        /// <param name="closeable">是否可关闭。</param>
         /// <returns></returns>
-        public static DbConnection TryClose(this DbConnection connection)
+        public static DbConnection TryClose(this DbConnection connection, bool closeable = true)
         {
             Guard.ArgumentNull(connection, nameof(connection));
+
+            if (!closeable)
+            {
+                return connection;
+            }
 
             var _state = connection.State;
             if (_state == ConnectionState.Open || _state == ConnectionState.Broken)
@@ -100,11 +106,17 @@ namespace Fireasy.Data
         /// 尝试关闭数据库链接。
         /// </summary>
         /// <param name="connection"></param>
+        /// <param name="closeable">是否可关闭。</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static async Task<DbConnection> TryCloseAsync(this DbConnection connection, CancellationToken cancellationToken = default)
+        public static async Task<DbConnection> TryCloseAsync(this DbConnection connection, bool closeable = true, CancellationToken cancellationToken = default)
         {
             Guard.ArgumentNull(connection, nameof(connection));
+
+            if (!closeable)
+            {
+                return connection;
+            }
 
             cancellationToken.ThrowIfCancellationRequested();
 
