@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;net7.0</TargetFrameworks>
+		<TargetFrameworks>$(AllTargetFrameworks)</TargetFrameworks>
+		<PackageId>$(AssemblyName)$(PackageIdSuffix)</PackageId>
 	</PropertyGroup>
-
 	<ItemGroup>
-		<PackageReference Include="System.ComponentModel.Composition" Version="7.0.0" />
+		<PackageReference Include="System.ComponentModel.Composition" Version="$(MsPackVersion)" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -8,7 +8,10 @@
 
 namespace Fireasy.Data.Converter
 {
-    public interface IConvertManager
+    /// <summary>
+    /// 值转换管理器。
+    /// </summary>
+    public interface IValueConvertManager
     {
         /// <summary>
         /// 根据对象类型创建相应的转换器。
@@ -17,7 +20,7 @@ namespace Fireasy.Data.Converter
         /// <returns>返回一个 <see cref="IValueConverter"/> 实例，如果未找到对应的转换器，则返回 null。</returns>
         IValueConverter GetConverter(Type conversionType);
 
-        // <summary>
+        /// <summary>
         /// 判断指定的类型是否支持转换。
         /// </summary>
         /// <param name="conversionType"></param>

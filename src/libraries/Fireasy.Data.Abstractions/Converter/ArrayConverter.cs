@@ -9,10 +9,17 @@ using System.Text;
 
 namespace Fireasy.Data.Converter
 {
+    /// <summary>
+    /// 数组转换器。
+    /// </summary>
     public class ArrayConverter : IValueConverter
     {
         private readonly Type _elementType;
 
+        /// <summary>
+        /// 初始化 <see cref="ArrayConverter"/> 类的新实例。
+        /// </summary>
+        /// <param name="elementType"></param>
         public ArrayConverter(Type elementType)
         {
             _elementType = elementType;
@@ -24,8 +31,7 @@ namespace Fireasy.Data.Converter
         /// <param name="value">要转换的值。</param>
         /// <param name="dbType">数据列类型。</param>
         /// <returns>一个数组。</returns>
-        /// <exception cref="ConverterNotSupportedException">如果不支持将数组转换为指定的 dbType 数据时，引发此异常。</exception>
-        public object ConvertFrom(object value, DbType dbType = DbType.String)
+        public object? ConvertFrom(object value, DbType dbType = DbType.String)
         {
             if (value == null || value == DBNull.Value)
             {
@@ -64,8 +70,7 @@ namespace Fireasy.Data.Converter
         /// <param name="value">要存储的数组。</param>
         /// <param name="dbType">数据列类型。</param>
         /// <returns></returns>
-        /// <exception cref="ConverterNotSupportedException">如果不支持将 dbType 类型的数据转换为数组时，引发此异常。</exception>
-        public object ConvertTo(object value, DbType dbType = DbType.String)
+        public object? ConvertTo(object value, DbType dbType = DbType.String)
         {
             if (dbType.IsStringDbType() && value != null)
             {

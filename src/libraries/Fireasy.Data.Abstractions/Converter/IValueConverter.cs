@@ -52,12 +52,12 @@ namespace Fireasy.Data.Converter
         /// <returns>使用 <paramref name="dbType"/> 类型的数据。</returns>
         public abstract object ConvertTo(T value, DbType dbType = DbType.String);
 
-        object IValueConverter.ConvertFrom(object value, DbType dbType)
+        object? IValueConverter.ConvertFrom(object value, DbType dbType)
         {
             return ConvertFrom(value, dbType);
         }
 
-        object IValueConverter.ConvertTo(object value, DbType dbType)
+        object? IValueConverter.ConvertTo(object value, DbType dbType)
         {
             return ConvertTo((T)value, dbType);
         }

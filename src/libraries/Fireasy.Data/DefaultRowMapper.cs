@@ -19,12 +19,18 @@ namespace Fireasy.Data
     /// <typeparam name="T">要转换的类型。</typeparam>
     public sealed class DefaultRowMapper<T> : FieldRowMapperBase<T>
     {
-        private Func<IDataReader, T> _funcDataRecd;
+        private Func<IValueConvertManager?, IDataReader, T>? _funcDataRecd;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IValueConvertManager _valueConvertManager;
 
+        /// <summary>
+        /// 初始化 <see cref="DefaultRowMapper{T}"/> 类的新实例。
+        /// </summary>
+        /// <param name="serviceProvider"></param>
         public DefaultRowMapper(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
+            _valueConvertManager = _serviceProvider.TryGetService<IValueConvertManager>()!;
         }
 
         private class MethodCache
@@ -45,7 +51,7 @@ namespace Fireasy.Data
                 CompileFunction(reader);
             }
 
-            return _funcDataRecd(reader);
+            return _funcDataRecd!(_valueConvertManager, reader);
         }
 
         private IEnumerable<PropertyInfo> GetProperties()
@@ -69,6 +75,7 @@ namespace Fireasy.Data
 
             var rowMapExp = Expression.Constant(RecordWrapper);
             var parExp = Expression.Parameter(typeof(IDataRecord), "s");
+            var parExpm = Expression.Parameter(typeof(IValueConvertManager), "m");
 
             var bindings =
                 mapping.Select(s =>
@@ -78,12 +85,11 @@ namespace Fireasy.Data
 
                     var expression = (Expression)Expression.Call(rowMapExp, getValueMethod, new Expression[] { parExp, Expression.Constant(s.Index) });
 
-                    var convertManager = _serviceProvider?.GetService<IConvertManager>();
+                    var convertManager = _serviceProvider?.GetService<IValueConvertManager>();
 
                     if (convertManager?.CanConvert(s.Info.PropertyType) == true)
                     {
-                        var converter = Expression.Call(typeof(ConvertManager), nameof(ConvertManager.GetConverter), null, Expression.Constant(s.Info.PropertyType));
-                        expression = Expression.Call(converter, MethodCache.ConvertFrom, Expression.Convert(expression, typeof(object)), Expression.Constant(dbType.GetDbType()));
+                        expression = Expression.Call(parExpm, MethodCache.ConvertFrom, Expression.Convert(expression, typeof(object)), Expression.Constant(dbType.GetDbType()));
                         expression = Expression.Convert(expression, s.Info.PropertyType);
                     }
                     else if (s.Info.PropertyType.IsNullableType())
@@ -102,11 +108,11 @@ namespace Fireasy.Data
                 });
 
             var expr =
-                Expression.Lambda<Func<IDataReader, T>>(
+                Expression.Lambda<Func<IValueConvertManager, IDataReader, T>>(
                     Expression.MemberInit(
                         newExp,
                         bindings.ToArray()),
-                    parExp);
+                    parExpm, parExp);
 
             _funcDataRecd = expr.Compile();
         }

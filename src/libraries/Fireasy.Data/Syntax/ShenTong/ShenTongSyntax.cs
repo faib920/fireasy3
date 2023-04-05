@@ -263,19 +263,10 @@ LIMIT {(segment.Length != 0 ? segment.Length : 1000)}{(segment.Start != null ? $
             }
 
             var sb = new StringBuilder();
-
-            sb.AppendFormat("NVL({0}", sourceExp);
-
-            for (int i = 0, n = argExps.Length - 1; i < n; i++)
+            sb.AppendFormat("COALESCE({0}", sourceExp);
+            foreach (var par in argExps)
             {
-                sb.AppendFormat(", NVL({0}", argExps[i]);
-            }
-
-            sb.AppendFormat(", {0}", argExps[argExps.Length - 1]);
-
-            for (int i = 0, n = argExps.Length - 1; i < n; i++)
-            {
-                sb.Append(")");
+                sb.AppendFormat(", {0}", par);
             }
 
             sb.Append(")");
@@ -329,7 +320,7 @@ LIMIT {(segment.Length != 0 ? segment.Length : 1000)}{(segment.Start != null ? $
         /// <returns></returns>
         public DbType CorrectDbType(DbType dbType)
         {
-            return dbType == DbType.Boolean ? DbType.Decimal : dbType;
+            return dbType;
         }
     }
 }

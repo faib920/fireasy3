@@ -12,13 +12,17 @@ using Fireasy.Data.Configuration.Converters;
 namespace Fireasy.Data.Converter
 {
     /// <summary>
-    /// 转换器管理器。
+    /// 缺省的值转换管理器。
     /// </summary>
-    public class ConvertManager : IConvertManager
+    public class DefaultValueConvertManager : IValueConvertManager
     {
         private readonly ConfigurationUnity _configurationUnity;
 
-        public ConvertManager(ConfigurationUnity configurationUnity)
+        /// <summary>
+        /// 初始化 <see cref="DefaultValueConvertManager"/> 类的新实例。
+        /// </summary>
+        /// <param name="configurationUnity"></param>
+        public DefaultValueConvertManager(ConfigurationUnity configurationUnity)
         {
             _configurationUnity = configurationUnity;
         }

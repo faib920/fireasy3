@@ -268,7 +268,7 @@ namespace Fireasy.Data.Batcher
             var sb = new StringBuilder();
 
             var serviceProfider = provider.TryGetServiceProvider();
-            var convertManager = serviceProfider.GetService<IConvertManager>();
+            var convertManager = serviceProfider.GetService<IValueConvertManager>();
 
             var converter = convertManager.GetConverter(mapping.PropertyType);
             if (converter != null)

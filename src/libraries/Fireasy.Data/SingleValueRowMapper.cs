@@ -38,7 +38,7 @@ namespace Fireasy.Data
             var value = RecordWrapper == null ? reader[0] :
                 RecordWrapper.GetValue(reader, 0);
 
-            var convertManager = _serviceProvider?.GetService<IConvertManager>();
+            var convertManager = _serviceProvider?.GetService<IValueConvertManager>();
             var converter = convertManager?.GetConverter(typeof(T));
             return converter != null ? (T)converter.ConvertFrom(value, reader.GetFieldType(0).GetDbType()) :
                 (T)Convert.ChangeType(value, typeof(T));

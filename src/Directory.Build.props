@@ -19,5 +19,8 @@
     <LangVersion>latest</LangVersion>
     <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>
+    <AllTargetFrameworks>netstandard2.0;netstandard2.1;net6.0</AllTargetFrameworks>
+    <MsPackVersion>7.0.0</MsPackVersion>
+    <PackageIdSuffix>-Fine</PackageIdSuffix>
   </PropertyGroup>
 </Project>

@@ -10,7 +10,6 @@ using Fireasy.Data.Converter;
 using Fireasy.Data.Extensions;
 using Fireasy.Data.Provider;
 using Fireasy.Data.Syntax;
-using Microsoft.Extensions.DependencyInjection;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 
@@ -114,6 +113,7 @@ namespace Fireasy.Data.Batcher
                 await database.Connection!.OpenAsync(cancellationToken);
                 using var command = database.Provider.CreateCommand(database.Connection, database.Transaction, null);
                 var syntax = database.Provider.GetService<ISyntaxProvider>();
+                var valueConvertManager = database.GetService<IValueConvertManager>();
 
                 var sql = string.Format("INSERT INTO {0}({1}) VALUES({2})",
                     syntax.Delimit(tableName),
@@ -134,7 +134,7 @@ namespace Fireasy.Data.Batcher
                                 mapping = GetNameTypeMapping(item);
                             }
 
-                            FillArrayData(mapping, item, data, batch);
+                            FillArrayData(valueConvertManager, mapping, item, data, batch);
                         },
                     async (index, batch, surplus, lastBatch) =>
                         {
@@ -227,19 +227,19 @@ namespace Fireasy.Data.Batcher
         /// <summary>
         /// 使用当前的记录填充数组。
         /// </summary>
+        /// <param name="valueConvertManager">值转换管理器。</param>
         /// <param name="mappings">名称和类型的映射字典。</param>
         /// <param name="item">当前的数据项。</param>
         /// <param name="data">数组的数组。</param>
         /// <param name="batch">当前批次中的索引。</param>
-        private void FillArrayData(IEnumerable<PropertyFieldMapping> mappings, object item, object[][] data, int batch)
+        private void FillArrayData(IValueConvertManager? valueConvertManager, IEnumerable<PropertyFieldMapping> mappings, object item, object[][] data, int batch)
         {
             mappings.ForEach((m, i) =>
             {
                 var value = m.ValueFunc(item);
                 if (value != null)
                 {
-                    var convertManager = (this as IProviderService).TryGetServiceProvider()?.GetService<IConvertManager>();
-                    var converter = convertManager?.GetConverter(m.PropertyType);
+                    var converter = valueConvertManager?.GetConverter(m.PropertyType);
                     if (converter != null)
                     {
                         value = converter.ConvertTo(value, m.FieldType);
