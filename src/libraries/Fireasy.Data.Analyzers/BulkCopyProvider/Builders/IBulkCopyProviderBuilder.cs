@@ -7,7 +7,7 @@
 // -----------------------------------------------------------------------
 using Microsoft.CodeAnalysis.Text;
 
-namespace Fireasy.Data.Analyzers.BulkCopyProvider.Generator.Builders
+namespace Fireasy.Data.Analyzers.BulkCopyProvider.Builders
 {
     /// <summary>
     /// BulkCopyProvider 类构造器。

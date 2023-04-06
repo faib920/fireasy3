@@ -7,7 +7,7 @@
 // -----------------------------------------------------------------------
 using Fireasy.Common.Analyzers.DynamicProxy.Metadata;
 
-namespace Fireasy.Common.Analyzers.DynamicProxy.Generator
+namespace Fireasy.Common.Analyzers.DynamicProxy
 {
     /// <summary>
     /// 动态代理类生成器。
@@ -221,7 +221,7 @@ namespace {_metadata.Namespace}
             {{
                 {(isAsync ? "await _InterceptAsync" : "_Intercept")}(interceptors, info, InterceptType.Finally);
             }}
-            {(returnType != "void" ? "return info.ReturnValue == null ? default : (" + realReturnType + ")info.ReturnValue;": string.Empty)}
+            {(returnType != "void" ? "return info.ReturnValue == null ? default : (" + realReturnType + ")info.ReturnValue;" : string.Empty)}
         }}");
         }
 
@@ -262,9 +262,9 @@ namespace {_metadata.Namespace}
         public override {propertyType} {property.Name}
         {{");
 
-        if (property.GetMethod != null)
-        {
-            sb.AppendLine($@"
+            if (property.GetMethod != null)
+            {
+                sb.AppendLine($@"
             get
             {{
                 var interceptors = new List<IInterceptor> {{ {BuildInterceptors(interceptors)} }};
@@ -475,8 +475,8 @@ namespace {_metadata.Namespace}
 
             foreach (var type in metadatas.InterceptorTypes)
             {
-                if ((isAsync && type.Interfaces.Any(t => t.Name == "IAsyncInterceptor")) ||
-                    (!isAsync && type.Interfaces.Any(t => t.Name == "IInterceptor")))
+                if (isAsync && type.Interfaces.Any(t => t.Name == "IAsyncInterceptor") ||
+                    !isAsync && type.Interfaces.Any(t => t.Name == "IInterceptor"))
                 {
                     interceptors.Add(type);
                 }

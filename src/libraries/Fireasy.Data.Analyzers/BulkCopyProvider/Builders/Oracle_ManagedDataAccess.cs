@@ -8,11 +8,11 @@
 using Microsoft.CodeAnalysis.Text;
 using System.Text;
 
-namespace Fireasy.Data.Analyzers.BulkCopyProvider.Generator.Builders
+namespace Fireasy.Data.Analyzers.BulkCopyProvider.Builders
 {
-    internal class Microsoft_Data_SqlClient : IBulkCopyProviderBuilder
+    internal class Oracle_ManagedDataAccess : IBulkCopyProviderBuilder
     {
-        string IBulkCopyProviderBuilder.BulkCopyProviderTypeName => "Microsoft_Data_SqlClient_BulkCopyProvider";
+        string IBulkCopyProviderBuilder.BulkCopyProviderTypeName => "Oracle_ManagedDataAccess_BulkCopyProvider";
 
         SourceText IBulkCopyProviderBuilder.BuildSource()
         {
@@ -23,22 +23,22 @@ using Fireasy.Common;
 using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
-using Microsoft.Data.SqlClient;
+using Oracle.ManagedDataAccess.Client;
 
 namespace Fireasy.Data.Batcher
 {
-    public class Microsoft_Data_SqlClient_BulkCopyProvider : DisposableBase, IBulkCopyProvider
+    public class Oracle_ManagedDataAccess_BulkCopyProvider : DisposableBase, IBulkCopyProvider
     {
-        private SqlBulkCopy _bulkCopy;
+        private OracleBulkCopy _bulkCopy;
 
         void IBulkCopyProvider.Initialize(DbConnection connection, DbTransaction? transaction, string tableName, int batchSize)
         {
-            if (connection is not SqlConnection sqlconn)
+            if (connection is not OracleConnection conn)
             {
-                throw new System.InvalidOperationException(""确保当前项目中的 SqlServer 的适配器仅安装了 Microsoft.Data.SqlClient 包。"");
+                throw new System.InvalidOperationException(""确保当前项目中的 Oracle 的适配器仅安装了 Oracle.ManagedDataAccess 包。"");
             }
 
-            _bulkCopy = new SqlBulkCopy(sqlconn, SqlBulkCopyOptions.KeepIdentity, transaction as SqlTransaction)
+            _bulkCopy = new OracleBulkCopy(conn)
             {
                 DestinationTableName = tableName,
                 BatchSize = batchSize
@@ -50,24 +50,27 @@ namespace Fireasy.Data.Batcher
             _bulkCopy.ColumnMappings.Add(sourceColumnIndex, destinationColumn);
         }
 
-        async Task IBulkCopyProvider.WriteToServerAsync(DbDataReader reader, CancellationToken cancellationToken = default)
+        Task IBulkCopyProvider.WriteToServerAsync(DbDataReader reader, CancellationToken cancellationToken = default)
         {
-            await _bulkCopy.WriteToServerAsync(reader, cancellationToken).ConfigureAwait(false);
+            _bulkCopy.WriteToServer(reader);
+            return Task.CompletedTask;
         }
 
-        async Task IBulkCopyProvider.WriteToServerAsync(DataTable table, CancellationToken cancellationToken = default)
+        Task IBulkCopyProvider.WriteToServerAsync(DataTable table, CancellationToken cancellationToken = default)
         {
-            await _bulkCopy.WriteToServerAsync(table, cancellationToken).ConfigureAwait(false);
+            _bulkCopy.WriteToServer(table);
+            return Task.CompletedTask;
         }
 
         protected override bool Dispose(bool disposing)
         {
-            _bulkCopy?.Close();
+            _bulkCopy?.Dispose();
             return base.Dispose(disposing);
         }
     }
 }
 ");
+
             return SourceText.From(sb.ToString(), Encoding.UTF8);
         }
     }

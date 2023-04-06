@@ -2,7 +2,7 @@
 using System;
 using System.Text;
 
-namespace Fireasy.Data.Analyzers.BulkCopyProvider.Generator.Builders
+namespace Fireasy.Data.Analyzers.BulkCopyProvider.Builders
 {
     internal class Kdbndp : IBulkCopyProviderBuilder
     {
@@ -58,7 +58,6 @@ namespace Fireasy.Data.Batcher
             _writer = _conn.BeginBinaryImport($""Copy {_tableName}({columnNames}) FROM STDIN (FORMAT BINARY)"");
             while (reader.Read())
             {
-                _writer.StartRow();
                 var values = new object[reader.FieldCount];
                 for (var i = 0; i < reader.FieldCount; i++)
                 {

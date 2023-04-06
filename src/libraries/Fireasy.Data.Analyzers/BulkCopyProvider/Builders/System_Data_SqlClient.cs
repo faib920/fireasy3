@@ -6,13 +6,15 @@
 // </copyright>
 // -----------------------------------------------------------------------
 using Microsoft.CodeAnalysis.Text;
+using System;
+using System.Collections.Generic;
 using System.Text;
 
-namespace Fireasy.Data.Analyzers.BulkCopyProvider.Generator.Builders
+namespace Fireasy.Data.Analyzers.BulkCopyProvider.Builders
 {
-    internal class Oracle_ManagedDataAccess : IBulkCopyProviderBuilder
+    internal class System_Data_SqlClient : IBulkCopyProviderBuilder
     {
-        string IBulkCopyProviderBuilder.BulkCopyProviderTypeName => "Oracle_ManagedDataAccess_BulkCopyProvider";
+        string IBulkCopyProviderBuilder.BulkCopyProviderTypeName => "System_Data_SqlClient_BulkCopyProvider";
 
         SourceText IBulkCopyProviderBuilder.BuildSource()
         {
@@ -23,22 +25,22 @@ using Fireasy.Common;
 using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
-using Oracle.ManagedDataAccess.Client;
+using System.Data.SqlClient;
 
 namespace Fireasy.Data.Batcher
 {
-    public class Oracle_ManagedDataAccess_BulkCopyProvider : DisposableBase, IBulkCopyProvider
+    public class System_Data_SqlClient_BulkCopyProvider : DisposableBase, IBulkCopyProvider
     {
-        private OracleBulkCopy _bulkCopy;
+        private SqlBulkCopy _bulkCopy;
 
         void IBulkCopyProvider.Initialize(DbConnection connection, DbTransaction? transaction, string tableName, int batchSize)
         {
-            if (connection is not OracleConnection conn)
+            if (connection is not SqlConnection sqlconn)
             {
-                throw new System.InvalidOperationException(""确保当前项目中的 Oracle 的适配器仅安装了 Oracle.ManagedDataAccess 包。"");
+                throw new System.InvalidOperationException(""确保当前项目中的 SqlServer 的适配器仅安装了 System.Data.SqlClient 包。"");
             }
 
-            _bulkCopy = new OracleBulkCopy(conn)
+            _bulkCopy = new SqlBulkCopy(sqlconn, SqlBulkCopyOptions.KeepIdentity, transaction as SqlTransaction)
             {
                 DestinationTableName = tableName,
                 BatchSize = batchSize
@@ -50,21 +52,19 @@ namespace Fireasy.Data.Batcher
             _bulkCopy.ColumnMappings.Add(sourceColumnIndex, destinationColumn);
         }
 
-        Task IBulkCopyProvider.WriteToServerAsync(DbDataReader reader, CancellationToken cancellationToken = default)
+        async Task IBulkCopyProvider.WriteToServerAsync(DbDataReader reader, CancellationToken cancellationToken = default)
         {
-            _bulkCopy.WriteToServer(reader);
-            return Task.CompletedTask;
+            await _bulkCopy.WriteToServerAsync(reader, cancellationToken).ConfigureAwait(false);
         }
 
-        Task IBulkCopyProvider.WriteToServerAsync(DataTable table, CancellationToken cancellationToken = default)
+        async Task IBulkCopyProvider.WriteToServerAsync(DataTable table, CancellationToken cancellationToken = default)
         {
-            _bulkCopy.WriteToServer(table);
-            return Task.CompletedTask;
+            await _bulkCopy.WriteToServerAsync(table, cancellationToken).ConfigureAwait(false);
         }
 
         protected override bool Dispose(bool disposing)
         {
-            _bulkCopy?.Dispose();
+            _bulkCopy?.Close();
             return base.Dispose(disposing);
         }
     }

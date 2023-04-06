@@ -8,7 +8,7 @@
 using Microsoft.CodeAnalysis.Text;
 using System.Text;
 
-namespace Fireasy.Data.Analyzers.BulkCopyProvider.Generator.Builders
+namespace Fireasy.Data.Analyzers.BulkCopyProvider.Builders
 {
     internal class MySqlConnector : IBulkCopyProviderBuilder
     {

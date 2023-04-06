@@ -5,7 +5,7 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using Fireasy.Data.Analyzers.BulkCopyProvider.Generator.Builders;
+using Fireasy.Data.Analyzers.BulkCopyProvider.Builders;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using System;
@@ -14,12 +14,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace Fireasy.Data.Analyzers.BulkCopyProvider.Generator
+namespace Fireasy.Data.Analyzers
 {
     [Generator]
     public class BulkCopyProviderGenerator : ISourceGenerator
     {
-        private readonly Dictionary<string, List<BuildMap>> _providers = new ()
+        private readonly Dictionary<string, List<BuildMap>> _providers = new()
         {
             { "SqlServerProvider", new () { new BuildMap(typeof(Microsoft_Data_SqlClient), "Microsoft.Data.SqlClient"), new BuildMap(typeof(System_Data_SqlClient), "System.Data.SqlClient") } },
             { "MySqlProvider", new () { new BuildMap(typeof(MySqlConnector), "MySqlConnector") } },

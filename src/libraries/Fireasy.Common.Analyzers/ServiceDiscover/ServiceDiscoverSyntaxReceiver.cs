@@ -7,7 +7,7 @@
 // -----------------------------------------------------------------------
 using Fireasy.Common.Analyzers.ServiceDiscover.Metadata;
 
-namespace Fireasy.Common.Analyzers.ServiceDiscover.Generator
+namespace Fireasy.Common.Analyzers.ServiceDiscover
 {
     internal class ServiceDiscoverSyntaxReceiver : ISyntaxContextReceiver
     {

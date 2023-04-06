@@ -7,7 +7,7 @@
 // -----------------------------------------------------------------------
 using Fireasy.Common.Analyzers.DynamicProxy.Metadata;
 
-namespace Fireasy.Common.Analyzers.DynamicProxy.Generator
+namespace Fireasy.Common.Analyzers.DynamicProxy
 {
     /// <summary>
     /// 动态代理语法接收器。

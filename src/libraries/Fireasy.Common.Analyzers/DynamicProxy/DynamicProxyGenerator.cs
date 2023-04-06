@@ -5,9 +5,10 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
+using Fireasy.Common.Analyzers.DynamicProxy;
 using System.Diagnostics;
 
-namespace Fireasy.Common.Analyzers.DynamicProxy.Generator
+namespace Fireasy.Common.Analyzers
 {
     /// <summary>
     /// 动态代理生成器。

@@ -6,15 +6,13 @@
 // </copyright>
 // -----------------------------------------------------------------------
 using Microsoft.CodeAnalysis.Text;
-using System;
-using System.Collections.Generic;
 using System.Text;
 
-namespace Fireasy.Data.Analyzers.BulkCopyProvider.Generator.Builders
+namespace Fireasy.Data.Analyzers.BulkCopyProvider.Builders
 {
-    internal class System_Data_SqlClient : IBulkCopyProviderBuilder
+    internal class Microsoft_Data_SqlClient : IBulkCopyProviderBuilder
     {
-        string IBulkCopyProviderBuilder.BulkCopyProviderTypeName => "System_Data_SqlClient_BulkCopyProvider";
+        string IBulkCopyProviderBuilder.BulkCopyProviderTypeName => "Microsoft_Data_SqlClient_BulkCopyProvider";
 
         SourceText IBulkCopyProviderBuilder.BuildSource()
         {
@@ -25,11 +23,11 @@ using Fireasy.Common;
 using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace Fireasy.Data.Batcher
 {
-    public class System_Data_SqlClient_BulkCopyProvider : DisposableBase, IBulkCopyProvider
+    public class Microsoft_Data_SqlClient_BulkCopyProvider : DisposableBase, IBulkCopyProvider
     {
         private SqlBulkCopy _bulkCopy;
 
@@ -37,7 +35,7 @@ namespace Fireasy.Data.Batcher
         {
             if (connection is not SqlConnection sqlconn)
             {
-                throw new System.InvalidOperationException(""确保当前项目中的 SqlServer 的适配器仅安装了 System.Data.SqlClient 包。"");
+                throw new System.InvalidOperationException(""确保当前项目中的 SqlServer 的适配器仅安装了 Microsoft.Data.SqlClient 包。"");
             }
 
             _bulkCopy = new SqlBulkCopy(sqlconn, SqlBulkCopyOptions.KeepIdentity, transaction as SqlTransaction)
@@ -70,7 +68,6 @@ namespace Fireasy.Data.Batcher
     }
 }
 ");
-
             return SourceText.From(sb.ToString(), Encoding.UTF8);
         }
     }

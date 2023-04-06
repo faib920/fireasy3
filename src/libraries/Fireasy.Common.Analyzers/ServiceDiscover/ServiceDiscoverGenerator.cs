@@ -5,10 +5,11 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
+using Fireasy.Common.Analyzers.ServiceDiscover;
 using Fireasy.Common.Analyzers.ServiceDiscover.Metadata;
 using System.Diagnostics;
 
-namespace Fireasy.Common.Analyzers.ServiceDiscover.Generator
+namespace Fireasy.Common.Analyzers
 {
     [Generator]
     public class ServiceDiscoverGenerator : ISourceGenerator
