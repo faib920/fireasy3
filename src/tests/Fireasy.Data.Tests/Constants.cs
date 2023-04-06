@@ -3,7 +3,7 @@
     public class Constants
     {
         public const string SQLite_ConnectionString = "Data source=|appdir|..\\..\\..\\..\\..\\..\\db\\Northwind.db3;Pooling=True";
-        public const string MySql_ConnectionString = "Data Source=localhost;database=northwind;User Id=root;password=faib;pooling=true;charset=utf8";
+        public const string MySql_ConnectionString = "Data Source=localhost;database=northwind;User Id=root;password=faib;pooling=true;charset=utf8;AllowLoadLocalInfile=true";
         public const string SqlServer_ConnectionString = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=|appdir|..\\..\\..\\..\\..\\..\\db\\Northwind.mdf;Integrated Security=True;Connect Timeout=30";
         public const string Oracle_ConnectionString = "Data Source=localhost/orcl;User ID=c##test;Password=Faib1234";
         public const string PostgreSql_ConnectionString = "Server=localhost;User Id=postgres;Password=faib;Database=postgres;";

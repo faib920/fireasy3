@@ -15,7 +15,7 @@ namespace Fireasy.Common.Analyzers.ServiceDiscover.Generator
     {
         void ISourceGenerator.Initialize(GeneratorInitializationContext context)
         {
-            Debugger.Launch();
+            //Debugger.Launch();
             context.RegisterForSyntaxNotifications(() => new ServiceDiscoverSyntaxReceiver());
         }
 
@@ -27,7 +27,7 @@ namespace Fireasy.Common.Analyzers.ServiceDiscover.Generator
 
                 if (metadatas.Count > 0)
                 {
-                    context.AddSource("ServicesDiscover.cs", BuildDiscoverSourceCode(metadatas));
+                    context.AddSource("ServiceDiscoverServicesDeployer.cs", BuildDiscoverSourceCode(metadatas));
                 }
             }
         }

@@ -22,7 +22,7 @@ namespace Fireasy.Data.Batcher
         /// <param name="transaction"></param>
         /// <param name="tableName"></param>
         /// <param name="batchSize"></param>
-        void Initialize(DbConnection connection, DbTransaction transaction, string tableName, int batchSize);
+        void Initialize(DbConnection connection, DbTransaction? transaction, string tableName, int batchSize);
 
         /// <summary>
         /// 
@@ -37,6 +37,14 @@ namespace Fireasy.Data.Batcher
         /// <param name="reader"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task WriteToServerAsync(DbDataReader reader, CancellationToken cancellationToken);
+        Task WriteToServerAsync(DbDataReader reader, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task WriteToServerAsync(DataTable table, CancellationToken cancellationToken = default);
     }
 }

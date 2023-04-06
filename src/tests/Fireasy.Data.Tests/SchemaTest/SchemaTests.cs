@@ -2,7 +2,6 @@
 using Fireasy.Data.RecordWrapper;
 using Microsoft.Extensions.DependencyInjection;
 using System.Data.Entity;
-using static Azure.Core.HttpHeader;
 
 namespace Fireasy.Data.Tests.SchemaTest
 {

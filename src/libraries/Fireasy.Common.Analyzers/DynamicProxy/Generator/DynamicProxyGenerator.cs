@@ -17,7 +17,7 @@ namespace Fireasy.Common.Analyzers.DynamicProxy.Generator
     {
         void ISourceGenerator.Initialize(GeneratorInitializationContext context)
         {
-            Debugger.Launch();
+            //Debugger.Launch();
             context.RegisterForSyntaxNotifications(() => new DynamicProxySyntaxReceiver());
         }
 

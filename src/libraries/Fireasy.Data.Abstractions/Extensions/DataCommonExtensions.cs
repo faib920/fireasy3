@@ -1,5 +1,6 @@
 ﻿using Fireasy.Common.Extensions;
 using System.ComponentModel;
+using System.Data.Common;
 using System.Text;
 
 namespace Fireasy.Data
@@ -13,9 +14,9 @@ namespace Fireasy.Data
         /// 将数组或 <see cref="IEnumerable"/> 中的成员转换到 <see cref="DataTable"/> 对象。
         /// </summary>
         /// <param name="data"></param>
-        /// <param name="tableName"></param>
+        /// <param name="tableName">表的名称。</param>
         /// <returns></returns>
-        public static DataTable ToDataTable(this object data, string tableName = null)
+        public static DataTable? ToDataTable(this object data, string? tableName = null)
         {
             if (data == null)
             {
@@ -26,7 +27,7 @@ namespace Fireasy.Data
             {
                 if (data is IEnumerable)
                 {
-                    table = ParseFromEnumerable(data as IEnumerable);
+                    table = ParseFromEnumerable((data as IEnumerable)!);
                 }
                 else
                 {
@@ -37,6 +38,36 @@ namespace Fireasy.Data
             if (table != null)
             {
                 table.TableName = tableName;
+            }
+
+            return table;
+        }
+
+        /// <summary>
+        /// 将 <see cref="DbDataReader"/> 中的数据读到 <see cref="DataTable"/> 对象中。
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <param name="tableName">表的名称。</param>
+        /// <returns></returns>
+        public static DataTable? ToDataTable(this DbDataReader reader, string? tableName = null)
+        {
+            var table = new DataTable { TableName = tableName };
+
+            for (var i = 0; i < reader.FieldCount; i++)
+            {
+                table.Columns.Add(reader.GetName(i), reader.GetFieldType(i));
+            }
+
+            while (reader.Read())
+            {
+                var values = new object[reader.FieldCount];
+
+                for (var i = 0; i < reader.FieldCount; i++)
+                {
+                    values[i] = reader.GetValue(i);
+                }
+
+                table.Rows.Add(values);
             }
 
             return table;
@@ -246,8 +277,7 @@ namespace Fireasy.Data
             type = type.GetNonNullableType();
             var typeCode = Type.GetTypeCode(type);
 
-            return typeCode != TypeCode.Object &&
-                typeCode != TypeCode.Empty &&
+            return typeCode != TypeCode.Empty &&
                 typeCode != TypeCode.DBNull;
         }
 

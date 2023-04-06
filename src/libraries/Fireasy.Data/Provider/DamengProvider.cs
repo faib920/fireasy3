@@ -5,6 +5,7 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
+using Fireasy.Data.Batcher;
 using Fireasy.Data.Identity;
 using Fireasy.Data.RecordWrapper;
 using Fireasy.Data.Schema;
@@ -77,6 +78,7 @@ namespace Fireasy.Data.Provider
             services.TryAddSingleton<ISyntaxProvider, DamengSyntax>();
             services.TryAddSingleton<ISchemaProvider, DamengSchema>();
             services.TryAddSingleton<IRecordWrapper, GeneralRecordWrapper>();
+            services.TryAddSingleton<IBatcherProvider, DamengBatcher>();
 
             return services;
         }
