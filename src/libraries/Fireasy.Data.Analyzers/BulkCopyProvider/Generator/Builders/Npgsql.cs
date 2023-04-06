@@ -26,7 +26,7 @@ namespace Fireasy.Data.Batcher
     public class Npgsql_BulkCopyProvider : DisposableBase, IBulkCopyProvider
     {
         private NpgsqlConnection _conn;
-        private NpgsqlBinaryImporter _importor;
+        private NpgsqlBinaryImporter _writer;
         private List<string> _columns = new List<string>();
         private string _tableName;
         private ISyntaxProvider _syntax;
@@ -55,34 +55,33 @@ namespace Fireasy.Data.Batcher
         async Task IBulkCopyProvider.WriteToServerAsync(DbDataReader reader, CancellationToken cancellationToken = default)
         {
             var columnNames = string.Join("","", _columns.Select(s => _syntax.Delimit(s)));
-            _importor = await _conn.BeginBinaryImportAsync($""Copy {_tableName}({columnNames}) FROM STDIN (FORMAT BINARY)"");
+            _writer = await _conn.BeginBinaryImportAsync($""Copy {_tableName}({columnNames}) FROM STDIN (FORMAT BINARY)"");
             while (reader.Read())
             {
-                await _importor.StartRowAsync(cancellationToken);
                 var values = new object[reader.FieldCount];
                 for (var i = 0; i < reader.FieldCount; i++)
                 {
                     values[i] = reader.GetValue(i);
                 }
-                await _importor.WriteRowAsync(cancellationToken, values);
+                await _writer.WriteRowAsync(cancellationToken, values);
             }
-            await _importor.CompleteAsync(cancellationToken);
+            await _writer.CompleteAsync(cancellationToken);
         }
 
         async Task IBulkCopyProvider.WriteToServerAsync(DataTable table, CancellationToken cancellationToken = default)
         {
             var columnNames = string.Join("","", _columns.Select(s => _syntax.Delimit(s)));
-            _importor = await _conn.BeginBinaryImportAsync($""Copy {_tableName}({columnNames}) FROM STDIN (FORMAT BINARY)"");
+            _writer = await _conn.BeginBinaryImportAsync($""Copy {_tableName}({columnNames}) FROM STDIN (FORMAT BINARY)"");
             foreach (DataRow row in table.Rows)
             {
-                await _importor.WriteRowAsync(cancellationToken, row.ItemArray);
+                await _writer.WriteRowAsync(cancellationToken, row.ItemArray);
             }
-            await _importor.CompleteAsync(cancellationToken);
+            await _writer.CompleteAsync(cancellationToken);
         }
 
         protected override bool Dispose(bool disposing)
         {
-            _importor?.Dispose();
+            _writer?.Dispose();
             return base.Dispose(disposing);
         }
     }

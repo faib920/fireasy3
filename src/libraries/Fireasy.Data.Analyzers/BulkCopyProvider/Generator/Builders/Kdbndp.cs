@@ -26,7 +26,7 @@ namespace Fireasy.Data.Batcher
     public class Kdbndp_BulkCopyProvider : DisposableBase, IBulkCopyProvider
     {
         private KdbndpConnection _conn;
-        private KdbndpBinaryImporter _importor;
+        private KdbndpBinaryImporter _writer;
         private List<string> _columns = new List<string>();
         private string _tableName;
         private ISyntaxProvider _syntax;
@@ -55,36 +55,36 @@ namespace Fireasy.Data.Batcher
         Task IBulkCopyProvider.WriteToServerAsync(DbDataReader reader, CancellationToken cancellationToken = default)
         {
             var columnNames = string.Join("","", _columns.Select(s => _syntax.Delimit(s)));
-            _importor = _conn.BeginBinaryImport($""Copy {_tableName}({columnNames}) FROM STDIN (FORMAT BINARY)"");
+            _writer = _conn.BeginBinaryImport($""Copy {_tableName}({columnNames}) FROM STDIN (FORMAT BINARY)"");
             while (reader.Read())
             {
-                _importor.StartRow();
+                _writer.StartRow();
                 var values = new object[reader.FieldCount];
                 for (var i = 0; i < reader.FieldCount; i++)
                 {
                     values[i] = reader.GetValue(i);
                 }
-                _importor.WriteRow(values);
+                _writer.WriteRow(values);
             }
-            _importor.Complete();
+            _writer.Complete();
             return Task.CompletedTask;
         }
 
         Task IBulkCopyProvider.WriteToServerAsync(DataTable table, CancellationToken cancellationToken = default)
         {
             var columnNames = string.Join("","", _columns.Select(s => _syntax.Delimit(s)));
-            _importor = _conn.BeginBinaryImport($""Copy {_tableName}({columnNames}) FROM STDIN (FORMAT BINARY)"");
+            _writer = _conn.BeginBinaryImport($""Copy {_tableName}({columnNames}) FROM STDIN (FORMAT BINARY)"");
             foreach (DataRow row in table.Rows)
             {
-                _importor.WriteRow(cancellationToken, row.ItemArray);
+                _writer.WriteRow(cancellationToken, row.ItemArray);
             }
-            _importor.Complete();
+            _writer.Complete();
             return Task.CompletedTask;
         }
 
         protected override bool Dispose(bool disposing)
         {
-            _importor?.Dispose();
+            _writer?.Dispose();
             return base.Dispose(disposing);
         }
     }
