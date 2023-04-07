@@ -118,7 +118,7 @@ public class Startup
 * 使用 `Predicate` 对程序集进行过滤
 
 ```csharp
-public class Test()
+public void Test()
 {
     var services = new ServiceCollection();
 
@@ -130,7 +130,7 @@ public class Test()
 * 使用 `IAssemblyFilter` 对程序集进行过滤
 
 ```csharp
-public class Test()
+public void Test()
 {
     var services = new ServiceCollection();
 
@@ -150,7 +150,7 @@ public class Test()
 * 列出遍列过的程序集
 
 ```csharp
-public class Test()
+public void Test()
 {
     var services = new ServiceCollection();
 
@@ -170,7 +170,7 @@ public class Test()
 * 列出注册的所有服务描述
 
 ```csharp
-public class Test()
+public void Test()
 {
     var services = new ServiceCollection();
 
@@ -190,7 +190,7 @@ public class Test()
 * 发现 `ISingletonService`、`ITransientService` 或 `IScopedService` 三种生命周期的服务
 
 ```csharp
-public class Test()
+public void Test()
 {
     var services = new ServiceCollection();
 
