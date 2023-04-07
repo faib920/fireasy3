@@ -445,3 +445,30 @@ public class TestClass
     Assert.IsNotNull(type);
 }
 ```
+
+　　要使用 `VB.NET` 语言只需要在在此中引用 `Fireasy.CodeCompiler.VisualBasic` 即可。
+
+```csharp
+private void Test()
+{
+    var services = new ServiceCollection();
+    var builder = services.AddFireasy();
+    var serviceProvider = services.BuildServiceProvider();
+
+    var source = @"
+Public Class A
+    Public Function Hello(ByVal str As String) As String
+        Return str
+    End Function
+End Class";
+
+    var codeCompilerManager = serviceProvider.GetService<ICodeCompilerManager>();
+    var codeCompiler = codeCompilerManager!.CreateCompiler("vb");
+
+    var assembly = codeCompiler!.CompileAssembly(source);
+
+    var type = assembly!.GetType("A");
+
+    Assert.IsNotNull(type);
+}
+```
