@@ -313,10 +313,6 @@ private void Test()
 
 public class TestProxy
 {
-    /// <summary>
-    /// 异步方法
-    /// </summary>
-    /// <returns></returns>
     [Intercept(typeof(GetStringAsyncInterceptor))]
     public virtual Task<string> GetStringAsync()
     {
@@ -390,6 +386,7 @@ private void Test()
 
     var assemblyBuilder = new DynamicAssemblyBuilder("MyAssembly");
     var typeBuilder = assemblyBuilder.DefineType("MyClass");
+
     //定义泛型类型参数
     typeBuilder.DefineGenericParameters(gt, new GtpType("TS"));
 
