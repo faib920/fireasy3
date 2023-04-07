@@ -110,3 +110,192 @@ public class Startup
     }
 }
 ```
+
+## 四、公共类库
+
+### 1、服务发现
+
+* 使用 `Predicate` 对程序集进行过滤
+
+```csharp
+public class Test()
+{
+    var services = new ServiceCollection();
+
+    //只遍列 Fireasy.Common.Tests
+    services.AddFireasy(opt => opt.DiscoverOptions.AssemblyFilterPredicates.Add(s => !s.FullName!.StartsWith("Fireasy.Common.Tests")));
+}
+```
+
+* 使用 `IAssemblyFilter` 对程序集进行过滤
+
+```csharp
+public class Test()
+{
+    var services = new ServiceCollection();
+
+    services.AddFireasy(opt => opt.DiscoverOptions.AssemblyFilters.Add(new MyAssemblyFilter()));
+
+    private class MyAssemblyFilter : IAssemblyFilter
+    {
+        public bool IsFilter(Assembly assembly)
+        {
+            //只遍列 Fireasy.Common.Tests
+            return !assembly.FullName!.StartsWith("Fireasy.Common.Tests");
+        }
+    }
+}
+```
+
+* 列出遍列过的程序集
+
+```csharp
+public class Test()
+{
+    var services = new ServiceCollection();
+
+    var builder = services.AddFireasy();
+
+    var serviceProvider = services.BuildServiceProvider();
+
+    var discoverer = serviceProvider.GetRequiredService<IServiceDiscoverer>();
+
+    foreach (var assembly in discoverer.Assemblies)
+    {
+        Console.WriteLine(assembly.FullName);
+    }
+}
+```
+
+* 列出注册的所有服务描述
+
+```csharp
+public class Test()
+{
+    var services = new ServiceCollection();
+
+    var builder = services.AddFireasy();
+
+    var serviceProvider = services.BuildServiceProvider();
+
+    var discoverer = serviceProvider.GetRequiredService<IServiceDiscoverer>();
+
+    foreach (var desc in discoverer.Descriptors)
+    {
+        Console.WriteLine($"{desc.ServiceType} -> {desc.ImplementationType}");
+    }
+}
+```
+
+* 发现 `ISingletonService`、`ITransientService` 或 `IScopedService` 三种生命周期的服务
+
+```csharp
+public class Test()
+{
+    var services = new ServiceCollection();
+
+    var builder = services.AddFireasy();
+
+    var serviceProvider = services.BuildServiceProvider();
+
+    var service1 = serviceProvider.GetService<ITestSingletonService>();
+    var service2 = serviceProvider.GetService<ITestSingletonService>();
+
+    Assert.IsNotNull(service1);
+    Assert.IsNotNull(service2);
+
+    //两对象的id应相等
+    Assert.AreEqual(service1.Id, service2.Id);
+
+    Guid id1, id2;
+
+    //作用域1
+    using (var scope1 = serviceProvider.CreateScope())
+    {
+        var service1 = scope1.ServiceProvider.GetService<ITestScopedService>();
+        var service2 = scope1.ServiceProvider.GetService<ITestScopedService>();
+
+        Assert.IsNotNull(service1);
+        Assert.IsNotNull(service2);
+
+        //两对象的id应相等
+        Assert.AreEqual(service1.Id, service2.Id);
+
+        id1 = service1.Id;
+    }
+
+    //作用域2
+    using (var scope2 = serviceProvider.CreateScope())
+    {
+        var service1 = scope2.ServiceProvider.GetService<ITestScopedService>();
+        var service2 = scope2.ServiceProvider.GetService<ITestScopedService>();
+
+        Assert.IsNotNull(service1);
+        Assert.IsNotNull(service2);
+
+        //两对象的id应相等
+        Assert.AreEqual(service1.Id, service2.Id);
+
+        id2 = service1.Id;
+    }
+
+    //两次scoped的id应不相等
+    Assert.AreNotEqual(id1, id2);
+}
+
+public interface ITestSingletonService
+{
+    Guid Id { get; }
+
+    void Test();
+}
+
+public class TestSingletonServiceImpl : ITestSingletonService, ISingletonService
+{
+    public TestSingletonServiceImpl()
+    {
+        Id = Guid.NewGuid();
+    }
+
+    public Guid Id { get; }
+
+    public void Test() => Console.WriteLine("Hello TestSingletonService!");
+}
+
+public interface ITestScopedService
+{
+    Guid Id { get; }
+
+    void Test();
+}
+
+public class TestScopedServiceImpl : ITestScopedService, IScopedService
+{
+    public TestScopedServiceImpl()
+    {
+        Id = Guid.NewGuid();
+    }
+
+    public Guid Id { get; }
+
+    public void Test() => Console.WriteLine("Hello TestScopedService!");
+}
+```
+
+* 使用服务部署器，自动注册服务
+
+```csharp
+[assembly: ServicesDeploy(typeof(DataServicesDeployer))]
+
+public class DataServicesDeployer : IServicesDeployer
+{
+    void IServicesDeployer.Configure(IServiceCollection services)
+    {
+        services.AddSingleton<IProviderManager, DefaultProviderManager>();
+        services.AddSingleton<IDatabaseFactory, DefaultDatabaseFactory>();
+        services.AddSingleton<IRowMapperFactory, DefaultRowMapperFactory>();
+        services.AddSingleton<IValueConvertManager, DefaultValueConvertManager>();
+        services.AddScoped<IDatabase>(sp => sp.GetRequiredService<IDatabaseFactory>().CreateDatabase());
+    }
+}
+```
