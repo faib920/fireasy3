@@ -572,3 +572,34 @@ private void Test()
     Assert.AreEqual("fireasy", value);
 }
 ```
+
+## 技术揭秘系列文章
+- [Fireasy3 揭秘 -- 依赖注入与服务发现](https://www.cnblogs.com/fireasy/p/17170417.html)
+- [Fireasy3 揭秘 -- 自动服务部署](https://www.cnblogs.com/fireasy/p/17173997.html)
+- [Fireasy3 揭秘 -- 使用 SourceGeneraor 改进服务发现](https://www.cnblogs.com/fireasy/p/17174121.html)
+- [Fireasy3 揭秘 -- 使用 SourceGeneraor 实现动态代理(AOP)](https://www.cnblogs.com/fireasy/p/17179651.html)
+- [Fireasy3 揭秘 -- 使用 Emit 构建程序集](https://www.cnblogs.com/fireasy/p/17201880.html)
+- [Fireasy3 揭秘 -- 代码编译器及适配器](https://www.cnblogs.com/fireasy/p/17213296.html)
+- Fireasy3 揭秘 -- 使用缓存提高反射性能
+- Fireasy3 揭秘 -- 动态类型及扩展支持
+- Fireasy3 揭秘 -- 线程数据共享的实现
+- Fireasy3 揭秘 -- 配置管理及解析处理
+- Fireasy3 揭秘 -- 数据库适配器
+- Fireasy3 揭秘 -- 解决数据库之间的语法差异
+- Fireasy3 揭秘 -- 获取数据库的架构信息
+- Fireasy3 揭秘 -- 数据批量插入的实现
+- Fireasy3 揭秘 -- 使用包装器对数据读取进行兼容
+- Fireasy3 揭秘 -- 数据行映射器
+- Fireasy3 揭秘 -- 数据转换器的实现
+- Fireasy3 揭秘 -- 通用序列生成器和雪花生成器的实现
+- Fireasy3 揭秘 -- 命令拦截器的实现
+- Fireasy3 揭秘 -- 数据库主从同步的实现
+- Fireasy3 揭秘 -- 大数据分页的策略
+- Fireasy3 揭秘 -- 数据按需更新及生成实体代理类
+- Fireasy3 揭秘 -- 用对象池技术管理上下文
+- Fireasy3 揭秘 -- Lambda 表达式解析的原理
+- Fireasy3 揭秘 -- 扩展选择的实现
+- Fireasy3 揭秘 -- 按需加载与惰性加载的区别与实现
+- Fireasy3 揭秘 -- 自定义函数的解析与绑定
+- Fireasy3 揭秘 -- 与 MongoDB 进行适配
+- Fireasy3 揭秘 -- 模块化的实现原理
