@@ -5,7 +5,7 @@
 
 　　目前 3.0 还处于开发阶段，到正式发布还需要一段时间，感谢你的关注与支持。
 
-　　<img src="http://fireasy.cn/content/upload/donate_weixin.jpg" style="width:200px;height:200px" /> <img src="http://fireasy.cn/content/upload/qqgroup.png" style="width:200px;height:200px" />
+　　<img src="http://fireasy.cn/content/upload/donate_weixin.jpg" style="height:240px" /> <img src="http://fireasy.cn/content/upload/qqgroup.png" style="height:240px" />
 
 ## 一、目标框架
 　　目前目标框架为 `netstandard2.0`、`netstandard2.1` 和 `net6.0`。
@@ -135,7 +135,6 @@ public void Test()
 public void Test()
 {
     var services = new ServiceCollection();
-
     services.AddFireasy(opt => opt.DiscoverOptions.AssemblyFilters.Add(new MyAssemblyFilter()));
 
     private class MyAssemblyFilter : IAssemblyFilter
@@ -155,9 +154,7 @@ public void Test()
 public void Test()
 {
     var services = new ServiceCollection();
-
     var builder = services.AddFireasy();
-
     var serviceProvider = services.BuildServiceProvider();
 
     var discoverer = serviceProvider.GetRequiredService<IServiceDiscoverer>();
@@ -175,9 +172,7 @@ public void Test()
 public void Test()
 {
     var services = new ServiceCollection();
-
     var builder = services.AddFireasy();
-
     var serviceProvider = services.BuildServiceProvider();
 
     var discoverer = serviceProvider.GetRequiredService<IServiceDiscoverer>();
@@ -195,9 +190,7 @@ public void Test()
 public void Test()
 {
     var services = new ServiceCollection();
-
     var builder = services.AddFireasy();
-
     var serviceProvider = services.BuildServiceProvider();
 
     var service1 = serviceProvider.GetService<ITestSingletonService>();
@@ -299,5 +292,156 @@ public class DataServicesDeployer : IServicesDeployer
         services.AddSingleton<IValueConvertManager, DefaultValueConvertManager>();
         services.AddScoped<IDatabase>(sp => sp.GetRequiredService<IDatabaseFactory>().CreateDatabase());
     }
+}
+```
+
+### 2、动态代理
+
+```csharp
+private void Test()
+{
+    var services = new ServiceCollection();
+    var builder = services.AddFireasy();
+    var serviceProvider = services.BuildServiceProvider();
+
+    var proxyFactory = serviceProvider.GetService<IDynamicProxyFactory>();
+    var proxyObj = proxyFactory!.BuildProxy<TestProxy>();
+
+    var value = await proxyObj!.GetStringAsync();
+    Assert.AreEqual("hello world", value);
+}
+
+public class TestProxy
+{
+    /// <summary>
+    /// 异步方法
+    /// </summary>
+    /// <returns></returns>
+    [Intercept(typeof(GetStringAsyncInterceptor))]
+    public virtual Task<string> GetStringAsync()
+    {
+        return Task.FromResult(string.Empty);
+    }
+}
+
+public class GetStringAsyncInterceptor : IAsyncInterceptor
+{
+    public ValueTask InitializeAsync(InterceptContext context)
+    {
+        return ValueTask.CompletedTask;
+    }
+
+    public ValueTask InterceptAsync(InterceptCallInfo info)
+    {
+        info.ReturnValue = "hello world";
+
+        return ValueTask.CompletedTask;
+    }
+}
+```
+
+### 3、反射缓存
+
+```csharp
+private void Test()
+{
+    var services = new ServiceCollection();
+    var builder = services.AddFireasy();
+    var serviceProvider = services.BuildServiceProvider();
+
+    var reflectionFactory = serviceProvider.GetService<IReflectionFactory>();
+
+    var obj = new OneObject();
+    var property = typeof(OneObject).GetTypeInfo().GetDeclaredProperty(nameof(OneObject.Value));
+    var accessor = reflectionFactory!.GetAccessor<int>(property!);
+
+    accessor.SetValue(obj, 100);
+    var value = accessor.GetValue(obj);
+
+    Assert.AreEqual(100, value);
+}
+
+private class OneObject
+{
+    public int Value { get; set; }
+}
+```
+
+### 4、动态编译
+
+```csharp
+private void Test()
+{
+    /*
+    public class MyClass<T, TS> where T : MyBaseClass
+    {
+        public MyClass(TS ts)
+        {
+        }
+        public T Hello<TV>(T t, TV tv)
+        {
+            Console.WriteLine(tv);
+            return t;
+        }
+    }
+    */
+
+    var gt = new GtpType("T").SetBaseTypeConstraint(typeof(MyBaseClass));
+
+    var assemblyBuilder = new DynamicAssemblyBuilder("MyAssembly");
+    var typeBuilder = assemblyBuilder.DefineType("MyClass");
+    //定义泛型类型参数
+    typeBuilder.DefineGenericParameters(gt, new GtpType("TS"));
+
+    //定义构造函数
+    typeBuilder.DefineConstructor(new Type[] { new GtpType("TS") });
+
+    //定义一个泛型方法，TV不在类中定义，所以属于方法的泛型类型参数
+    var methodBuilder = typeBuilder.DefineMethod("Hello", gt, new Type[] { gt, new GtpType("TV") }, ilCoding: c =>
+    {
+        c.Emitter
+        .ldarg_2.call(typeof(Console).GetMethod("WriteLine", new[] { typeof(object) }))
+        .ldarg_1.ret();
+    });
+
+    var type = typeBuilder.CreateType().MakeGenericType(typeof(MyBaseClass), typeof(int));
+    var obj = Activator.CreateInstance(type, 100);
+
+    var method = type.GetMethod("Hello").MakeGenericMethod(typeof(string));
+    var value = method.Invoke(obj, new object[] { new MyBaseClass(), "world" });
+
+    Assert.IsInstanceOfType(value, typeof(MyBaseClass));
+}
+```
+
+### 5、代码编译
+
+```csharp
+private void Test()
+{
+    var services = new ServiceCollection();
+    var builder = services.AddFireasy();
+    var serviceProvider = services.BuildServiceProvider();
+
+    var source = @"
+public class TestClass
+{
+    public string Hello(string str)
+    {
+        return str;
+    }
+}";
+
+    var codeCompilerManager = serviceProvider.GetService<ICodeCompilerManager>();
+    var codeCompiler = codeCompilerManager!.CreateCompiler("csharp");
+
+    var opt = new ConfigureOptions();
+    opt.Assemblies.Add("System.Core.dll");
+
+    var assembly = codeCompiler!.CompileAssembly(source, opt);
+
+    var type = assembly!.GetType("TestClass");
+
+    Assert.IsNotNull(type);
 }
 ```
