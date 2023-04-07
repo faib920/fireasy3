@@ -5,12 +5,12 @@ using System.ComponentModel.Composition;
 namespace Fireasy.Composition.Tests
 {
     [TestClass]
-    public class ConpositionTests : ConfigurationBaseTests
+    public class CompositionTests : ConfigurationBaseTests
     {
         [TestMethod]
         public void TestGetExportedServices()
         {
-            var services = ServiceProvider.GetExportedService<IExportService>();
+            var services = ServiceProvider.GetExportedServices<IExportService>();
             Assert.AreEqual(2, services.Count());
         }
     }
@@ -20,6 +20,7 @@ namespace Fireasy.Composition.Tests
         void Hello();
     }
 
+    [
     [Export(typeof(IExportService))]
     public class ExportService1 : IExportService
     {
