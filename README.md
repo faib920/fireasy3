@@ -469,3 +469,106 @@ End Class";
     Assert.IsNotNull(type);
 }
 ```
+
+### 6、对象序列化
+
+```csharp
+private void Test()
+{
+    var services = new ServiceCollection();
+    var builder = services.AddFireasy();
+    var serviceProvider = services.BuildServiceProvider();
+
+    var obj = new TestObject { Name = "fireasy", Address = "kunming", Age = 30 };
+
+    var serializer = serviceProvider.GetRequiredService<IJsonSerializer>();
+
+    //在明确提供方的情况下，可以指定 JsonSerializerOptions，但是更换提供方后，相应的也要切换
+    var json = serializer.Serialize(obj, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true });
+
+    Console.WriteLine(json);
+}
+```
+
+　　除了 `Json` 序列化，还提供了二进制序列化 `IBinarySerializer`，但目前还没有适配。
+
+### 7、MEF 服务导出
+
+```csharp
+private void Test()
+{
+    var services = new ServiceCollection();
+    var builder = services.AddFireasy();
+
+    var configuration = new ConfigurationBuilder()
+        .SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+        .Build();
+
+    services.AddSingleton<IConfiguration>(configuration);
+
+    var serviceProvider = services.BuildServiceProvider();
+
+    //这是一个扩展方法 GetExportedServices
+    var exportedServices = serviceProvider.GetExportedServices<IExportService>();
+    Assert.AreEqual(2, exportedServices.Count());
+}
+
+public interface IExportService
+{
+}
+
+[Export(typeof(IExportService))]
+public class ExportService1 : IExportService
+{
+}
+
+[Export(typeof(IExportService))]
+public class ExportService2 : IExportService
+{
+}
+```
+
+　　使用配置进行匹配，`assembly` 匹配程序集名称，`pattern` 匹配文件名称。
+
+```json
+{
+  "fireasy": {
+    "imports": {
+      "settings": {
+        "usePattern": {
+          "pattern": "Fireasy.*.dll"
+        },
+        "useAssembly": {
+          "assembly": "Fireasy.Composition.Tests"
+        }
+      }
+    }
+  }
+}
+```
+
+### 8、动态扩展对象
+
+```csharp
+private void Test()
+{
+    var services = new ServiceCollection();
+    var builder = services.AddFireasy();
+    var serviceProvider = services.BuildServiceProvider();
+
+    //如果不获取 DynamicDescriptionSupporter 则该测试将失败
+    var supporter = serviceProvider.GetService<DynamicDescriptionSupporter>();
+
+    var obj = (IDictionary<string, object>)new DynamicExpandoObject();
+    obj.Add("Name", "fireasy");
+
+    var property = TypeDescriptor.GetProperties(obj).Find("Name", false);
+
+    Assert.IsNotNull(property);
+
+    var value = property.GetValue(obj);
+
+    Assert.AreEqual("fireasy", value);
+}
+```

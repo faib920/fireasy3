@@ -33,7 +33,7 @@ namespace Fireasy.Composition
         /// <param name="serviceProvider"></param>
         /// <param name="contractName"></param>
         /// <returns></returns>
-        public static IEnumerable<T> GetExportedService<T>(this IServiceProvider serviceProvider, string? contractName = null)
+        public static IEnumerable<T> GetExportedServices<T>(this IServiceProvider serviceProvider, string? contractName = null)
         {
             var definition = CreateImportDefinition<T>(contractName);
 
