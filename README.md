@@ -446,7 +446,7 @@ public class TestClass
 }
 ```
 
-　　要使用 `VB.NET` 语言只需要在在此中引用 `Fireasy.CodeCompiler.VisualBasic` 即可。
+　　要使用 `VB.NET` 语言只需要在项目中引用 `Fireasy.CodeCompiler.VisualBasic` 即可。
 
 ```csharp
 private void Test()
