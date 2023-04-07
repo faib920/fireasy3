@@ -91,7 +91,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fireasy.Composition.Tests",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fireasy.AspNetCore.SampleWebApi", "samples\Fireasy.AspNetCore.SampleWebApi\Fireasy.AspNetCore.SampleWebApi.csproj", "{D7D58FAF-60BE-4F2A-8845-D8D5357E8FA8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fireasy.Data.Analyzers", "libraries\Fireasy.Data.Analyzers\Fireasy.Data.Analyzers.csproj", "{C5F0505C-E093-49AC-83FF-92C00D94F88E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fireasy.Data.Analyzers", "libraries\Fireasy.Data.Analyzers\Fireasy.Data.Analyzers.csproj", "{C5F0505C-E093-49AC-83FF-92C00D94F88E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{C327281B-680C-4C8D-AA7A-04337EAADD2B}"
+	ProjectSection(SolutionItems) = preProject
+		..\README.md = ..\README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
