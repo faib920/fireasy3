@@ -5,7 +5,7 @@
 
 　　目前 3.0 还处于开发阶段，到正式发布还需要一段时间，感谢你的关注与支持。
 
-　　![给我打赏](http://fireasy.cn/content/upload/donate_weixin.jpg){:width="200px" height="200px"} ![加QQ交流群](http://fireasy.cn/content/upload/qqgroup.png){:width="200px" height="200px"}
+　　<img src="http://fireasy.cn/content/upload/donate_weixin.jpg" style="width:200px;height:200px" /> <img src="http://fireasy.cn/content/upload/qqgroup.png" style="width:200px;height:200px" />
 
 ## 一、目标框架
 　　目前目标框架为 `netstandard2.0`、`netstandard2.1` 和 `net6.0`。
