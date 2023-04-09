@@ -573,6 +573,84 @@ private void Test()
 }
 ```
 
+## 五、数据库类库
+
+　　`IProvider` 定义了一套标准，不同的数据库类型有不同的实现。另外，每种数据库还应实现以下接口：
+
+* `ISyntaxProvider` 语法适配器
+
+* `ISchemaProvider` 架构适配器
+
+* `IBatcherProvider` 批量插入适配器
+
+* `IRecordWrapper` 记录包装器
+
+* `IGeneratorProvider` 标识生成器适配器
+
+　　目前已经提供了 SqlServer、MySql、SQLite、Firebird、PostgreSql、Oracle、Dameng(达梦)、Kingbase(人大金仓)和ShenTong(神通)数据库，以及 OleDb 驱动。
+
+　　Fireasy.Data 中未引用相关的 Nuget 包，只要在项目中直接安装 Nuget 包即可。
+
+| 数据库类型 | Nuget 包 |
+| :-- | :-- |
+| SqlServer | Microsoft.Data.SqlClient、System.Data.SqlClient |
+| MySql | MySql.Data、MySqlConnector |
+| SQLite | System.Data.SQLite、Microsoft.Data.Sqlite |
+| Firebird | FirebirdSql.Data.FirebirdClient |
+| PostgreSql | Npgsql |
+| Oracle | Oracle.ManagedDataAccess |
+| Dameng | DmProvider |
+| Kingbase | Kdbndp |
+| ShenTong | Oscar.Data.SqlClient |
+
+### 1、列举适配器(比如SqlServer、MySql等等)
+
+```csharp
+private void Test()
+{
+    var services = new ServiceCollection();
+    var builder = services.AddFireasy();
+    var serviceProvider = services.BuildServiceProvider();
+
+    var manager = serviceProvider.GetRequiredService<IProviderManager>();
+
+    var descriptors = manager.GetSupportedProviders();
+
+    foreach (var item in descriptors)
+    {
+        Console.WriteLine($"{item.Alais} {item.Description}");
+    }
+}
+```
+
+### 1、创建实例
+
+```csharp
+private async Task TestAsync()
+{
+    var services = new ServiceCollection();
+    var builder = services.AddFireasy();
+
+    var configuration = new ConfigurationBuilder()
+        .SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+        .Build();
+
+    services.AddSingleton<IConfiguration>(configuration);
+
+    var serviceProvider = services.BuildServiceProvider();
+
+    var factory = serviceProvider.GetRequiredService<IDatabaseFactory>();
+
+    await using var database = factory.CreateDatabase<MySqlProvider>("Data Source=localhost;database=northwind;User Id=root;password=faib;pooling=true;charset=utf8");
+    Assert.IsNotNull(database);
+
+    var exp = await database.TryConnectAsync();
+
+    Assert.IsNull(exp);
+}
+```
+
 ## 技术揭秘系列文章
 - [Fireasy3 揭秘 -- 依赖注入与服务发现](https://www.cnblogs.com/fireasy/p/17170417.html)
 - [Fireasy3 揭秘 -- 自动服务部署](https://www.cnblogs.com/fireasy/p/17173997.html)
