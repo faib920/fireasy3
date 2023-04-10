@@ -577,15 +577,15 @@ private void Test()
 
 　　`IProvider` 定义了一套标准，不同的数据库类型有不同的实现。另外，每种数据库还应实现以下插件服务接口：
 
-* `ISyntaxProvider` 语法适配器
+* `ISyntaxProvider` 语法插件服务
 
-* `ISchemaProvider` 架构适配器
+* `ISchemaProvider` 架构插件服务
 
-* `IBatcherProvider` 批量插入适配器
+* `IBatcherProvider` 批量插入插件服务
 
-* `IRecordWrapper` 记录包装器
+* `IRecordWrapper` 记录包装器插件服务
 
-* `IGeneratorProvider` 标识生成器适配器
+* `IGeneratorProvider` 标识生成器插件服务
 
 　　目前已经提供了 SqlServer、MySql、SQLite、Firebird、PostgreSql、Oracle、Dameng(达梦)、Kingbase(人大金仓)和ShenTong(神通)数据库，以及 OleDb 驱动。
 
