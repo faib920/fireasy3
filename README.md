@@ -736,7 +736,7 @@ private async Task TestAsync()
 
     var factory = serviceProvider.GetRequiredService<IDatabaseFactory>();
 
-    await using var database = factory.CreateDatabase<MySqlProvider>("sqlserver");
+    await using var database = factory.CreateDatabase("mysql");
 
     //查询列表，带分页
     var pager = new DataPager(10, 1);
@@ -772,7 +772,7 @@ private async Task TestAsync()
 
     var factory = serviceProvider.GetRequiredService<IDatabaseFactory>();
 
-    await using var database = factory.CreateDatabase<T>(ConnectionString);
+    await using var database = factory.CreateDatabase("mysql");
     await database.BeginTransactionAsync();
 
     try
