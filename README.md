@@ -602,6 +602,7 @@ private void Test()
 | Dameng | DmProvider |
 | Kingbase | Kdbndp |
 | ShenTong | Oscar.Data.SqlClient |
+| OleDb | System.Data.OleDb |
 
 ### 1、列举数据库提供者(比如SqlServer、MySql等等)
 
@@ -711,7 +712,7 @@ private async Task TestAsync()
     Assert.IsNotNull(database);
 
     //指定数据库配置名称
-    await using var database = factory.CreateDatabase<MySqlProvider>("oledb_access");
+    await using var database = factory.CreateDatabase("oledb_access");
     Assert.IsNotNull(database);
 }
 ```
