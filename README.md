@@ -575,7 +575,7 @@ private void Test()
 
 ## 五、数据库类库
 
-　　`IProvider` 定义了一套标准，不同的数据库类型有不同的实现。另外，每种数据库还应实现以下接口：
+　　`IProvider` 定义了一套标准，不同的数据库类型有不同的实现。另外，每种数据库还应实现以下插件服务接口：
 
 * `ISyntaxProvider` 语法适配器
 
@@ -603,7 +603,7 @@ private void Test()
 | Kingbase | Kdbndp |
 | ShenTong | Oscar.Data.SqlClient |
 
-### 1、列举适配器(比如SqlServer、MySql等等)
+### 1、列举数据库提供者(比如SqlServer、MySql等等)
 
 ```csharp
 private void Test()
@@ -623,7 +623,71 @@ private void Test()
 }
 ```
 
-### 1、创建实例
+### 2、更换提供者或插件服务
+
+```csharp
+private void Test()
+{
+    var services = new ServiceCollection();
+    var builder = services.AddFireasy();
+
+    //用于替换 SqlServerProvider 中的 DbProviderFactory
+    builder.ConfigureData(s => s.AddProivderFactory<SqlServerProvider>(System.Data.SqlClient.SqlClientFactory.Instance));
+
+    //用于替换数据库提供者，SqlServer 不再使用 SqlServerProvider，而是使用自定义的 TestProvider
+    //sqlserver使用2012以下版本的语法
+    builder.ConfigureData(s => s.AddProvider<TestProvider>("SqlServer").AddProivderService<SqlServerProvider, SqlServerSyntaxLessThan2012>());
+
+    var serviceProvider = services.BuildServiceProvider();
+}
+```
+
+### 3、使用配置文件配置连接字符串
+
+```json
+{
+  "fireasy": {
+    "dataInstances": {
+      "default": "sqlserver",
+      "settings": {
+        "sqlite": {
+          "providerType": "SQLite",
+          "connectionString": "Data source=|appdir|..\\..\\..\\..\\..\\..\\db\\Northwind.db3;Pooling=True"
+        },
+        "sqlserver": {
+          "providerType": "SqlServer",
+          "connectionString": "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=|appdir|..\\..\\..\\..\\..\\..\\db\\Northwind.mdf;Integrated Security=True;Connect Timeout=30"
+        },
+        "oracle": {
+          "providerType": "Oracle",
+          "connectionString": "Data Source=localhost/orcl;User ID=c##test;Password=Faib1234"
+        },
+        "mysql": {
+          "providerType": "MySql",
+          "connectionString": "Data Source=localhost;database=northwind;User Id=root;password=faib;pooling=true;charset=utf8"
+        },
+        "oledb_access": {
+          "providerType": "OleDb",
+          "connectionString": "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=|appdir|..\\..\\..\\..\\..\\..\\db\\Northwind.accdb;Persist Security Info=False;"
+        },
+        "testdb": {
+          "providerType": "myprovider",
+          "connectionString": "Data Source=localhost;database=northwind;User Id=root;password=faib;pooling=true;charset=utf8"
+        }
+      }
+    },
+    "dataProviders": {
+      "settings": {
+        "myprovider": {
+          "type": "Fireasy.Data.Tests.TestProvider, Fireasy.Data.Tests"
+        }
+      }
+    }
+  }
+}
+```
+
+### 4、创建数据库实例
 
 ```csharp
 private async Task TestAsync()
@@ -642,12 +706,86 @@ private async Task TestAsync()
 
     var factory = serviceProvider.GetRequiredService<IDatabaseFactory>();
 
+    //指定提供者及连接串
     await using var database = factory.CreateDatabase<MySqlProvider>("Data Source=localhost;database=northwind;User Id=root;password=faib;pooling=true;charset=utf8");
     Assert.IsNotNull(database);
 
-    var exp = await database.TryConnectAsync();
+    //指定数据库配置名称
+    await using var database = factory.CreateDatabase<MySqlProvider>("oledb_access");
+    Assert.IsNotNull(database);
+}
+```
 
-    Assert.IsNull(exp);
+### 5、数据库增删改查
+
+```csharp
+private async Task TestAsync()
+{
+    var services = new ServiceCollection();
+    var builder = services.AddFireasy();
+
+    var configuration = new ConfigurationBuilder()
+        .SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+        .Build();
+
+    services.AddSingleton<IConfiguration>(configuration);
+
+    var serviceProvider = services.BuildServiceProvider();
+
+    var factory = serviceProvider.GetRequiredService<IDatabaseFactory>();
+
+    await using var database = factory.CreateDatabase<MySqlProvider>("sqlserver");
+
+    //查询列表，带分页
+    var pager = new DataPager(10, 1);
+    var list = await database.ExecuteEnumerableAsync<Customers>($"select * from customers order by CustomerID", pager);
+
+    //单一字段
+    var value = await database.ExecuteScalarAsync<byte[]>($"select Picture from categories where CategoryID=1");
+
+    //更新字段，参数化
+    var parameters = new ParameterCollection();
+    parameters.Add("customerId", "ALFKI");
+    parameters.Add("country", "Germany");
+    var ret = await database.ExecuteNonQueryAsync($"update customers set Country=@country where CustomerID=@customerId", parameters: parameters);
+}
+```
+
+### 6、使用事务
+
+```csharp
+private async Task TestAsync()
+{
+    var services = new ServiceCollection();
+    var builder = services.AddFireasy();
+
+    var configuration = new ConfigurationBuilder()
+        .SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+        .Build();
+
+    services.AddSingleton<IConfiguration>(configuration);
+
+    var serviceProvider = services.BuildServiceProvider();
+
+    var factory = serviceProvider.GetRequiredService<IDatabaseFactory>();
+
+    await using var database = factory.CreateDatabase<T>(ConnectionString);
+    await database.BeginTransactionAsync();
+
+    try
+    {
+        await database.ExecuteNonQueryAsync($"delete from customers");
+        //表不存在，将抛错
+        await database.ExecuteNonQueryAsync($"delete from testtable");
+
+        await database.CommitTransactionAsync();
+    }
+    catch (Exception)
+    {
+        await database.RollbackTransactionAsync();
+    }
 }
 ```
 
