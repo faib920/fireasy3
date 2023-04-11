@@ -8,7 +8,7 @@
 　　<img src="http://fireasy.cn/content/upload/donate_weixin.jpg" style="height:240px" /> <img src="http://fireasy.cn/content/upload/qqgroup.png" style="height:240px" />
 
 ## 一、目标框架
-　　目前目标框架为 `netstandard2.0`、`netstandard2.1` 和 `net6.0`。
+　　目前目标框架为 `net462`、`netstandard2.0`、`netstandard2.1` 和 `net6.0`。
 
 ## 二、部分程序集
 
@@ -44,7 +44,6 @@ static class Program
     [STAThread]
     static void Main(params string[] args)
     {
-        Application.ThreadException += Application_ThreadException;
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
             
@@ -120,7 +119,7 @@ public class Startup
 * 使用 `Predicate` 对程序集进行过滤
 
 ```csharp
-public void Test()
+private void Test()
 {
     var services = new ServiceCollection();
 
@@ -132,7 +131,7 @@ public void Test()
 * 使用 `IAssemblyFilter` 对程序集进行过滤
 
 ```csharp
-public void Test()
+private void Test()
 {
     var services = new ServiceCollection();
     services.AddFireasy(opt => opt.DiscoverOptions.AssemblyFilters.Add(new MyAssemblyFilter()));
@@ -151,7 +150,7 @@ public void Test()
 * 列出遍列过的程序集
 
 ```csharp
-public void Test()
+private void Test()
 {
     var services = new ServiceCollection();
     var builder = services.AddFireasy();
@@ -169,7 +168,7 @@ public void Test()
 * 列出注册的所有服务描述
 
 ```csharp
-public void Test()
+private void Test()
 {
     var services = new ServiceCollection();
     var builder = services.AddFireasy();
@@ -187,7 +186,7 @@ public void Test()
 * 发现 `ISingletonService`、`ITransientService` 或 `IScopedService` 三种生命周期的服务
 
 ```csharp
-public void Test()
+private void Test()
 {
     var services = new ServiceCollection();
     var builder = services.AddFireasy();

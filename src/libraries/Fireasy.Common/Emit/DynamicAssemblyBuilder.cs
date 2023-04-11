@@ -206,23 +206,26 @@ namespace Fireasy.Common.Emit
             return AssemblyBuilder;
         }
 
-#if NETFRAMEWORK
         /// <summary>
         /// 将所有的动态类型保存到程序集。
         /// </summary>
+#if !NETFRAMEWORK
+        [Obsolete("非 .NETFramework 框架不会输出程序集到磁盘，此方法与 Create 等效。")]
+#endif
         public Assembly Save()
         {
             Create();
 
+#if NETFRAMEWORK
             if (!string.IsNullOrEmpty(OutputAssembly))
             {
                 var fileName = OutputAssembly.Substring(OutputAssembly.LastIndexOf("\\") + 1);
                 AssemblyBuilder.Save(fileName);
             }
+#endif
 
             return AssemblyBuilder;
         }
-#endif
 
         /// <summary>
         /// 设置一个 <see cref="CustomAttributeBuilder"/> 对象。

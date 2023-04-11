@@ -3,10 +3,12 @@
 		<TargetFrameworks>$(AllTargetFrameworks)</TargetFrameworks>
 		<PackageId>$(AssemblyName)$(PackageIdSuffix)</PackageId>
 	</PropertyGroup>
-	<ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)'!='net462'">
 		<PackageReference Include="System.ComponentModel.Composition" Version="$(MsPackVersion)" />
 	</ItemGroup>
-
+	<ItemGroup Condition="'$(TargetFramework)'=='net462'">
+		<Reference Include="System.ComponentModel.Composition" />
+	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\Fireasy.Common\Fireasy.Common.csproj" />
 	  <ProjectReference Include="..\Fireasy.Configuration\Fireasy.Configuration.csproj" />

@@ -23,7 +23,7 @@ namespace Fireasy.Data.Tests
 
             //用于替换数据库提供者
             //sqlserver使用2012以下版本的语法
-            builder.ConfigureData(s => s.AddProvider<TestProvider>("MySql").AddProivderService<SqlServerProvider, SqlServerSyntaxLessThan2012>());
+            builder.ConfigureData(s => s.AddProvider<TestProvider>("SqlServer").AddProivderService<SqlServerProvider, SqlServerSyntaxLessThan2012>());
         }
 
         /// <summary>
