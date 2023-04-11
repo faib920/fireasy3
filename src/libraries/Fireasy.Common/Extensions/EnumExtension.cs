@@ -61,15 +61,22 @@ namespace Fireasy.Common.Extensions
                     continue;
                 }
 
-                var attr = fieldInfo.GetCustomAttributes<EnumDescriptionAttribute>().FirstOrDefault();
+                var attr = fieldInfo.GetCustomAttributes<DescriptionAttribute>().FirstOrDefault();
                 if (attr != null)
                 {
-                    if (flags != 0 && (attr.Flags & flags) != flags)
+                    dictionary.Add(Enum.Parse(enumType, fieldInfo.Name, true).To<int>(), attr?.Description ?? fieldInfo.Name);
+                    continue;
+                }
+
+                var eattr = fieldInfo.GetCustomAttributes<EnumDescriptionAttribute>().FirstOrDefault();
+                if (eattr != null)
+                {
+                    if (flags != 0 && (eattr.Flags & flags) != flags)
                     {
                         continue;
                     }
 
-                    dictionary.Add(Enum.Parse(enumType, fieldInfo.Name, true).To<int>(), attr != null ? attr.Description : fieldInfo.Name);
+                    dictionary.Add(Enum.Parse(enumType, fieldInfo.Name, true).To<int>(), eattr?.Description ?? fieldInfo.Name);
                 }
             }
 
