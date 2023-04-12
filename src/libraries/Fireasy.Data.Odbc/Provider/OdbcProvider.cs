@@ -50,6 +50,7 @@ namespace Fireasy.Data.Provider
         public override IServiceCollection RegisterServices(IServiceCollection services)
         {
             services = base.RegisterServices(services);
+            services.TryAddSingleton<ISchemaProvider, OdbcSchema>();
             services.TryAddSingleton<IRecordWrapper, GeneralRecordWrapper>();
             return services;
         }
