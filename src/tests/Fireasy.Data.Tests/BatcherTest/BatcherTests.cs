@@ -50,6 +50,30 @@ namespace Fireasy.Data.Tests.BatcherTest
         }
 
         [TestMethod]
+        public async Task TestBatchInsertWithDataTable_NoPK_10000()
+        {
+            var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
+
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
+            var batcher = database.GetService<IBatcherProvider>();
+            var syntax = database.GetService<ISyntaxProvider>();
+
+            await database.ExecuteNonQueryAsync($"delete from {syntax!.ToggleCase("batchers")}");
+
+            var table = NewDataTable();
+
+            for (var i = 0; i < 10000; i++)
+            {
+                table.Rows.Add(NewDataRow(i));
+            }
+
+            //去掉主键
+            table.Columns.RemoveAt(0);
+
+            await batcher.InsertAsync(database, table);
+        }
+
+        [TestMethod]
         public async Task TestBatchInsertWithList_10000()
         {
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
@@ -68,6 +92,30 @@ namespace Fireasy.Data.Tests.BatcherTest
             }
 
             await batcher.InsertAsync(database, list, "batchers");
+        }
+
+        [TestMethod]
+        public async Task TestBatchInsertWithList_NoPK_10000()
+        {
+            var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
+
+            await using var database = factory.CreateDatabase<T>(ConnectionString);
+            var batcher = database.GetService<IBatcherProvider>();
+            var syntax = database.GetService<ISyntaxProvider>();
+
+            await database.ExecuteNonQueryAsync($"delete from {syntax!.ToggleCase("batchers")}");
+
+            var table = NewDataTable();
+
+            for (var i = 0; i < 10000; i++)
+            {
+                table.Rows.Add(NewDataRow(i));
+            }
+
+            //去掉主键
+            table.Columns.RemoveAt(0);
+
+            await batcher.InsertAsync(database, table);
         }
 
         [TestMethod]
@@ -189,6 +237,11 @@ namespace Fireasy.Data.Tests.BatcherTest
         private BatcherData NewData(int i)
         {
             return new BatcherData(i + 1, "Name" + i, "Address" + i, "ext1", "ext2", "ext3", "ext4", "ext5", "ext6", "ext7", "ext8", "ext9", "ext10", NewBytes(), NewBytes(), NewBytes(), NewBytes(), NewBytes());
+        }
+
+        private BatcherData NewDataNoPk(int i)
+        {
+            return new BatcherData(0, "Name" + i, "Address" + i, "ext1", "ext2", "ext3", "ext4", "ext5", "ext6", "ext7", "ext8", "ext9", "ext10", NewBytes(), NewBytes(), NewBytes(), NewBytes(), NewBytes());
         }
 
         private byte[] NewBytes()

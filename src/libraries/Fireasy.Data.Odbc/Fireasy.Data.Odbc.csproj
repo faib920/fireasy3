@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>$(AllTargetFrameworks)</TargetFrameworks>
+		<PackageId>$(AssemblyName)$(PackageIdSuffix)</PackageId>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="System.Data.Odbc" Version="7.0.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Fireasy.Data\Fireasy.Data.csproj" />
+	</ItemGroup>
+</Project>
