@@ -854,6 +854,20 @@ private async Task TestAsync()
 
     await batcher.InsertAsync(database, list, "batchers");
 }
+
+private class BatcherData
+{
+    public BatcherData(int id, string name, string address)
+    {
+        Id = id;
+        Name = name;
+        Address = address;
+    }
+
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Address { get; set; }
+}
 ```
 
 ## 技术揭秘系列文章
