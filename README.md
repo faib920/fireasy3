@@ -808,7 +808,7 @@ private async Task TestAsync()
 
     var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-    await using var database = factory.CreateDatabase<T>(ConnectionString);
+    await using var database = factory.CreateDatabase("mysql");
     var schema = database.GetService<ISchemaProvider>();
     var syntax = database.GetService<ISyntaxProvider>();
 
@@ -852,7 +852,7 @@ private async Task TestAsync()
 
     var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
-    await using var database = factory.CreateDatabase<T>(ConnectionString);
+    await using var database = factory.CreateDatabase("mysql");
     var batcher = database.GetService<IBatcherProvider>();
 
     var list = new List<BatcherData>();
