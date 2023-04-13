@@ -789,6 +789,73 @@ private async Task TestAsync()
 }
 ```
 
+### 7、获取数据库架构
+
+```csharp
+private async Task TestAsync()
+{
+    var services = new ServiceCollection();
+    var builder = services.AddFireasy();
+
+    var configuration = new ConfigurationBuilder()
+        .SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+        .Build();
+
+    services.AddSingleton<IConfiguration>(configuration);
+
+    var serviceProvider = services.BuildServiceProvider();
+
+    var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
+
+    await using var database = factory.CreateDatabase<T>(ConnectionString);
+    var schema = database.GetService<ISchemaProvider>();
+    var syntax = database.GetService<ISyntaxProvider>();
+
+    //获取表
+    var tables = await schema!.GetSchemasAsync<Data.Schema.Table>(database).ToListAsync();
+    
+    //获取字段
+    var columns = await schema!.GetSchemasAsync<Data.Schema.Column>(database, s => s.TableName == syntax!.ToggleCase("products") && s.Name == "ProductID").ToListAsync();
+
+    //获取外键
+    var foreignKeys = await schema!.GetSchemasAsync<Data.Schema.ForeignKey>(database, s => s.TableName.Equals(syntax!.ToggleCase("orders"))).ToListAsync();
+}
+```
+
+### 8、批量插入
+
+```csharp
+private async Task TestAsync()
+{
+    var services = new ServiceCollection();
+    var builder = services.AddFireasy();
+
+    var configuration = new ConfigurationBuilder()
+        .SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+        .Build();
+
+    services.AddSingleton<IConfiguration>(configuration);
+
+    var serviceProvider = services.BuildServiceProvider();
+
+    var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
+
+    await using var database = factory.CreateDatabase<T>(ConnectionString);
+    var batcher = database.GetService<IBatcherProvider>();
+
+    var list = new List<BatcherData>();
+
+    for (var i = 0; i < 100000; i++)
+    {
+        list.Add(new BatcherData(i + 1, "Name" + i, "Address" + i));
+    }
+
+    await batcher.InsertAsync(database, list, "batchers");
+}
+```
+
 ## 技术揭秘系列文章
 - [Fireasy3 揭秘 -- 依赖注入与服务发现](https://www.cnblogs.com/fireasy/p/17170417.html)
 - [Fireasy3 揭秘 -- 自动服务部署](https://www.cnblogs.com/fireasy/p/17173997.html)
