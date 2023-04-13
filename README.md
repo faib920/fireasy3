@@ -814,7 +814,17 @@ private async Task TestAsync()
 
     //获取表
     var tables = await schema!.GetSchemasAsync<Data.Schema.Table>(database).ToListAsync();
-    
+
+    var names = new[]
+    {
+        syntax!.ToggleCase("products"),
+        syntax!.ToggleCase("customers"),
+        syntax!.ToggleCase("orders")
+    };
+
+    //多表匹配
+    tables = await schema!.GetSchemasAsync<Data.Schema.Table>(database, s => names.Contains(s.Name)).ToListAsync();
+
     //获取字段
     var columns = await schema!.GetSchemasAsync<Data.Schema.Column>(database, s => s.TableName == syntax!.ToggleCase("products") && s.Name == "ProductID").ToListAsync();
 
