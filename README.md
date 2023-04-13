@@ -721,17 +721,7 @@ private async Task TestAsync()
 ```csharp
 private async Task TestAsync()
 {
-    var services = new ServiceCollection();
-    var builder = services.AddFireasy();
-
-    var configuration = new ConfigurationBuilder()
-        .SetBasePath(Directory.GetCurrentDirectory())
-        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-        .Build();
-
-    services.AddSingleton<IConfiguration>(configuration);
-
-    var serviceProvider = services.BuildServiceProvider();
+    //略去 serviceProvider 的创建，见第4节
 
     var factory = serviceProvider.GetRequiredService<IDatabaseFactory>();
 
@@ -757,17 +747,7 @@ private async Task TestAsync()
 ```csharp
 private async Task TestAsync()
 {
-    var services = new ServiceCollection();
-    var builder = services.AddFireasy();
-
-    var configuration = new ConfigurationBuilder()
-        .SetBasePath(Directory.GetCurrentDirectory())
-        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-        .Build();
-
-    services.AddSingleton<IConfiguration>(configuration);
-
-    var serviceProvider = services.BuildServiceProvider();
+    //略去 serviceProvider 的创建，见第4节
 
     var factory = serviceProvider.GetRequiredService<IDatabaseFactory>();
 
@@ -794,17 +774,7 @@ private async Task TestAsync()
 ```csharp
 private async Task TestAsync()
 {
-    var services = new ServiceCollection();
-    var builder = services.AddFireasy();
-
-    var configuration = new ConfigurationBuilder()
-        .SetBasePath(Directory.GetCurrentDirectory())
-        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-        .Build();
-
-    services.AddSingleton<IConfiguration>(configuration);
-
-    var serviceProvider = services.BuildServiceProvider();
+    //略去 serviceProvider 的创建，见第4节
 
     var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
@@ -838,17 +808,7 @@ private async Task TestAsync()
 ```csharp
 private async Task TestAsync()
 {
-    var services = new ServiceCollection();
-    var builder = services.AddFireasy();
-
-    var configuration = new ConfigurationBuilder()
-        .SetBasePath(Directory.GetCurrentDirectory())
-        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-        .Build();
-
-    services.AddSingleton<IConfiguration>(configuration);
-
-    var serviceProvider = services.BuildServiceProvider();
+    //略去 serviceProvider 的创建，见第4节
 
     var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
 
