@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Odbc;
-using System.Data.OleDb;
 
 namespace Fireasy.Data.Schema
 {
