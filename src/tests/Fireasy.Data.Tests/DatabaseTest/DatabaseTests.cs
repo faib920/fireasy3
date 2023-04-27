@@ -1,5 +1,6 @@
 ﻿using Fireasy.Common.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Mysqlx.Expr;
 
 namespace Fireasy.Data.Tests.DatabaseTest
 {
@@ -462,6 +463,59 @@ namespace Fireasy.Data.Tests.DatabaseTest
             var value = await database.ExecuteScalarAsync<ShipVia?>($"select {syntax!.Delimit("ShipVia")} from orders where {syntax!.Delimit("OrderID")}=10248");
 
             Assert.AreEqual(ShipVia.C, value);
+        }
+
+        /// <summary>
+        /// 测试加密完整的字符串
+        /// </summary>
+        [TestMethod]
+        public void TestEncryptFullConnectionString()
+        {
+            var encryptor = ServiceProvider.GetService<IConnectionStringEncryptor>();
+            var connStr = encryptor.Encrypt(ConnectionString, CSEncryptPart.Full);
+
+            Console.WriteLine(connStr);
+
+            connStr = encryptor.Decrypt(connStr);
+
+            Console.WriteLine(connStr);
+
+            Assert.IsTrue(connStr == ConnectionString);
+        }
+
+        /// <summary>
+        /// 测试加密部分参数
+        /// </summary>
+        [TestMethod]
+        public void TestEncryptConnectionString()
+        {
+            var encryptor = ServiceProvider.GetService<IConnectionStringEncryptor>();
+            var connStr = encryptor.Encrypt(ConnectionString, CSEncryptPart.Server | CSEncryptPart.Password);
+
+            Console.WriteLine(connStr);
+
+            connStr = encryptor.Decrypt(connStr);
+
+            Console.WriteLine(connStr);
+
+            Assert.IsTrue(connStr == ConnectionString);
+        }
+
+        /// <summary>
+        /// 测试加密部分参数并尝试打开
+        /// </summary>
+        [TestMethod]
+        public async Task TestEncryptConnectionStringTryOpen()
+        {
+            var encryptor = ServiceProvider.GetService<IConnectionStringEncryptor>();
+            var connStr = encryptor.Encrypt(ConnectionString, CSEncryptPart.Server | CSEncryptPart.Password);
+
+            var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();
+
+            await using var database = factory.CreateDatabase<T>((string)connStr);
+            var exp = await database.TryConnectAsync();
+
+            Assert.IsNull(exp);
         }
 
         public class Customers

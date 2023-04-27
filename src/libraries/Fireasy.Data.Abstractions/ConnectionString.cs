@@ -44,7 +44,7 @@ namespace Fireasy.Data
         /// <param name="connStr1"></param>
         /// <param name="connStr2"></param>
         /// <returns></returns>
-        public static bool operator ==(ConnectionString connStr1, ConnectionString connStr2)
+        public static bool operator ==(ConnectionString? connStr1, ConnectionString? connStr2)
         {
             if (Equals(connStr1, null) && Equals(connStr2, null))
             {
@@ -65,7 +65,7 @@ namespace Fireasy.Data
         /// <param name="connStr1"></param>
         /// <param name="connStr2"></param>
         /// <returns></returns>
-        public static bool operator !=(ConnectionString connStr1, ConnectionString connStr2)
+        public static bool operator !=(ConnectionString? connStr1, ConnectionString? connStr2)
         {
             if (Equals(connStr1, null) && Equals(connStr2, null))
             {
@@ -182,7 +182,7 @@ namespace Fireasy.Data
                         builder.AppendFormat("{0}={1};", name.ToString(), value.ToString());
                     }
 
-                    Properties.Add(name.ToString().ToLower(), value.ToString(), isCustomized);
+                    Properties.Add(name.ToString(), value.ToString(), isCustomized);
 
                     index = i + 1;
                     last = true;
@@ -208,7 +208,7 @@ namespace Fireasy.Data
                     builder.AppendFormat("{0}={1};", name.ToString(), value.ToString());
                 }
 
-                Properties.Add(name.ToString().ToLower(), value.ToString(), isCustomized);
+                Properties.Add(name.ToString(), value.ToString(), isCustomized);
             }
 
             return builder.ToString();

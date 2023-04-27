@@ -5,7 +5,6 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-
 using Fireasy.Data.Provider;
 using Fireasy.Data.RecordWrapper;
 using System.Data.Common;

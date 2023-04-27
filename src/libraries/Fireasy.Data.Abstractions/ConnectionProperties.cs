@@ -14,7 +14,7 @@ namespace Fireasy.Data
     /// </summary>
     public sealed class ConnectionProperties
     {
-        private readonly Dictionary<string, PropertyValue> _properties = new Dictionary<string, PropertyValue>();
+        private readonly Dictionary<string, PropertyValue> _properties = new Dictionary<string, PropertyValue>(StringComparer.OrdinalIgnoreCase);
         private readonly ConnectionString _connectionString;
 
         /// <summary>

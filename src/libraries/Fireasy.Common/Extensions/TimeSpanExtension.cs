@@ -68,31 +68,29 @@ namespace Fireasy.Common.Extensions
         public static string ToStringEx(this TimeSpan timeSpan)
         {
             var timeString = new StringBuilder();
-            var flag = new AssertFlag();
             if ((timeSpan.Days > 0) || (timeSpan.Hours > 0))
             {
-                flag.AssertTrue();
                 var hours = ((24 * timeSpan.Days) + timeSpan.Hours);
                 timeString.Append(hours + "时");
             }
 
             if (timeSpan.Minutes > 0)
             {
-                if (!flag.AssertTrue())
-                {
-                    timeString.Append(" ");
-                }
-
                 timeString.Append(timeSpan.Minutes + "分");
             }
 
-            if (!flag.AssertTrue())
+            if (timeSpan.Seconds > 0)
             {
-                timeString.Append(" ");
+                timeString.Append(timeSpan.Seconds + "秒");
             }
 
-            timeString.Append(timeSpan.Seconds + "秒");
+            if (timeString.Length == 0)
+            {
+                timeString.Append(timeSpan.Milliseconds + "毫秒");
+            }
+
             return timeString.ToString();
+
         }
     }
 }

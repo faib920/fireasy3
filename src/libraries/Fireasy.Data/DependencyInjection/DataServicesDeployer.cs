@@ -27,6 +27,7 @@ namespace Fireasy.Data.DependencyInjection
             services.AddSingleton<IRowMapperFactory, DefaultRowMapperFactory>();
             services.AddSingleton<IValueConvertManager, DefaultValueConvertManager>();
             services.AddScoped<IDatabase>(sp => sp.GetRequiredService<IDatabaseFactory>().CreateDatabase());
+            services.AddSingleton<IConnectionStringEncryptor, DefaultConnectionStringEncryptor>();
             services.AddScoped<DistributedController>();
         }
     }

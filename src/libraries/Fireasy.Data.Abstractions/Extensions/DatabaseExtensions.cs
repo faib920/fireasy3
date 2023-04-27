@@ -230,7 +230,7 @@ namespace Fireasy.Data
         /// <param name="database"><see cref="IDatabase"/> 对象。</param>
         /// <param name="mode">分布式模式。</param>
         /// <returns><paramref name="database"/> 创建的 <see cref="DbConnection"/> 对象。</returns>
-        public static DbConnection CreateConnection(this IDatabase database, DistributedMode mode = DistributedMode.Master)
+        public static DbConnection? CreateConnection(this IDatabase database, DistributedMode mode = DistributedMode.Master)
         {
             Guard.ArgumentNull(database, nameof(database));
 
@@ -246,7 +246,20 @@ namespace Fireasy.Data
             }
 
             var connection = database!.Provider.DbProviderFactory.CreateConnection();
-            connection.ConnectionString = (connStr ?? database.ConnectionString)?.ToString();
+
+            var encryptor = database.GetService<IConnectionStringEncryptor>();
+
+            connStr ??= database.ConnectionString;
+            if (encryptor != null && connStr != null)
+            {
+                connStr = encryptor.Decrypt(connStr);
+            }
+
+            if (connection != null)
+            {
+                connection.ConnectionString = connStr?.ToString();
+            }
+
             return connection;
         }
     }
