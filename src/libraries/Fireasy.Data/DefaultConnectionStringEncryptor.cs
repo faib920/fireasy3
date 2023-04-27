@@ -32,21 +32,21 @@ namespace Fireasy.Data
 
             if (part.HasFlag(CSEncryptPart.Server))
             {
-                var server = connectionString.Properties.TryGetValue("data source", "server", "host");
+                var server = connectionString.Properties.TryGetValue(ConnectionParameterKeys.Server);
                 if (!string.IsNullOrEmpty(server))
                 {
                     server = Encrypt(server!);
-                    connectionString.Properties.TrySetValue(server, "data source", "server", "host");
+                    connectionString.Properties.TrySetValue(server, ConnectionParameterKeys.Server);
                     hasChanged = true;
                 }
             }
             if (part.HasFlag(CSEncryptPart.Password))
             {
-                var password = connectionString.Properties.TryGetValue("password", "pwd");
+                var password = connectionString.Properties.TryGetValue(ConnectionParameterKeys.Password);
                 if (!string.IsNullOrEmpty(password))
                 {
                     password = Encrypt(password!);
-                    connectionString.Properties.TrySetValue(password, "password", "pwd");
+                    connectionString.Properties.TrySetValue(password, ConnectionParameterKeys.Password);
                     hasChanged = true;
                 }
             }
