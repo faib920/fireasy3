@@ -471,7 +471,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         [TestMethod]
         public void TestEncryptFullConnectionString()
         {
-            var encryptor = ServiceProvider.GetService<IConnectionStringEncryptor>();
+            var encryptor = ServiceProvider.GetService<IConnectionStringProtector>();
             var connStr = encryptor.Encrypt(ConnectionString, CSEncryptPart.Full);
 
             Console.WriteLine(connStr);
@@ -489,7 +489,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         [TestMethod]
         public void TestEncryptConnectionString()
         {
-            var encryptor = ServiceProvider.GetService<IConnectionStringEncryptor>();
+            var encryptor = ServiceProvider.GetService<IConnectionStringProtector>();
             var connStr = encryptor.Encrypt(ConnectionString, CSEncryptPart.Server | CSEncryptPart.Password);
 
             Console.WriteLine(connStr);
@@ -507,7 +507,7 @@ namespace Fireasy.Data.Tests.DatabaseTest
         [TestMethod]
         public async Task TestEncryptConnectionStringTryOpen()
         {
-            var encryptor = ServiceProvider.GetService<IConnectionStringEncryptor>();
+            var encryptor = ServiceProvider.GetService<IConnectionStringProtector>();
             var connStr = encryptor.Encrypt(ConnectionString, CSEncryptPart.Server | CSEncryptPart.Password);
 
             var factory = ServiceProvider.GetRequiredService<IDatabaseFactory>();

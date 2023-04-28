@@ -9,9 +9,9 @@
 namespace Fireasy.Data
 {
     /// <summary>
-    /// 连接字符串加密器。
+    /// 连接字符串保护器。
     /// </summary>
-    public interface IConnectionStringEncryptor
+    public interface IConnectionStringProtector
     {
         /// <summary>
         /// 加密连接字符串。

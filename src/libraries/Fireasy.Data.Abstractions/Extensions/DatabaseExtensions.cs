@@ -247,7 +247,7 @@ namespace Fireasy.Data
 
             var connection = database!.Provider.DbProviderFactory.CreateConnection();
 
-            var encryptor = database.GetService<IConnectionStringEncryptor>();
+            var encryptor = database.GetService<IConnectionStringProtector>();
 
             connStr ??= database.ConnectionString;
             if (encryptor != null && connStr != null)
