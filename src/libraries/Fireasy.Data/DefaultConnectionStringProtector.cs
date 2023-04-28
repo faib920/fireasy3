@@ -5,9 +5,7 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using Fireasy.Common.Extensions;
 using System.IO;
-using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 
