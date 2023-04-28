@@ -22,16 +22,16 @@ namespace Fireasy.Data
         private readonly byte[] _key = new byte[] { 53, 211, 34, 65, 171, 43, 21, 134 };
         private readonly byte[] _iv = new byte[] { 12, 64, 134, 43, 58, 154, 200, 48 };
 
-        ConnectionString IConnectionStringProtector.Encrypt(ConnectionString connectionString, CSEncryptPart part = CSEncryptPart.Password)
+        ConnectionString IConnectionStringProtector.Encrypt(ConnectionString connectionString, ConnectionStringProtectMode mode)
         {
-            if (part == CSEncryptPart.Full)
+            if (mode == ConnectionStringProtectMode.Full)
             {
                 return Encrypt((string)connectionString);
             }
 
             var hasChanged = false;
 
-            if (part.HasFlag(CSEncryptPart.Server))
+            if (mode.HasFlag(ConnectionStringProtectMode.Server))
             {
                 var server = connectionString.Properties.TryGetValue(ConnectionParameterKeys.Server);
                 if (!string.IsNullOrEmpty(server))
@@ -41,7 +41,7 @@ namespace Fireasy.Data
                     hasChanged = true;
                 }
             }
-            if (part.HasFlag(CSEncryptPart.Password))
+            if (mode.HasFlag(ConnectionStringProtectMode.Password))
             {
                 var password = connectionString.Properties.TryGetValue(ConnectionParameterKeys.Password);
                 if (!string.IsNullOrEmpty(password))

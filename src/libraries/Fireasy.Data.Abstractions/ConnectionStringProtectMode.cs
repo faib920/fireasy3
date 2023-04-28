@@ -9,25 +9,25 @@
 namespace Fireasy.Data
 {
     /// <summary>
-    /// 连接字符串加密部位。
+    /// 连接字符串瓮中保护模式。
     /// </summary>
     [Flags]
-    public enum CSEncryptPart
+    public enum ConnectionStringProtectMode
     {
         /// <summary>
-        /// 服务器参数。
+        /// 保护服务器参数。
         /// </summary>
         Server = 1,
         /// <summary>
-        /// 用户名参数。
+        /// 保护用户名参数。
         /// </summary>
         UserId = 3,
         /// <summary>
-        /// 密码参数。
+        /// 保护密码参数。
         /// </summary>
         Password = 4,
         /// <summary>
-        /// 完整加密。
+        /// 完整保护，保护整个连接串。
         /// </summary>
         Full = 32
     }

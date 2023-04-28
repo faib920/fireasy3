@@ -16,15 +16,15 @@ namespace Fireasy.Data
         /// <summary>
         /// 加密连接字符串。
         /// </summary>
-        /// <param name="connectionString"></param>
-        /// <param name="part">加密部位。</param>
+        /// <param name="connectionString">连接字符串。</param>
+        /// <param name="mode">保护的模式。</param>
         /// <returns></returns>
-        ConnectionString Encrypt(ConnectionString connectionString, CSEncryptPart part = CSEncryptPart.Password);
+        ConnectionString Encrypt(ConnectionString connectionString, ConnectionStringProtectMode mode = ConnectionStringProtectMode.Password);
 
         /// <summary>
         /// 解密连接字符串。
         /// </summary>
-        /// <param name="connectionString"></param>
+        /// <param name="connectionString">连接字符串。</param>
         /// <returns></returns>
         ConnectionString Decrypt(ConnectionString connectionString);
     }
