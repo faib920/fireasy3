@@ -14,6 +14,7 @@
         public const string OleDb_Access_ConnectionString = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=|appdir|..\\..\\..\\..\\..\\..\\db\\Northwind.accdb;Persist Security Info=False;";
         public const string OleDb_Excel_ConnectionString = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=|appdir|..\\..\\..\\..\\..\\..\\db\\Northwind.xlsx;Extended Properties='Excel 8.0;HDR=Yes;IMEX=1'";
         public const string OleDb_SqlServer_ConnectionString = "Provider=SQLOLEDB.1;Integrated Security=SSPI;Persist Security Info=False;Data Source=(local);Initial File Name=|appdir|..\\..\\..\\..\\..\\..\\db\\Northwind.mdf";
+        public const string Odbc_Mysql_ConnectionString = "DSN=mysql;UID=root;PASSWORD=faib;";
 
         public const string SQLite_InstanceName = "sqlite";
         public const string MySql_InstanceName = "mysql";
@@ -27,5 +28,6 @@
         public const string OleDb_Access_InstanceName = "oledb_access";
         public const string OleDb_Excel_InstanceName = "oledb_excel";
         public const string OleDb_SqlServer_InstanceName = "oledb_sqlserver";
+        public const string Odbc_MySql_InstanceName = "odbc_mysql";
     }
 }

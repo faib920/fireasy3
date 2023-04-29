@@ -5,7 +5,6 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
-using Fireasy.Data.Schema;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -67,5 +66,131 @@ namespace Fireasy.Data.Schema
         /// 获取是否提供同一限制的集合查询。
         /// </summary>
         public override bool RestrictionMultipleQuerySupport => false;
+
+        /// <summary>
+        /// 获取 <see cref="Table"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
+        protected override async IAsyncEnumerable<Table> GetTablesAsync(IDatabase database, RestrictionDictionary restrictionValues)
+        {
+            using var connection = database.CreateConnection() as OdbcConnection;
+            var restrictions = new [] { null, null, restrictionValues.GetValue(nameof(Table.Name)) };
+            await connection!.TryOpenAsync();
+            var dtTables = connection!.GetSchema("Tables", restrictions);
+            foreach (DataRow row in dtTables!.Rows)
+            {
+                yield return new Table
+                {
+                    Catalog = row["TABLE_CAT"].ToString(),
+                    Schema = row["TABLE_SCHEM"].ToString(),
+                    Name = row["TABLE_NAME"].ToString(),
+                    Type = row["TABLE_TYPE"].ToString() == "TABLE" ? TableType.BaseTable : TableType.SystemTable,
+                    Description = row["REMARKS"].ToString()
+                };
+            }
+        }
+
+        /// <summary>
+        /// 获取 <see cref="Column"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
+        protected override async IAsyncEnumerable<Column> GetColumnsAsync(IDatabase database, RestrictionDictionary restrictionValues)
+        {
+            using var connection = database.CreateConnection() as OdbcConnection;
+            var restrictions = new[] { null, null, restrictionValues.GetValue(nameof(Column.TableName)), restrictionValues.GetValue(nameof(Column.Name)) };
+            await connection!.TryOpenAsync();
+            var dtTables = !restrictionValues.ContainsKey(nameof(Column.TableName)) ?
+                _cachedTables ??= connection.GetSchema("Tables", new string[] { null, null, null }) : null;
+            var dtColumns = connection.GetSchema("Columns", restrictions);
+            foreach (DataRow row in dtColumns!.Rows)
+            {
+                if (dtTables != null && dtTables.Select($"TABLE_NAME = '{row["TABLE_NAME"]}'").Length == 0)
+                {
+                    continue;
+                }
+
+                yield return SetColumnType(SetDataType(new Column
+                {
+                    Catalog = row["TABLE_CAT"].ToString(),
+                    Schema = row["TABLE_SCHEM"].ToString(),
+                    TableName = row["TABLE_NAME"].ToString(),
+                    Name = row["COLUMN_NAME"].ToString(),
+                    Default = row["COLUMN_DEF"].ToString(),
+                    DataType = Enum.Parse(typeof(OdbcType), row["DATA_TYPE"].ToString()).ToString(),
+                    NumericPrecision = row["COLUMN_SIZE"] == DBNull.Value ? (int?)null : Convert.ToInt32(row["COLUMN_SIZE"]),
+                    NumericScale = row["DECIMAL_DIGITS"] == DBNull.Value ? (int?)null : Convert.ToInt32(row["DECIMAL_DIGITS"]),
+                    IsNullable = row["NULLABLE"] != DBNull.Value && Convert.ToBoolean(row["NULLABLE"]),
+                    Length = row["COLUMN_SIZE"] == DBNull.Value ? (long?)null : Convert.ToInt64(row["COLUMN_SIZE"]),
+                    Position = Convert.ToInt32(row["ORDINAL_POSITION"])
+                }));
+            }
+        }
+
+        /// <summary>
+        /// 获取 <see cref="View"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
+        protected override async IAsyncEnumerable<View> GetViewsAsync(IDatabase database, RestrictionDictionary restrictionValues)
+        {
+            using var connection = database.CreateConnection() as OdbcConnection;
+            var restrictions = new[] { null, null, restrictionValues.GetValue(nameof(View.Name)) };
+            await connection!.TryOpenAsync();
+            var dtView = connection!.GetSchema("Views", restrictions);
+            foreach (DataRow row in dtView!.Rows)
+            {
+                yield return new View
+                {
+                    Catalog = row["TABLE_CAT"].ToString(),
+                    Schema = row["TABLE_SCHEM"].ToString(),
+                    Name = row["TABLE_NAME"].ToString(),
+                    Description = row["REMARKS"].ToString()
+                };
+            }
+        }
+
+        /// <summary>
+        /// 获取 <see cref="ViewColumn"/> 元数据序列。
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="restrictionValues"></param>
+        /// <returns></returns>
+        protected override async IAsyncEnumerable<ViewColumn> GetViewColumnsAsync(IDatabase database, RestrictionDictionary restrictionValues)
+        {
+            using var connection = database.CreateConnection() as OdbcConnection;
+            var restrictions = new[] { null, null, restrictionValues.GetValue(nameof(ViewColumn.ViewName)), restrictionValues.GetValue(nameof(ViewColumn.Name)) };
+            await connection!.TryOpenAsync();
+            var dtTables = !restrictionValues.ContainsKey(nameof(ViewColumn.ViewName)) ?
+                _cachedTables ??= connection.GetSchema("Views", new string[] { null, null, null }) : null;
+            var dtColumns = connection.GetSchema("Columns", restrictions);
+            foreach (DataRow row in dtColumns!.Rows)
+            {
+                if (dtTables != null && dtTables.Select($"TABLE_NAME = '{row["TABLE_NAME"]}'").Length == 0)
+                {
+                    continue;
+                }
+
+                yield return SetDataType(new ViewColumn
+                {
+                    Catalog = row["TABLE_CAT"].ToString(),
+                    Schema = row["TABLE_SCHEM"].ToString(),
+                    ViewName = row["TABLE_NAME"].ToString(),
+                    Name = row["COLUMN_NAME"].ToString(),
+                    Default = row["COLUMN_DEF"].ToString(),
+                    DataType = Enum.Parse(typeof(OdbcType), row["DATA_TYPE"].ToString()).ToString(),
+                    NumericPrecision = row["COLUMN_SIZE"] == DBNull.Value ? (int?)null : Convert.ToInt32(row["COLUMN_SIZE"]),
+                    NumericScale = row["DECIMAL_DIGITS"] == DBNull.Value ? (int?)null : Convert.ToInt32(row["DECIMAL_DIGITS"]),
+                    IsNullable = row["NULLABLE"] != DBNull.Value && Convert.ToBoolean(row["NULLABLE"]),
+                    Length = row["COLUMN_SIZE"] == DBNull.Value ? (long?)null : Convert.ToInt64(row["COLUMN_SIZE"]),
+                    Position = Convert.ToInt32(row["ORDINAL_POSITION"])
+                });
+            }
+        }
+
     }
 }
