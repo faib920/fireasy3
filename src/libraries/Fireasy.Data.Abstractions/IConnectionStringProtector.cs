@@ -27,5 +27,12 @@ namespace Fireasy.Data
         /// <param name="connectionString">连接字符串。</param>
         /// <returns></returns>
         ConnectionString Decrypt(ConnectionString connectionString);
+
+        /// <summary>
+        /// 检查是否被保护。
+        /// </summary>
+        /// <param name="param">参数或字符串。</param>
+        /// <returns></returns>
+        bool IsProtected(string param);
     }
 }
