@@ -16,20 +16,7 @@ namespace Fireasy.Common.Compiler
     /// </summary>
     public class DefaultCodeCompilerManager : ICodeCompilerManager
     {
-        private readonly Dictionary<string, Type> _languageMappers = new(new StringIgnoreCaseComparer());
-
-        private class StringIgnoreCaseComparer : IEqualityComparer<string>
-        {
-            public bool Equals(string x, string y)
-            {
-                return string.Compare(x, y, true) == 0;
-            }
-
-            public int GetHashCode(string obj)
-            {
-                return obj?.GetHashCode() ?? 0;
-            }
-        }
+        private readonly Dictionary<string, Type> _languageMappers = new(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// 初始化 <see cref="DefaultCodeCompilerManager"/> 类新实例。
