@@ -12,9 +12,9 @@ namespace Fireasy.Data.Tests
         {
         }
 
-        public override IServiceCollection RegisterServices(IServiceCollection services)
+        public override void Initialize(ProviderInitializeContext context)
         {
-            return base.RegisterServices(services);
+            base.Initialize(context);
         }
     }
 }

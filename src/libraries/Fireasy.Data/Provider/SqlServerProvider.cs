@@ -68,20 +68,17 @@ namespace Fireasy.Data.Provider
         }
 
         /// <summary>
-        /// 注册服务。
+        /// 初始化。
         /// </summary>
-        /// <param name="services"></param>
-        /// <returns></returns>
-        public override IServiceCollection RegisterServices(IServiceCollection services)
+        /// <param name="context">初始化上下文。</param>
+        public override void Initialize(ProviderInitializeContext context)
         {
-            services = base.RegisterServices(services);
-            services.TryAddSingleton<IGeneratorProvider, BaseSequenceGenerator>();
-            services.TryAddSingleton<ISyntaxProvider, SqlServerSyntax>();
-            services.TryAddSingleton<ISchemaProvider, SqlServerSchema>();
-            services.TryAddSingleton<IBatcherProvider, SqlServerBatcher>();
-            services.TryAddSingleton<IRecordWrapper, GeneralRecordWrapper>();
-
-            return services;
+            base.Initialize(context);
+            context.Services.TryAddSingleton<IGeneratorProvider, BaseSequenceGenerator>();
+            context.Services.TryAddSingleton<ISyntaxProvider, SqlServerSyntax>();
+            context.Services.TryAddSingleton<ISchemaProvider, SqlServerSchema>();
+            context.Services.TryAddSingleton<IBatcherProvider, SqlServerBatcher>();
+            context.Services.TryAddSingleton<IRecordWrapper, GeneralRecordWrapper>();
         }
     }
 }

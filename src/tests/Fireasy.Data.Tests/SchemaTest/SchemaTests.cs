@@ -96,6 +96,8 @@ namespace Fireasy.Data.Tests.SchemaTest
                 Console.WriteLine($"{item.Name}");
             }
 
+            var ss = await database.ExecuteEnumerableAsync("select * from customer limit 10");
+
             Assert.IsTrue(tables.Any());
         }
 

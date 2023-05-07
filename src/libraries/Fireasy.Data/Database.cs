@@ -746,24 +746,14 @@ namespace Fireasy.Data
 
             if (_connMaster != null)
             {
-                _connMaster.TryClose();
-
-                if (disposing)
-                {
-                    _connMaster.Dispose();
-                    _connMaster = null;
-                }
+                _connMaster.Dispose();
+                _connMaster = null;
             }
 
             if (_connSlave != null)
             {
-                _connSlave.TryClose();
-
-                if (disposing)
-                {
-                    _connSlave.Dispose();
-                    _connSlave = null;
-                }
+                _connSlave.Dispose();
+                _connSlave = null;
             }
 
             var sp = Provider.TryGetServiceProvider();
@@ -785,24 +775,14 @@ namespace Fireasy.Data
 
             if (_connMaster != null)
             {
-                await _connMaster.TryCloseAsync();
-
-                if (disposing)
-                {
-                    _connMaster.Dispose();
-                    _connMaster = null;
-                }
+                _connMaster.Dispose();
+                _connMaster = null;
             }
 
             if (_connSlave != null)
             {
-                await _connSlave.TryCloseAsync();
-
-                if (disposing)
-                {
-                    _connSlave.Dispose();
-                    _connSlave = null;
-                }
+                _connSlave.Dispose();
+                _connSlave = null;
             }
 
             var sp = Provider.TryGetServiceProvider();

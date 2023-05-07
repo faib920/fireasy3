@@ -57,8 +57,6 @@ namespace Fireasy.Data
                 throw new InvalidOperationException($"未查找到提供者 {instanceSetting.ProviderType}，如果是自定义提供者，请在 fireasy:dataProviders 里进行配置。");
             }
 
-            var _ = CreateServicePrivoder(provider);
-
             if (instanceSetting.Clusters.Count > 0)
             {
                 var distConns = GetDistributedConnections(instanceSetting);
@@ -85,8 +83,6 @@ namespace Fireasy.Data
             var provider = objActivator.CreateInstance(typeof(TProvider), _serviceProvider);
             if (provider is TProvider _provider)
             {
-                var _ = CreateServicePrivoder(_provider);
-
                 return CreateDatabase(connectionString, _provider);
             }
 
@@ -108,8 +104,6 @@ namespace Fireasy.Data
             var provider = providerManager.GetDefinedProvider(providerName);
             if (provider != null)
             {
-                var _ = CreateServicePrivoder(provider);
-
                 return CreateDatabase(connectionString, provider);
             }
 
@@ -134,6 +128,9 @@ namespace Fireasy.Data
         /// <returns></returns>
         protected virtual IDatabase CreateDatabase(List<DistributedConnectionString> distConns, IProvider provider)
         {
+            var master = distConns.First(s => s.Mode == DistributedMode.Master);
+            var _ = CreateServicePrivoder(master, provider);
+
             return new InterceptedDatabase(distConns, provider);
         }
 
@@ -143,23 +140,27 @@ namespace Fireasy.Data
         /// <param name="connectionString">连接字符串。</param>
         /// <param name="provider">提供者实例。</param>
         /// <returns></returns>
-        protected virtual IDatabase CreateDatabase(string connectionString, IProvider provider)
+        protected virtual IDatabase CreateDatabase(ConnectionString connectionString, IProvider provider)
         {
+            var _ = CreateServicePrivoder(connectionString, provider);
+
             return new InterceptedDatabase(connectionString, provider);
         }
 
         /// <summary>
         /// 创建一个 <see cref="IServiceProvider"/> 实例。
         /// </summary>
+        /// <param name="connectionString"></param>
         /// <param name="provider"></param>
         /// <returns></returns>
-        protected virtual IServiceProvider CreateServicePrivoder(IProvider provider)
+        protected virtual IServiceProvider CreateServicePrivoder(ConnectionString connectionString, IProvider provider)
         {
             IServiceCollection services = new ServiceCollection();
             services = RegisterInternalServices(services).AddSingleton<IProvider>(provider);
-            var servicePrivider = provider.RegisterServices(services).BuildServiceProvider();
+            provider.Initialize(new ProviderInitializeContext(services, connectionString));
+            var serviceProvider = services.BuildServiceProvider();
             var scope = _serviceProvider.CreateScope();
-            var internalSp = new InternalServiceProvider(scope, servicePrivider);
+            var internalSp = new InternalServiceProvider(scope, serviceProvider);
 
             provider.TrySetServiceProvider(internalSp);
             return internalSp;

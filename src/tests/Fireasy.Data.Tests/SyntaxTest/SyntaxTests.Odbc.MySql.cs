@@ -1,8 +1,8 @@
-﻿namespace Fireasy.Data.Tests.SchemaTest
+﻿namespace Fireasy.Data.Tests.SyntaxTest
 {
     [TestClass]
-    [TestCategory("SchemaTests")]
-    public class SchemaTests_Odbc_MySql : SchemaTests<OdbcProvider>
+    [TestCategory("SyntaxTests")]
+    public class SyntaxTests_Odbc_MySql : SyntaxTests<OdbcProvider>
     {
         protected override string ConnectionString => Constants.Odbc_MySql_ConnectionString;
 

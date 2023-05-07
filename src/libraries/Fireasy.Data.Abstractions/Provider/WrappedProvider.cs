@@ -46,7 +46,7 @@ namespace Fireasy.Data.Provider
 
         string? IFeaturedProvider.GetFeature(ConnectionString connectionString) => _provider is IFeaturedProvider featureProvider ? featureProvider.GetFeature(connectionString) : null;
 
-        IServiceCollection IProvider.RegisterServices(IServiceCollection services) => _provider.RegisterServices(services);
+        void IProvider.Initialize(ProviderInitializeContext context) => _provider.Initialize(context);
 
         TService IProvider.GetService<TService>() => _provider.GetService<TService>();
 

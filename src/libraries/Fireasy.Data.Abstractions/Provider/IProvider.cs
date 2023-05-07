@@ -42,11 +42,10 @@ namespace Fireasy.Data.Provider
         void UpdateConnectionString(ConnectionString connectionString, ConnectionParameter parameter);
 
         /// <summary>
-        /// 注册服务。
+        /// 初始化。
         /// </summary>
-        /// <param name="services"></param>
-        /// <returns></returns>
-        IServiceCollection RegisterServices(IServiceCollection services);
+        /// <param name="context">初始化上下文。</param>
+        void Initialize(ProviderInitializeContext context);
 
         /// <summary>
         /// 获取服务。

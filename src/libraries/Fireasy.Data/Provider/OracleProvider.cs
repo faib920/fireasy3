@@ -82,19 +82,17 @@ namespace Fireasy.Data.Provider
         }
 
         /// <summary>
-        /// 注册服务。
+        /// 初始化。
         /// </summary>
-        /// <param name="services"></param>
-        public override IServiceCollection RegisterServices(IServiceCollection services)
+        /// <param name="context">初始化上下文。</param>
+        public override void Initialize(ProviderInitializeContext context)
         {
-            services = base.RegisterServices(services);
-            services.TryAddSingleton<IGeneratorProvider, OracleSequenceGenerator>();
-            services.TryAddSingleton<ISyntaxProvider, OracleSyntax>();
-            services.TryAddSingleton<ISchemaProvider, OracleSchema>();
-            services.TryAddSingleton<IBatcherProvider, OracleBatcher>();
-            services.TryAddSingleton<IRecordWrapper, OracleRecordWrapper>();
-
-            return services;
+            base.Initialize(context);
+            context.Services.TryAddSingleton<IGeneratorProvider, OracleSequenceGenerator>();
+            context.Services.TryAddSingleton<ISyntaxProvider, OracleSyntax>();
+            context.Services.TryAddSingleton<ISchemaProvider, OracleSchema>();
+            context.Services.TryAddSingleton<IBatcherProvider, OracleBatcher>();
+            context.Services.TryAddSingleton<IRecordWrapper, OracleRecordWrapper>();
         }
     }
 }

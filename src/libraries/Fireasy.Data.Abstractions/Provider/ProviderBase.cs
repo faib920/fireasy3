@@ -79,11 +79,13 @@ namespace Fireasy.Data.Provider
         }
 
         /// <summary>
-        /// 注册服务。
+        /// 初始化。
         /// </summary>
-        /// <param name="services"></param>
-        /// <returns></returns>
-        public virtual IServiceCollection RegisterServices(IServiceCollection services) => AddFromCustomizer(services);
+        /// <param name="context">初始化上下文。</param>
+        public virtual void Initialize(ProviderInitializeContext context)
+        {
+            AddFromCustomizer(context.Services);
+        }
 
         /// <summary>
         /// 获取服务。
