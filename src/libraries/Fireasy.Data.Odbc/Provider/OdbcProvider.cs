@@ -39,20 +39,13 @@ namespace Fireasy.Data.Provider
         /// <returns>连接字符串参数对象。</returns>
         public override ConnectionParameter GetConnectionParameter(ConnectionString connectionString)
         {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// 注册服务。
-        /// </summary>
-        /// <param name="services"></param>
-        /// <returns></returns>
-        public override IServiceCollection RegisterServices(IServiceCollection services)
-        {
-            services = base.RegisterServices(services);
-            services.TryAddSingleton<ISchemaProvider, OdbcSchema>();
-            services.TryAddSingleton<IRecordWrapper, GeneralRecordWrapper>();
-            return services;
+            return new ConnectionParameter
+            {
+                Server = connectionString.Properties.TryGetValue("data source", "server"),
+                Database = connectionString.Properties.TryGetValue("database"),
+                UserId = connectionString.Properties.TryGetValue("uid", "userid"),
+                Password = connectionString.Properties.TryGetValue("pwd")
+            };
         }
 
         /// <summary>
@@ -62,7 +55,55 @@ namespace Fireasy.Data.Provider
         /// <param name="parameter"></param>
         public override void UpdateConnectionString(ConnectionString connectionString, ConnectionParameter parameter)
         {
-            throw new NotImplementedException();
+            connectionString.Properties.TrySetValue(parameter.Server, "data source", "server")
+                .TrySetValue(parameter.Database, "database")
+                .TrySetValue(parameter.UserId, "uid", "user id")
+                .TrySetValue(parameter.Password, "pwd")
+                .Update();
+        }
+
+        /// <summary>
+        /// 初始化。
+        /// </summary>
+        /// <param name="context">初始化上下文。</param>
+        public override void Initialize(ProviderInitializeContext context)
+        {
+            base.Initialize(context);
+
+            var driver = context.ConnectionString.Properties.TryGetValue("driver");
+            if (driver?.StartsWith("MySQL ODBC") == true)
+            {
+                context.Services.TryAddSingleton<ISyntaxProvider, MySqlSyntax>();
+                context.Services.TryAddSingleton<ISchemaProvider, MySqlSchema>();
+            }
+            else if (Regex.IsMatch(driver, @"DM(\d+) ODBC DRIVER"))
+            {
+                context.Services.TryAddSingleton<ISyntaxProvider, DamengSyntax>();
+                context.Services.TryAddSingleton<ISchemaProvider, DamengSchema>();
+            }
+            else if (driver == "SQL Server")
+            {
+                context.Services.TryAddSingleton<ISyntaxProvider, SqlServerSyntax>();
+                context.Services.TryAddSingleton<ISchemaProvider, SqlServerSchema>();
+            }
+            else if (driver?.StartsWith("Oracle") == true)
+            {
+                context.Services.TryAddSingleton<ISyntaxProvider, OracleSyntax>();
+                context.Services.TryAddSingleton<ISchemaProvider, OracleSchema>();
+            }
+            else if (driver?.StartsWith("Kingbase") == true)
+            {
+                context.Services.TryAddSingleton<ISyntaxProvider, KingbaseSyntax>();
+                context.Services.TryAddSingleton<ISchemaProvider, KingbaseSchema>();
+            }
+            else if (driver?.StartsWith("OSCAR ODBC") == true)
+            {
+                context.Services.TryAddSingleton<ISyntaxProvider, ShenTongSyntax>();
+                context.Services.TryAddSingleton<ISchemaProvider, ShenTongSchema>();
+            }
+
+            context.Services.TryAddSingleton<ISchemaProvider, OdbcSchema>();
+            context.Services.TryAddSingleton<IRecordWrapper, GeneralRecordWrapper>();
         }
 
         /// <summary>

@@ -43,20 +43,6 @@ namespace Fireasy.Data.Provider
         }
 
         /// <summary>
-        /// 注册服务。
-        /// </summary>
-        /// <param name="services"></param>
-        /// <returns></returns>
-        public override IServiceCollection RegisterServices(IServiceCollection services)
-        {
-            services = base.RegisterServices(services);
-            services.TryAddSingleton<ISyntaxProvider, OleDbSyntax>();
-            services.TryAddSingleton<ISchemaProvider, OleDbSchema>();
-            services.TryAddSingleton<IRecordWrapper, GeneralRecordWrapper>();
-            return services;
-        }
-
-        /// <summary>
         /// 使用参数更新指定的连接。
         /// </summary>
         /// <param name="connectionString">连接字符串对象。</param>
@@ -64,6 +50,18 @@ namespace Fireasy.Data.Provider
         public override void UpdateConnectionString(ConnectionString connectionString, ConnectionParameter parameter)
         {
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 初始化。
+        /// </summary>
+        /// <param name="context">初始化上下文。</param>
+        public override void Initialize(ProviderInitializeContext context)
+        {
+            base.Initialize(context);
+            context.Services.TryAddSingleton<ISyntaxProvider, OleDbSyntax>();
+            context.Services.TryAddSingleton<ISchemaProvider, OleDbSchema>();
+            context.Services.TryAddSingleton<IRecordWrapper, GeneralRecordWrapper>();
         }
 
         /// <summary>
