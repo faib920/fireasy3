@@ -975,9 +975,9 @@ namespace Fireasy.Windows.Forms
                 {
                     newVal = 0;
                 }
-                else if (newVal > _vbar.Maximum - _vbar.LargeChange + 1)
+                else if (newVal > _vbar.Maximum - _vbar.LargeChange)
                 {
-                    newVal = _vbar.Maximum - _vbar.LargeChange + 1;
+                    newVal = _vbar.Maximum - _vbar.LargeChange;
                 }
 
                 _vbar.Value = Math.Max(0, newVal);
@@ -1109,7 +1109,7 @@ namespace Fireasy.Windows.Forms
             }
             else if (y >= _bound.ItemBound.Height - itemHeight)
             {
-                _vbar.Value = Math.Max(0, Math.Min((vitem.Index - (_bound.ItemBound.Height + (_showHeader ? HeaderHeight : 0)) / itemHeight) * itemHeight, _vbar.Maximum));
+                _vbar.Value = Math.Max(0, Math.Min((vitem.Index + 1 - (_bound.ItemBound.Height + (_showHeader ? HeaderHeight : 0)) / itemHeight) * itemHeight, _vbar.Maximum));
             }
         }
 
