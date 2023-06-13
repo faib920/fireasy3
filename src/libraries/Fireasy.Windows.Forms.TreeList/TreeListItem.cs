@@ -56,7 +56,7 @@ namespace Fireasy.Windows.Forms
         public object Tag { get; set; }
 
         [Browsable(false)]
-        public object KeyValue { get; set; }
+        public object? KeyValue { get; set; }
 
         /// <summary>
         /// 获取或设置显示的文本。
@@ -383,6 +383,9 @@ namespace Fireasy.Windows.Forms
         [Browsable(false)]
         public TreeList TreeList { get; private set; }
 
+        /// <summary>
+        /// 获取当前项的父项。
+        /// </summary>
         public TreeListItem Parent { get; internal set; }
 
         internal TreeListItemCollection Owner { get; set; }
@@ -392,14 +395,32 @@ namespace Fireasy.Windows.Forms
         /// </summary>
         internal bool IsDemandLoad { get; set; }
 
+        /// <summary>
+        /// 获取数据行的索引。
+        /// </summary>
         internal int DataIndex { get; set; }
 
+        /// <summary>
+        /// 获取或设置当前项在集合中的索引。
+        /// </summary>
         [Browsable(false)]
         public int Index { get; set; }
 
+        /// <summary>
+        /// 获取绑定的数据项。
+        /// </summary>
+        [Browsable(false)]
+        public object? DataItem { get; internal set; }
+
+        /// <summary>
+        /// 绑定数据行数据。
+        /// </summary>
+        /// <param name="dataItem"></param>
         public void Bind(object dataItem)
         {
-
+            var initialize = DataItem != dataItem;
+            DataItem = dataItem;
+            TreeList.BindListItem(this, initialize);
         }
 
         public override string ToString()
@@ -407,6 +428,9 @@ namespace Fireasy.Windows.Forms
             return Text;
         }
 
+        /// <summary>
+        /// 使当前项在视图中可见。
+        /// </summary>
         public void EnsureVisible()
         {
             if (TreeList != null)

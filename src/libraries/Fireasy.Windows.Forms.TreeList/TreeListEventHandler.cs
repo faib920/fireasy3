@@ -16,6 +16,8 @@ namespace Fireasy.Windows.Forms
 
     public delegate void TreeListCellDataBoundEventHandler(object sender, TreeListCellDataBoundEventArgs e);
 
+    public delegate void TreeListCellDataUpdatedEventHandler(object sender, TreeListCellDataUpdatedEventArgs e);
+
     public delegate void TreeListItemClickEventHandler(object sender, TreeListItemEventArgs e);
 
     public delegate void TreeListItemDoubleClickEventHandler(object sender, TreeListItemEventArgs e);
@@ -128,12 +130,28 @@ namespace Fireasy.Windows.Forms
         /// <summary>
         /// 获取绑定到行上的对象。
         /// </summary>
-        public object ItemData { get; internal set; }
+        public object? ItemData { get; internal set; }
 
         /// <summary>
         /// 获取绑定到单元格的数据。
         /// </summary>
-        public object Value { get; internal set; }
+        public object? Value { get; internal set; }
+    }
+
+    /// <summary>
+    /// 单元格数据更新的事件参数。
+    /// </summary>
+    public class TreeListCellDataUpdatedEventArgs : TreeListCellEventArgs
+    {
+        /// <summary>
+        /// 获取绑定到行上的对象。
+        /// </summary>
+        public object? ItemData { get; internal set; }
+
+        /// <summary>
+        /// 获取绑定到单元格的数据。
+        /// </summary>
+        public object? Value { get; internal set; }
     }
 
     /// <summary>
@@ -166,12 +184,12 @@ namespace Fireasy.Windows.Forms
         /// <summary>
         /// 获取原来的值。
         /// </summary>
-        public object OldValue { get; internal set; }
+        public object? OldValue { get; internal set; }
 
         /// <summary>
         /// 获取或设置新值。
         /// </summary>
-        public object NewValue { get; set; }
+        public object? NewValue { get; set; }
 
         /// <summary>
         /// 获取或设置是否取消更新。

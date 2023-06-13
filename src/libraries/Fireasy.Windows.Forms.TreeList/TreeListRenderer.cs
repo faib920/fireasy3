@@ -220,13 +220,18 @@ namespace Fireasy.Windows.Forms
 
         protected virtual TreeListDecorationRenderer CreateDecorationRenderer(TreeListCell cell)
         {
-            if (cell.Column.Index == 0)
+            if (cell.Column.DataType == TreeListCellDataType.Boolean)
+            {
+                if (cell.Column.Index == 0 && (cell.Item.TreeList.ShowPlusMinus || cell.Item.TreeList.ShowPlusMinusLines))
+                {
+                    return new TreeListIdentityDecorationRenderer();
+                }
+
+                return new TreeListBooleanDecorationRenderer();
+            }
+            else if (cell.Column.Index == 0)
             {
                 return new TreeListIdentityDecorationRenderer();
-            }
-            else if (cell.Column.DataType == TreeListCellDataType.Boolean)
-            {
-                return new TreeListBooleanDecorationRenderer();
             }
             else
             {

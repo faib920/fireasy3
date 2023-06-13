@@ -16,7 +16,7 @@ namespace Fireasy.Windows.Forms
     /// </summary>
     public class TreeListCell
     {
-        private object _value;
+        private object? _value;
         private string _nullText;
         private BoxType _boxType;
         private bool _checked;
@@ -38,11 +38,16 @@ namespace Fireasy.Windows.Forms
             Value = value;
         }
 
+        internal TreeListCell(TreeListColumn column)
+        {
+            Column = column;
+        }
+
         /// <summary>
         /// 获取或设置单元格的值。
         /// </summary>
         [DefaultValue(null)]
-        public object Value
+        public object? Value
         {
             get { return _value; }
             set
@@ -110,7 +115,7 @@ namespace Fireasy.Windows.Forms
         /// <summary>
         /// 获取或设置单元格是否已验证。
         /// </summary>
-        public bool IsValid { get; private set; }
+        public bool IsValid { get; private set; } = true;
 
         /// <summary>
         /// 获取单元格对应的列。
@@ -207,18 +212,14 @@ namespace Fireasy.Windows.Forms
 
         private void ValidateCellValue()
         {
-            if (Column != null && Column.Validator != null)
+            if (Column != null && Column.Validatable)
             {
-                IsValid = Column.Validator(Value);
-            }
-            else
-            {
-                IsValid = true;
-            }
+                IsValid = Column.Validator?.Invoke(Value) ?? true;
 
-            if (Item != null && Item.TreeList != null)
-            {
-                Item.TreeList.UpdateValidateFlags(this);
+                if (Item != null && Item.TreeList != null)
+                {
+                    Item.TreeList.UpdateValidateFlags(this);
+                }
             }
         }
     }

@@ -48,6 +48,7 @@ namespace Fireasy.Windows.Forms
         //检测列头调整宽度是否超出右边框的距离
         private const int RIGHT_EDGE = 4;
 
+        private int _groupHeight = 26;
         private int _itemHeight = 26;
         private int _headerHeight = 26;
         private int _footerHeight = 30;
@@ -196,6 +197,25 @@ namespace Fireasy.Windows.Forms
         }
 
         /// <summary>
+        /// 获取或设置组的高度。
+        /// </summary>
+        [Category("Appearance")]
+        [DefaultValue(26)]
+        [Description("获取或设置组的高度。")]
+        public int GroupHeight
+        {
+            get { return _groupHeight; }
+            set
+            {
+                if (_groupHeight != value)
+                {
+                    _groupHeight = value;
+                    Invalidate();
+                }
+            }
+        }
+
+        /// <summary>
         /// 获取或设置行的高度。
         /// </summary>
         [Category("Appearance")]
@@ -238,27 +258,6 @@ namespace Fireasy.Windows.Forms
         /// </summary>
         [Browsable(false)]
         public int RowNumberIndex { get; set; }
-
-        /*
-        /// <summary>
-        /// 获取或设置组的高度。
-        /// </summary>
-        [Category("Appearance")]
-        [DefaultValue(26)]
-        [Description("获取或设置组的高度。")]
-        public int GroupHeight
-        {
-            get { return groupHeight; }
-            set
-            {
-                if (groupHeight != value)
-                {
-                    groupHeight = value;
-                    Invalidate();
-                }
-            }
-        }
-         */
 
         /// <summary>
         /// 获取或设置列头的高度。
@@ -764,6 +763,11 @@ namespace Fireasy.Windows.Forms
         public bool AllowDragItem { get; set; }
 
         /// <summary>
+        /// 获取或设置是否在 AfterCellUpdated 事件或设置 <see cref="TreeListCell"/> 的 Value 值后更新绑定的数据对象。
+        /// </summary>
+        public bool AllowUpdateDataItem { get; set; }
+
+        /// <summary>
         /// 获取数据是否验证成功。
         /// </summary>
         [Browsable(false)]
@@ -1197,6 +1201,8 @@ namespace Fireasy.Windows.Forms
         #region 内部方法
         internal void SelectItem(TreeListItem item, bool selected, bool clearSelected = true)
         {
+            HideEditor();
+
             if (clearSelected)
             {
                 for (var i = SelectedItems.Count - 1; i >= 0; i--)
@@ -1209,7 +1215,6 @@ namespace Fireasy.Windows.Forms
             }
 
             item.SetSelected(selected);
-            HideEditor();
 
             if (selected)
             {
@@ -1589,9 +1594,10 @@ namespace Fireasy.Windows.Forms
                 SelectedItems.InternalClear();
             }
 
-            RowNumberWidth = Items.Count > 999 ? 46 : (Items.Count > 99 ? 38 : 30);
-
             _virMgr.Recalc();
+
+            RowNumberWidth = ((int)Math.Floor(Math.Log10(_virMgr.Items.Count)) - 1) * 8 + 30;
+
             SetScrollBars();
             Invalidate();
         }
@@ -1876,11 +1882,18 @@ namespace Fireasy.Windows.Forms
             _tip.Hide();
         }
 
+        /// <summary>
+        /// 隐藏编辑控件。
+        /// </summary>
         private void HideEditor()
         {
             _editor.AcceptEdit();
         }
 
+        /// <summary>
+        /// 使用 <see cref="TreeListCell"/> 打开编辑模式。
+        /// </summary>
+        /// <param name="cell"></param>
         public void BeginEdit(TreeListCell cell)
         {
             var rect = GetCellRectangle(cell);
@@ -1903,6 +1916,9 @@ namespace Fireasy.Windows.Forms
             _editor.BeginEdit(cell, rect);
         }
 
+        /// <summary>
+        /// 结束编辑模式。
+        /// </summary>
         public void EndEdit()
         {
             _editor.AcceptEdit();
@@ -1980,6 +1996,44 @@ namespace Fireasy.Windows.Forms
         {
             _invalidateCells.Clear();
         }
+
+        internal void RemoveColumn(TreeListColumn column)
+        {
+            _bindingCache = null;
+
+            foreach (var vitem in _virMgr.Items)
+            {
+                if (vitem.Item is TreeListItem item)
+                {
+                    for (var i = item.Cells.Count - 1; i > 0; i--)
+                    {
+                        if (item.Cells[i].Column == column)
+                        {
+                            item.Cells.RemoveAt(i);
+                        }
+                    }
+                }
+            }
+
+            SetScrollBars();
+        }
+
+        internal void AddColumn(int index, TreeListColumn column)
+        {
+            _bindingCache = null;
+
+            foreach (var vitem in _virMgr.Items)
+            {
+                if (vitem.Item is TreeListItem item)
+                {
+                    item.Cells.Insert(index, new TreeListCell(column));
+                    BindListItem(item, false);
+                }
+            }
+
+            SetScrollBars();
+        }
+
         #endregion
     }
 }

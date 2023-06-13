@@ -33,7 +33,7 @@ namespace Fireasy.Windows.Forms
         /// 设置编辑器的值。
         /// </summary>
         /// <param name="value"></param>
-        void SetValue(object value);
+        void SetValue(object? value);
 
         /// <summary>
         /// 获取编辑器的值。
@@ -46,5 +46,10 @@ namespace Fireasy.Windows.Forms
         /// </summary>
         /// <returns></returns>
         bool IsValid();
+
+        /// <summary>
+        /// 获取或设置是否允许为空。
+        /// </summary>
+        bool AllowNullable { get; set; }
     }
 }

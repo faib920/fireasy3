@@ -1,4 +1,6 @@
 ﻿using Fireasy.Common;
+using Fireasy.Common.Extensions;
+using System.Linq;
 // -----------------------------------------------------------------------
 // <copyright company="Fireasy"
 //      email="faib920@126.com"
@@ -57,6 +59,15 @@ namespace Fireasy.Windows.Forms
             var control = (Control)_editor;
             _treelist.Controls.Add(control);
 
+            if (cell.Item.DataItem != null)
+            {
+                var definition = _treelist.GetBindingDefinition(cell.Item.DataItem);
+                if (definition?.Properties.TryGetValue(cell.Column.DataKey, out var property) == true && !property.PropertyType.IsNullableType())
+                {
+                    _editor.AllowNullable = false;
+                }
+            }
+
             IsEditing = true;
             _editor.Controller = this;
             _editor.SetValue(cell.Value);
@@ -94,12 +105,17 @@ namespace Fireasy.Windows.Forms
             if (!_treelist.RaiseBeforeCellUpdatingEvent(Cell, Cell.Value, ref newValue))
             {
                 Cell.Value = newValue;
+
                 if (!_treelist.RaiseAfterCellUpdatedEvent(Cell, Cell.Value, newValue, enterKey))
                 {
                     enterKey = false;
                 }
 
                 RemoveEditor();
+
+                _treelist.UpdateListCellValue(Cell, newValue);
+                _treelist.InvalidateItem(Cell.Item);
+
                 RaiseEditedEvent(enterKey);
             }
 

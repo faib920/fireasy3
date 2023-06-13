@@ -589,7 +589,7 @@ namespace Fireasy.Windows.Forms
 
                 HideEditor();
 
-                if (Sortable)
+                if (Sortable && column.Sortable)
                 {
                     if (_sortedColumn != column)
                     {

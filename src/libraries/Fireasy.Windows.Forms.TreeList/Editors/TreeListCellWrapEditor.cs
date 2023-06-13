@@ -74,6 +74,11 @@ namespace Fireasy.Windows.Forms
             return true;
         }
 
+        /// <summary>
+        /// 获取或设置是否允许为空。
+        /// </summary>
+        public virtual bool AllowNullable { get; set; }
+
         protected virtual void EditorKeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)

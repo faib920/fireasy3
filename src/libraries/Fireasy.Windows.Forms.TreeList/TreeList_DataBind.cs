@@ -5,8 +5,10 @@
 //   (c) Copyright Fireasy. All rights reserved.
 // </copyright>
 // -----------------------------------------------------------------------
+using Fireasy.Common.Extensions;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Linq;
 
@@ -15,6 +17,7 @@ namespace Fireasy.Windows.Forms
     public partial class TreeList
     {
         private object _dataSource;
+        private Dictionary<Type, ObjectBindingDefinition>? _bindingCache = null;
 
         /// <summary>
         /// 将一个数据对象绑定到 <see cref="TreeList"/>
@@ -28,6 +31,7 @@ namespace Fireasy.Windows.Forms
             }
 
             _dataSource = dataSource;
+            _bindingCache = null;
 
             BeginUpdate();
 
@@ -138,33 +142,80 @@ namespace Fireasy.Windows.Forms
                 var definition = GetBindingDefinition(item);
 
                 var listitem = new TreeListItem();
+                listitem.DataItem = item;
                 Items.Add(listitem);
 
-                BindListItem(listitem, item, definition, index);
+                BindListItem(listitem, definition, index, true);
 
                 RaiseItemDataBoundEvent(listitem, item, index++);
             }
         }
 
-        private void BindListItem(TreeListItem listitem, object item, ObjectBindingDefinition definition, int index)
+        internal void BindListItem(TreeListItem listitem, bool initialize)
+        {
+            if (listitem.DataItem == null)
+            {
+                return;
+            }
+
+            var definition = GetBindingDefinition(listitem.DataItem);
+            BindListItem(listitem, definition, -1, initialize);
+        }
+
+        internal void UpdateListCellValue(TreeListCell cell, object? value)
+        {
+            if (!AllowUpdateDataItem)
+            {
+                return;
+            }
+
+            if (cell.Item.DataItem == null || string.IsNullOrEmpty(cell.Column.DataKey))
+            {
+                return;
+            }
+
+            var definition = GetBindingDefinition(cell.Item.DataItem);
+            if (definition.Properties.TryGetValue(cell.Column.DataKey, out var property) && property != null)
+            {
+                property.SetValue(cell.Item.DataItem, value.To(property.PropertyType));
+
+                RaiseCellDataUpdatedEvent(cell, cell.Item.DataItem, value);
+            }
+        }
+
+        private void BindListItem(TreeListItem listitem, ObjectBindingDefinition definition, int index, bool initialize)
         {
             if (definition.PrimaryProperty != null)
             {
-                listitem.KeyValue = definition.PrimaryProperty.GetValue(item);
+                listitem.KeyValue = definition.PrimaryProperty.GetValue(listitem.DataItem);
             }
 
-            var p = 0;
+            if (initialize && listitem.DataItem is INotifyPropertyChanged npc)
+            {
+                npc.PropertyChanged += (o, e) =>
+                {
+                    if (definition.Properties.TryGetValue(e.PropertyName, out var property))
+                    {
+                        var value = property.GetValue(listitem.DataItem);
+                        listitem.Cells[property.Name].Value = value;
+                        RaiseCellDataUpdatedEvent(listitem.Cells[property.Name], listitem.DataItem, value);
+                    }
+                };
+            }
+
             foreach (var property in definition.Properties)
             {
-                if (property != null)
+                if (property.Value == null)
                 {
-                    var value = property.GetValue(item);
-                    listitem.Cells[p].Value = value;
-
-                    RaiseCellDataBoundEvent(listitem.Cells[p], item, value);
+                    listitem.Cells[property.Key].Value = null;
+                    continue;
                 }
-
-                p++;
+                else
+                {
+                    var value = property.Value.GetValue(listitem.DataItem);
+                    listitem.Cells[property.Key].Value = value;
+                    RaiseCellDataBoundEvent(listitem.Cells[property.Key], listitem.DataItem!, value);
+                }
             }
         }
 
@@ -173,35 +224,47 @@ namespace Fireasy.Windows.Forms
         /// </summary>
         /// <param name="element">序列中的元素。</param>
         /// <returns></returns>
-        private ObjectBindingDefinition GetBindingDefinition(object element)
+        internal ObjectBindingDefinition GetBindingDefinition(object element)
         {
-            var binding = new List<PropertyDescriptor>();
-            var properties = new List<PropertyDescriptor>();
-
-            foreach (PropertyDescriptor pd in TypeDescriptor.GetProperties(element))
+            if (_bindingCache == null)
             {
-                properties.Add(pd);
+                _bindingCache = new Dictionary<Type, ObjectBindingDefinition>();
             }
 
-            var primary = FindProperty(properties, KeyField);
-
-            foreach (var column in Columns)
+            if (!_bindingCache.TryGetValue(element.GetType(), out var definition))
             {
-                binding.Add(FindProperty(properties, column.DataKey));
+                var binding = new Dictionary<string, PropertyDescriptor>();
+                var properties = new List<PropertyDescriptor>();
+
+                foreach (PropertyDescriptor pd in TypeDescriptor.GetProperties(element))
+                {
+                    properties.Add(pd);
+                }
+
+                var primary = FindProperty(properties, KeyField);
+
+                foreach (var column in Columns.Where(s => !string.IsNullOrEmpty(s.DataKey)))
+                {
+                    binding.Add(column.DataKey, FindProperty(properties, column.DataKey));
+                }
+
+                definition = new ObjectBindingDefinition(primary, binding);
+
+                _bindingCache.Add(element.GetType(), definition);
             }
 
-            return new ObjectBindingDefinition(primary, binding);
+            return definition;
         }
 
         private PropertyDescriptor FindProperty(List<PropertyDescriptor> properties, string name)
         {
             return string.IsNullOrEmpty(name) ? null :
-                properties.Find(s => s.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
+                properties.Find(s => s.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
         }
 
-        private class ObjectBindingDefinition
+        internal class ObjectBindingDefinition
         {
-            public ObjectBindingDefinition(PropertyDescriptor primary, IList<PropertyDescriptor> properties)
+            public ObjectBindingDefinition(PropertyDescriptor primary, Dictionary<string, PropertyDescriptor> properties)
             {
                 PrimaryProperty = primary;
                 Properties = properties;
@@ -209,7 +272,7 @@ namespace Fireasy.Windows.Forms
 
             public PropertyDescriptor PrimaryProperty { get; set; }
 
-            public IList<PropertyDescriptor> Properties { get; set; }
+            public Dictionary<string, PropertyDescriptor> Properties { get; set; }
         }
     }
 }

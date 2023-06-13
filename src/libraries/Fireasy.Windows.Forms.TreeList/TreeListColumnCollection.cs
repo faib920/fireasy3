@@ -81,12 +81,15 @@ namespace Fireasy.Windows.Forms
             if (_treelist != null)
             {
                 column.Update(_treelist);
+                _treelist.AddColumn(index, column);
                 _treelist.Invalidate();
             }
         }
 
         protected override void RemoveItem(int index)
         {
+            _treelist.RemoveColumn(Items[index]);
+
             base.RemoveItem(index);
 
             for (var i = 0; i < Items.Count; i++)

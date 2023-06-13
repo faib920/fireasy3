@@ -17,7 +17,7 @@ namespace Fireasy.Windows.Forms
         /// 初始化 <see cref="TreeListIntegerEditor"/> 类的新实例。
         /// </summary>
         public TreeListIntegerEditor()
-            : base(new IntegerTextBox())
+            : base(new IntegerTextBox { AllowNullable = true })
         {
         }
 
@@ -27,7 +27,7 @@ namespace Fireasy.Windows.Forms
         /// <param name="value"></param>
         public override void SetValue(object value)
         {
-            ((IntegerTextBox)Inner).Int = value == null ? 0 : Convert.ToInt32(value);
+            ((IntegerTextBox)Inner).Int = value == null ? (int?)null : Convert.ToInt32(value);
         }
 
         /// <summary>
@@ -46,6 +46,15 @@ namespace Fireasy.Windows.Forms
         public override bool IsValid()
         {
             return ((IntegerTextBox)Inner).IsValid();
+        }
+
+        /// <summary>
+        /// 获取或设置是否允许为空。
+        /// </summary>
+        public override bool AllowNullable
+        {
+            get { return ((IntegerTextBox)Inner).AllowNullable; }
+            set { ((IntegerTextBox)Inner).AllowNullable = value; }
         }
 
         /// <summary>

@@ -13,6 +13,7 @@ namespace Fireasy.Windows.Forms
         private readonly VirtualTreeListItemCollection _virtualList = new VirtualTreeListItemCollection();
         private readonly TreeList _treeList;
         private int _rowNumberIndex;
+        private int _y;
 
         public VirtualItemManager(TreeList treeList)
         {
@@ -29,6 +30,7 @@ namespace Fireasy.Windows.Forms
 
         public void Recalc()
         {
+            _y = 0;
             _rowNumberIndex = 0;
             _virtualList.Clear();
             if (_treeList.Groups.Count == 0)
@@ -39,9 +41,11 @@ namespace Fireasy.Windows.Forms
             {
                 foreach (var g in _treeList.Groups)
                 {
-
                     var vitem = new VirtualTreeListItem(g, _virtualList.Count);
+                    vitem.Bounds = new Rectangle(0, _y, 0, _y + _treeList.GroupHeight);
                     _virtualList.Add(vitem);
+
+                    _y += _treeList.GroupHeight;
 
                     if (g.Expended)
                     {
@@ -56,8 +60,16 @@ namespace Fireasy.Windows.Forms
             for (var i = 0; i < items.Count; i++)
             {
                 var vitem = new VirtualTreeListItem(items[i], _virtualList.Count);
+                vitem.Bounds = new Rectangle(0, _y, 0, _y + _treeList.ItemHeight);
                 items[i].DataIndex = (++_rowNumberIndex);
                 _virtualList.Add(vitem);
+
+                _y += _treeList.ItemHeight;
+
+                if (_treeList.ShowGridLines)
+                {
+                    _y += 1;
+                }
 
                 if (items[i].Selected)
                 {

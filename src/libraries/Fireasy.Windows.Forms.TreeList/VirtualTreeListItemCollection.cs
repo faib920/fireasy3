@@ -40,6 +40,8 @@ namespace Fireasy.Windows.Forms
         internal int Index { get; set; }
 
         internal ItemType ItemType { get; private set; }
+
+        internal Rectangle Bounds { get; set; }
     }
 
     internal enum ItemType

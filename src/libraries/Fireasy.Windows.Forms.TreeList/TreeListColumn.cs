@@ -137,13 +137,19 @@ namespace Fireasy.Windows.Forms
         /// 获取或设置格式化器。
         /// </summary>
         [Browsable(false)]
-        public Func<object, string> Formatter { get; set; }
+        public Func<object?, string> Formatter { get; set; }
 
         /// <summary>
         /// 获取或设置验证器。
         /// </summary>
         [Browsable(false)]
-        public Func<object, bool> Validator { get; set; }
+        public Func<object?, bool> Validator { get; set; }
+
+        /// <summary>
+        /// 获取或设置是否需要数据验证。
+        /// </summary>
+        [DefaultValue(true)]
+        public bool Validatable { get; set; } = true;
 
         /// <summary>
         /// 获取或设置附加的数据对象。

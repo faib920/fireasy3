@@ -27,10 +27,9 @@ namespace Fireasy.Windows.Forms
         /// <param name="rect">编辑器放置的范围。</param>
         public override void Show(Rectangle rect)
         {
-            base.Show(rect);
-
             var checkbox = Inner as CheckBox;
             checkbox.Location = new Point((rect.Width - checkbox.Width) / 2, (rect.Height - checkbox.Height) / 2);
+            base.Show(rect);
         }
 
         /// <summary>

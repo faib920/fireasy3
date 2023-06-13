@@ -16,6 +16,8 @@ namespace Fireasy.Windows.Forms
         public event TreeListItemDataBoundEventHandler ItemDataBound;
         [Description("当单元格数据绑定时触发此事件。")]
         public event TreeListCellDataBoundEventHandler CellDataBound;
+        [Description("当单元格数据更新时触发此事件。")]
+        public event TreeListCellDataUpdatedEventHandler CellDataUpdated;
         [Description("当行单击时触发此事件。")]
         public event TreeListItemClickEventHandler ItemClick;
         [Description("当单击格单击时触发此事件。")]
@@ -89,10 +91,16 @@ namespace Fireasy.Windows.Forms
             OnItemDataBound(e);
         }
 
-        protected internal void RaiseCellDataBoundEvent(TreeListCell cell, object data, object value)
+        protected internal void RaiseCellDataBoundEvent(TreeListCell cell, object data, object? value)
         {
             var e = new TreeListCellDataBoundEventArgs { Cell = cell, ItemData = data, Value = value };
             OnCellDataBound(e);
+        }
+
+        protected internal void RaiseCellDataUpdatedEvent(TreeListCell cell, object data, object? value)
+        {
+            var e = new TreeListCellDataUpdatedEventArgs { Cell = cell, ItemData = data, Value = value };
+            OnCellDataUpdated(e);
         }
 
         protected internal void RaiseItemClickEvent(TreeListItem item)
@@ -164,7 +172,7 @@ namespace Fireasy.Windows.Forms
             OnAfterCellEdited(e);
         }
 
-        protected internal bool RaiseBeforeCellUpdatingEvent(TreeListCell cell, object oldValue, ref object newValue)
+        protected internal bool RaiseBeforeCellUpdatingEvent(TreeListCell cell, object? oldValue, ref object newValue)
         {
             var e = new TreeListBeforeCellUpdatingEventArgs { Cell = cell, OldValue = oldValue, NewValue = newValue };
             OnBeforeCellUpdating(e);
@@ -231,6 +239,11 @@ namespace Fireasy.Windows.Forms
         protected virtual void OnCellDataBound(TreeListCellDataBoundEventArgs e)
         {
             CellDataBound?.Invoke(this, e);
+        }
+
+        protected virtual void OnCellDataUpdated(TreeListCellDataUpdatedEventArgs e)
+        {
+            CellDataUpdated?.Invoke(this, e);
         }
 
         protected virtual void OnItemClick(TreeListItemEventArgs e)
