@@ -33,7 +33,12 @@ namespace Fireasy.Windows.Forms
             CannotBeNegative = 0x00010000,
 
             /// <summary> If the user enters a digit after the <see cref="MaxWholeDigits" /> have been entered, a <see cref="DecimalPoint" /> is inserted and then the digit. </summary>
-            AddDecimalAfterMaxWholeDigits = 0x00020000
+            AddDecimalAfterMaxWholeDigits = 0x00020000,
+
+            /// <summary>
+            /// 
+            /// </summary>
+            AllowNullable = 0x00040000
         };
 
         /// <summary>
@@ -227,6 +232,18 @@ namespace Fireasy.Windows.Forms
             set
             {
                 ModifyFlags((int)Flag.CannotBeNegative, !value);
+            }
+        }
+
+        public bool AllowNullable
+        {
+            get
+            {
+                return HasFlag((int)Flag.AllowNullable);
+            }
+            set
+            {
+                ModifyFlags((int)Flag.AllowNullable, value);
             }
         }
 
@@ -972,7 +989,7 @@ namespace Fireasy.Windows.Forms
             Selection.Saver savedSelection = new Selection.Saver(_textBox);  // save the selection before the text changes
             bool textChangedByKeystroke = _textChangedByKeystroke;
             base.HandleTextChanged(sender, e);
-            if (_textBox.Text.Length == 0)
+            if (_textBox.Text.Length == 0 && !AllowNullable)
             {
                 _textBox.Text = _defaultValue.ToString();
             }

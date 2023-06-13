@@ -52,81 +52,121 @@ namespace Fireasy.Windows.Forms
         }
 
         [Browsable(false)]
-        public double Double
+        public double? Double
         {
             get
             {
-                try
+                if (AllowNullable && string.IsNullOrEmpty(Behavior.NumericText))
                 {
-                    return Convert.ToDouble(Behavior.NumericText);
+                    return null;
                 }
-                catch
+
+                if (double.TryParse(Behavior.NumericText, out var value))
                 {
-                    return 0;
+                    return value;
                 }
+
+                return 0;
             }
             set
             {
-                Text = value.ToString();
+                if (AllowNullable && value == null)
+                {
+                    Text = string.Empty;
+                }
+                else
+                {
+                    Text = (value ?? 0).ToString();
+                }
             }
         }
 
         [Browsable(false)]
-        public int Int
+        public int? Int
         {
             get
             {
-                try
+                if (AllowNullable && string.IsNullOrEmpty(Behavior.NumericText))
                 {
-                    return Convert.ToInt32(Behavior.NumericText);
+                    return null;
                 }
-                catch
+
+                if (int.TryParse(Behavior.NumericText, out var value))
                 {
-                    return 0;
+                    return value;
                 }
+
+                return 0;
             }
             set
             {
-                Text = value.ToString();
+                if (AllowNullable && value == null)
+                {
+                    Text = string.Empty;
+                }
+                else
+                {
+                    Text = (value ?? 0).ToString();
+                }
             }
         }
 
         [Browsable(false)]
-        public decimal Decimal
+        public decimal? Decimal
         {
             get
             {
-                try
+                if (AllowNullable && string.IsNullOrEmpty(Behavior.NumericText))
                 {
-                    return Convert.ToDecimal(Behavior.NumericText);
+                    return null;
                 }
-                catch
+
+                if (decimal.TryParse(Behavior.NumericText, out var value))
                 {
-                    return 0;
+                    return value;
                 }
+
+                return 0;
             }
             set
             {
-                Text = value.ToString();
+                if (AllowNullable && value == null)
+                {
+                    Text = string.Empty;
+                }
+                else
+                {
+                    Text = (value ?? 0).ToString();
+                }
             }
         }
         [Browsable(false)]
-        public long Long
+        public long? Long
         {
             get
             {
-                try
+                if (AllowNullable && string.IsNullOrEmpty(Behavior.NumericText))
                 {
-                    return Convert.ToInt64(Behavior.NumericText);
+                    return null;
                 }
-                catch
+
+                if (long.TryParse(Behavior.NumericText, out var value))
                 {
-                    return 0;
+                    return value;
                 }
+
+                return 0;
             }
             set
             {
-                Text = value.ToString();
+                if (AllowNullable && value == null)
+                {
+                    Text = string.Empty;
+                }
+                else
+                {
+                    Text = (value ?? 0).ToString();
+                }
             }
         }
 
@@ -187,6 +227,20 @@ namespace Fireasy.Windows.Forms
             set
             {
                 Behavior.AllowNegative = value;
+            }
+        }
+
+        [Category("Behavior")]
+        [Description("Determines whether the value is allowed to be negative or not.")]
+        public bool AllowNullable
+        {
+            get
+            {
+                return Behavior.AllowNullable;
+            }
+            set
+            {
+                Behavior.AllowNullable = value;
             }
         }
 
