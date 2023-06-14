@@ -1104,16 +1104,18 @@ namespace Fireasy.Windows.Forms
                 return;
             }
 
-            var offsetTop = GetOffsetTop();
-            var itemHeight = GetAdjustItemHeight();
-            var y = vitem.Index * itemHeight - offsetTop;
-            if (y + _bound.ItemBound.Y < _bound.ItemBound.Y)
+            if (vitem.Bounds.Y - _vbar.Value < _bound.ItemBound.Y &&
+                _vbar.Value != vitem.Bounds.Y)
             {
-                _vbar.Value = Math.Max(0, vitem.Index * itemHeight);
+                _vbar.Value = vitem.Bounds.Y;
             }
-            else if (y >= _bound.ItemBound.Height - itemHeight)
+            else if (vitem.Bounds.Top > _bound.ItemBound.Height)
             {
-                _vbar.Value = Math.Max(0, Math.Min((vitem.Index + 1 - (_bound.ItemBound.Height + (_showHeader ? HeaderHeight : 0)) / itemHeight) * itemHeight, _vbar.Maximum));
+                var y = vitem.Bounds.Bottom - _bound.ItemBound.Height;
+                if (_vbar.Value != y)
+                {
+                    _vbar.Value = y;
+                }
             }
         }
 
@@ -1129,7 +1131,7 @@ namespace Fireasy.Windows.Forms
             VirtualTreeListItem vitem;
             if ((vitem = _virMgr.Items.FirstOrDefault(s => s.Item.Equals(item))) != null)
             {
-                var y = _bound.ColumnBound.Bottom + vitem.Index * GetAdjustItemHeight() - GetOffsetTop();
+                var y = _bound.ColumnBound.Bottom + vitem.Bounds.Top - GetOffsetTop();
                 return new Point(GetBorderWidth(), y);
             }
 
@@ -1148,7 +1150,7 @@ namespace Fireasy.Windows.Forms
             VirtualTreeListItem vitem;
             if ((vitem = _virMgr.Items.FirstOrDefault(s => s.Item.Equals(cell.Item))) != null)
             {
-                var y = _bound.ColumnBound.Bottom + vitem.Index * GetAdjustItemHeight() - GetOffsetTop();
+                var y = _bound.ColumnBound.Bottom + vitem.Bounds.Top - GetOffsetTop();
                 var r = GetColumnBound(cell.Column);
                 return new Point(r.Left, y);
             }
@@ -1226,7 +1228,6 @@ namespace Fireasy.Windows.Forms
             }
 
             RaiseItemSelectionChangedEvent();
-            EnsureVisible(item);
             InvalidateItem(item);
         }
 
@@ -1313,82 +1314,66 @@ namespace Fireasy.Windows.Forms
         /// <param name="graphics"></param>
         private void DrawItems(Graphics graphics)
         {
-            var workRect = _bound.ItemBound;
-
             if (_virMgr.Items.Count == 0 && !string.IsNullOrEmpty(NoneItemText))
             {
-                Renderer.DrawNoneItem(new TreeListRenderEventArgs(this, graphics, workRect));
+                Renderer.DrawNoneItem(new TreeListRenderEventArgs(this, graphics, _bound.ItemBound));
                 return;
             }
 
-            var y = workRect.Top;
-            var isDrawing = false;
-            var width = GetColumnTotalWidth();
-
-            var fr = _vbar.Value / GetAdjustItemHeight();
-            if (fr < 0)
-            {
-                fr = 0;
-            }
-
-            y -= _vbar.Value % GetAdjustItemHeight();
-
             graphics.KeepClip(_bound.AvlieBound, () =>
             {
-                for (var i = fr; i < _virMgr.Items.Count; i++)
+                for (var i = 0; i < _virMgr.Items.Count; i++)
                 {
                     var vitem = _virMgr.Items[i];
-                    var rect = GetDrawItemRect(vitem, workRect, y, width);
-                    if (!_bound.ItemBound.IntersectsWith(rect) && isDrawing)
+                    var rect = GetItemRect(vitem);
+                    if (!_bound.ItemBound.IntersectsWith(rect))
                     {
-                        break;
+                        vitem.Visible = false;
+                        continue;
                     }
 
+                    vitem.Visible = true;
                     switch (vitem.ItemType)
                     {
                         case ItemType.Item:
                             var litem = vitem.Item as TreeListItem;
-                            var e1 = new TreeListItemRenderEventArgs(litem, graphics, rect)
+                            var e1 = new TreeListItemRenderEventArgs(litem!, graphics, rect)
                             {
                                 Alternate = i % 2 != 0,
-                                DrawState = litem.Selected ? DrawState.Selected : DrawState.Normal
+                                DrawState = litem!.Selected ? DrawState.Selected : DrawState.Normal
                             };
                             DrawItem(e1, false);
-
-                            y = IncreaseItemY(y);
                             break;
                         case ItemType.Group:
                             var gitem = vitem.Item as TreeListGroup;
-                            var e2 = new TreeListGroupRenderEventArgs(gitem, graphics, rect);
+                            var e2 = new TreeListGroupRenderEventArgs(gitem!, graphics, rect);
                             DrawGroup(e2, false);
-                            y = IncreaseGroupY(y);
                             break;
                     }
-
-                    isDrawing = true;
                 }
             });
         }
 
-        private Rectangle GetDrawItemRect(VirtualTreeListItem vitem, Rectangle workRect, int y, int width)
+        private Rectangle GetItemRect(VirtualTreeListItem vitem)
         {
+            var workRect = _bound.ItemBound;
+            var offsetTop = GetOffsetTop();
             switch (vitem.ItemType)
             {
                 case ItemType.Item:
-                    return new Rectangle(workRect.X - GetOffsetLeft(), y, width, ItemHeight);
+                    return new Rectangle(workRect.X - GetOffsetLeft(), workRect.Y - offsetTop + vitem.Bounds.Y, GetColumnTotalWidth(), ItemHeight);
                 case ItemType.Group:
-                    return new Rectangle(workRect.X - GetOffsetLeft(), y, width, ItemHeight); //GroupHeight
+                    return new Rectangle(workRect.X - GetOffsetLeft(), workRect.Y - offsetTop + vitem.Bounds.Y, GetColumnTotalWidth(), GroupHeight);
                 default:
                     return Rectangle.Empty;
             }
         }
 
-
         private TreeListItemRenderEventArgs GetListItemRenderEventArgs(Graphics graphics, VirtualTreeListItem item, DrawState state)
         {
             var width = GetColumnTotalWidth();
 
-            var y = _bound.ItemBound.Y + item.Index * GetAdjustItemHeight() - GetOffsetTop();
+            var y = _bound.ItemBound.Y + item.Bounds.Top - GetOffsetTop();
             var rect = new Rectangle(_bound.ItemBound.X - _hbar.Value, y, width, ItemHeight);
 
             if (item.Item is TreeListItem titem)
@@ -1678,7 +1663,7 @@ namespace Fireasy.Windows.Forms
             var itemHeight = GetAdjustItemHeight();
             var width = GetColumnTotalWidth();
             var borderWidth = GetBorderWidth();
-            var height = _virMgr.Items.Count * itemHeight;
+            var height = _virMgr.GetClientHeight();
 
             var showHBar = Columns.Count > 0 && Columns[0].Spring ? false : width + _vbar.Width > _bound.WorkBound.Width;
             var showVBar = height + _hbar.Height > _bound.WorkBound.Height - _bound.ColumnBound.Height - (ShowFooter ? FooterHeight : 0);
@@ -1735,13 +1720,6 @@ namespace Fireasy.Windows.Forms
             }
 
             _bound.Reset();
-        }
-
-        private Rectangle OffsetHorRectangle(Rectangle rect)
-        {
-            var r = rect;
-            r.Offset(-_hbar.Value, 0);
-            return r;
         }
 
         private int GetAdjustItemHeight()
@@ -1933,13 +1911,13 @@ namespace Fireasy.Windows.Forms
             }
 
             var r = GetColumnBound(cell.Column);
-            var y = _bound.ItemBound.Y + item.Index * GetAdjustItemHeight() - GetOffsetTop();
+            var y = _bound.ItemBound.Y + item.Bounds.Top - GetOffsetTop();
             return new Rectangle(r.Left, y, r.Width, ItemHeight);
         }
 
         private void InvalidateItem(VirtualTreeListItem item)
         {
-            var y = _bound.ItemBound.Y + item.Index * GetAdjustItemHeight() - GetOffsetTop();
+            var y = _bound.ItemBound.Y + item.Bounds.Top - GetOffsetTop();
             var rect = new Rectangle(_bound.AvlieBound.X - _hbar.Value, y, _bound.AvlieBound.Width, ItemHeight);
 
             Invalidate(rect);

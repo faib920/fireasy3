@@ -6,6 +6,8 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using System.Linq;
+
 namespace Fireasy.Windows.Forms
 {
     internal class VirtualItemManager
@@ -28,7 +30,12 @@ namespace Fireasy.Windows.Forms
             }
         }
 
-        public void Recalc()
+        internal int GetClientHeight()
+        {
+            return _virtualList.Count == 0 ? 0 : _virtualList.Last().Bounds.Bottom;
+        }
+
+        internal void Recalc()
         {
             _y = 0;
             _rowNumberIndex = 0;
@@ -42,7 +49,7 @@ namespace Fireasy.Windows.Forms
                 foreach (var g in _treeList.Groups)
                 {
                     var vitem = new VirtualTreeListItem(g, _virtualList.Count);
-                    vitem.Bounds = new Rectangle(0, _y, 0, _y + _treeList.GroupHeight);
+                    vitem.Bounds = new Rectangle(0, _y, 0, _treeList.GroupHeight);
                     _virtualList.Add(vitem);
 
                     _y += _treeList.GroupHeight;
@@ -60,7 +67,7 @@ namespace Fireasy.Windows.Forms
             for (var i = 0; i < items.Count; i++)
             {
                 var vitem = new VirtualTreeListItem(items[i], _virtualList.Count);
-                vitem.Bounds = new Rectangle(0, _y, 0, _y + _treeList.ItemHeight);
+                vitem.Bounds = new Rectangle(0, _y, 0, _treeList.ItemHeight);
                 items[i].DataIndex = (++_rowNumberIndex);
                 _virtualList.Add(vitem);
 

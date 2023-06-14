@@ -6,6 +6,8 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using System.Linq;
+
 namespace Fireasy.Windows.Forms
 {
     public partial class TreeList
@@ -91,18 +93,13 @@ namespace Fireasy.Windows.Forms
             return new TreeListHitTestInfo(TreeListHitTestType.Column);
         }
 
-        private TreeListHitTestInfo HitTestGroup(int x, int y)
-        {
-            return null;
-        }
-
         /// <summary>
         /// 提供座标 x 和 y 处的 <see cref="TreeListItem"/> 信息。
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        private TreeListHitTestInfo HitTestItem(int x, int y)
+        private TreeListHitTestInfo? HitTestItem(int x, int y)
         {
             var itemHeight = GetAdjustItemHeight();
             var totalWidth = GetColumnTotalWidth();
@@ -111,60 +108,56 @@ namespace Fireasy.Windows.Forms
                 totalWidth += RowNumberWidth;
             }
 
-            var columnHeight = ShowHeader ? HeaderHeight : 0;
-
-            //取得当前行的索引号
-            var index = (y - columnHeight + GetOffsetTop()) / itemHeight;
-
-            //判断索引是否有效，以及是否超出右边
-            if (index < 0 || index > _virMgr.Items.Count - 1 || x > totalWidth - GetOffsetLeft())
+            //判断是否超出右边
+            if (x > totalWidth - GetOffsetLeft())
             {
                 return new TreeListHitTestInfo(TreeListHitTestType.Item);
             }
 
-            var item = _virMgr.Items[index];
-            if (item.ItemType == ItemType.Group)
+            foreach (var item in _virMgr.Items.Where(s => s.Visible))
             {
-                return HitTestGroup(x, y);
-            }
-
-            var x1 = _bound.ItemBound.X - GetOffsetLeft();
-
-            //修正y座标
-            var y1 = _bound.ItemBound.Y + index * itemHeight - GetOffsetTop();
-            var tw = GetColumnTotalWidth();
-
-            var rect = new Rectangle(x1, y1, tw, ItemHeight);
-
-            if (rect.Contains(x, y))
-            {
-                //测试是否是 +/-
-                var info = HitTestItemPlusMinus(item, rect, x, y);
-                if (info != null)
+                var rect = GetItemRect(item);
+                if (item.ItemType == ItemType.Group)
                 {
-                    return info;
-                }
+                    if (rect.Contains(x, y))
+                    {
 
-                //测试是否为复选框
-                info = HitTestItemCheckbox(item, rect, x, y);
-                if (info != null)
+                        return new TreeListHitTestInfo(TreeListHitTestType.Group, item, rect);
+                    }
+                }
+                else if (item.ItemType == ItemType.Item)
                 {
-                    return info;
+                    if (rect.Contains(x, y))
+                    {
+                        //测试是否是 +/-
+                        var info = HitTestItemPlusMinus(item, rect, x, y);
+                        if (info != null)
+                        {
+                            return info;
+                        }
+
+                        //测试是否为复选框
+                        info = HitTestItemCheckbox(item, rect, x, y);
+                        if (info != null)
+                        {
+                            return info;
+                        }
+
+                        //测试是否是Cell
+                        info = HitTestCell(item, rect, x, y);
+                        if (info != null)
+                        {
+                            return info;
+                        }
+
+                        return new TreeListHitTestInfo(TreeListHitTestType.Item, item, rect);
+                    }
+
+                    if (ShowRowNumber && new Rectangle(_bound.RowNumberBound.X, rect.Y, RowNumberWidth, rect.Height).Contains(x, y))
+                    {
+                        return new TreeListHitTestInfo(TreeListHitTestType.Item, item, rect);
+                    }
                 }
-
-                //测试是否是Cell
-                info = HitTestCell(item, rect, x, y);
-                if (info != null)
-                {
-                    return info;
-                }
-
-                return new TreeListHitTestInfo(TreeListHitTestType.Item, item, rect);
-            }
-
-            if (ShowRowNumber && new Rectangle(_bound.RowNumberBound.X, y1, RowNumberWidth, ItemHeight).Contains(x, y))
-            {
-                return new TreeListHitTestInfo(TreeListHitTestType.Item, item, rect);
             }
 
             return null;
@@ -178,7 +171,7 @@ namespace Fireasy.Windows.Forms
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        private TreeListHitTestInfo HitTestItemPlusMinus(VirtualTreeListItem item, Rectangle rect, int x, int y)
+        private TreeListHitTestInfo? HitTestItemPlusMinus(VirtualTreeListItem item, Rectangle rect, int x, int y)
         {
             var sitem = (TreeListItem)item.Item;
 
@@ -214,7 +207,7 @@ namespace Fireasy.Windows.Forms
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        private TreeListHitTestInfo HitTestItemCheckbox(VirtualTreeListItem item, Rectangle rect, int x, int y)
+        private TreeListHitTestInfo? HitTestItemCheckbox(VirtualTreeListItem item, Rectangle rect, int x, int y)
         {
             if (ShowCheckBoxes)
             {
@@ -251,7 +244,7 @@ namespace Fireasy.Windows.Forms
             return null;
         }
 
-        private TreeListHitTestInfo HitTestCell(VirtualTreeListItem vitem, Rectangle rect, int x, int y)
+        private TreeListHitTestInfo? HitTestCell(VirtualTreeListItem vitem, Rectangle rect, int x, int y)
         {
             var workRect = _bound.ItemBound;
             var x1 = workRect.X - GetOffsetLeft();
@@ -713,30 +706,23 @@ namespace Fireasy.Windows.Forms
         /// <param name="info"></param>
         private void AdjustItemPosistion(TreeListHitTestInfo info)
         {
-            var y = info.Bounds.Y - _bound.ItemBound.Y;
-            if (y < 0 || (y = info.Bounds.Bottom - _bound.ItemBound.Bottom) > 0)
+            if (info.Bounds.Y < _bound.ItemBound.Y)
             {
-                var barValue = _vbar.Value + y;
-                if (y > _vbar.Maximum)
+                var y = Math.Abs(info.Bounds.Y) + _bound.ItemBound.Y;
+                if (_vbar.Value - y < 0)
                 {
-                    barValue = _vbar.Maximum;
+                    y = 0;
                 }
-                else if (y < _vbar.Minimum)
+                _vbar.Value -= y;
+            }
+            else if (info.Bounds.Bottom > _bound.ItemBound.Bottom)
+            {
+                var y = info.Bounds.Bottom - _bound.ItemBound.Bottom;
+                if (_vbar.Value + y > _vbar.Maximum)
                 {
-                    barValue = _vbar.Minimum;
+                    y = 0;
                 }
-
-                _vbar.Value = barValue;
-                var r = info.Bounds;
-                r.Offset(0, -y);
-                info.Bounds = r;
-
-                if (info.Owner != null)
-                {
-                    r = info.Owner.Bounds;
-                    r.Offset(0, -y);
-                    info.Owner.Bounds = r;
-                }
+                _vbar.Value += y;
             }
         }
 
